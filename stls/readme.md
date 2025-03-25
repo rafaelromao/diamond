@@ -45,4 +45,4 @@ The STL files are provided for the right side. To print the left side, just mirr
 - [Choc Body Right](../stls/v2/choc_body_right.stl)
 - [Choc Body Right - Tilted Thumbs](../stls/v2/choc_body_right_tilted.stl)
 - [Unibody Base](../stls/v2/unibody_base.stl)
-- [Unibody Base Cover](../slts/v2/unibody_base_cover.stl)
+- [Unibody Base Cover](../stls/v2/unibody_base_cover.stl)
