@@ -14,7 +14,7 @@ Parts for the keyboard:
 - 24 choc switches.
 - 20 1u choc keycaps.
 - 4 1u thumb choc keycaps.
-- Choc Diamond [case](stls) - v2 with choc plate..
+- Choc Diamond [case](../stls) - v2 with choc plate..
 - [2 Supermini NRF52840](https://www.aliexpress.com/item/1005006035267231.html).
 - [2 500mAh 3.7v battery - 752035](https://www.aliexpress.com/item/1005005984848543.html)
 - [24 Single Switch PCBs](https://keycapsss.com/keyboard-parts/pcbs/173/mxledbit-single-switch-pcb-mx-choc-hot-swap-socket).
