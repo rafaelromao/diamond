@@ -12,9 +12,9 @@ Parts for the keyboard:
 - 24 MX switches.
 - 18 1u MX keycaps.
 - 6 1.5u MX keycaps.
-- Diamond [case](../../stls)
+- Diamond [case](../../stls).
 - [2 Supermini NRF52840](https://www.aliexpress.com/item/1005006035267231.html).
-- [2 500mAh 3.7v battery - 752035](https://www.aliexpress.com/item/1005005984848543.html)
+- [2 500mAh 3.7v battery - 752035](https://www.aliexpress.com/item/1005005984848543.html).
 - [24 Single Switch PCBs](https://keycapsss.com/keyboard-parts/pcbs/173/mxledbit-single-switch-pcb-mx-choc-hot-swap-socket).
 - [2 6x6x6 switches](https://www.aliexpress.com/item/4001166999847.html).
 - [2 SS12F15 switches](https://www.aliexpress.com/item/4000699324084.html).
