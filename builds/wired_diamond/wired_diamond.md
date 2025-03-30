@@ -16,7 +16,7 @@ Parts for the keyboard:
 - 24 MX switches.
 - 18 1u MX keycaps.
 - 6 1.5u MX keycaps.
-- Diamond [case](stls) - v2 with tilted thumbs.
+- Diamond [case](../../stls) - v2 with tilted thumbs.
 - [2 Xiao RP2040](https://www.aliexpress.com/item/1005006987582110.html).
 - [24 Single Switch PCBs](https://keycapsss.com/keyboard-parts/pcbs/173/mxledbit-single-switch-pcb-mx-choc-hot-swap-socket).
 - [2 USB-C breakout boards](https://www.aliexpress.com/item/1005006047462864.html).
