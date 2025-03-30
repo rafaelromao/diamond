@@ -1,31 +1,41 @@
-## Diamond
-### A 24 keys handwired split keyboard.
+# Diamond
 
-### Build Details
+## A 24 keys handwired split keyboard.
 
 Diamond is a handwired board originally designed by me but heavily inspired by the [Rommana](https://github.com/AlaaSaadAbdo/Rommana) and using the switch holders of the [Dactyl Cygnus](https://github.com/juhakaup/keyboards).
+- It contains 24 keys only, in the format 1333+2.
+- It should be handwired, ideally using single switch PCBs.
+- The MCU, reset button and on/off switch goes in the base, below a cover used to hide them.
+- These components should be mounted upside down, under this cover.
+- The cables for column and rows will pass through 3 holes in the cover and can be tightened in the end of assembling to make them less visible in the final build. 
 
-### Diamond
-![img](img/diamond.jpeg)
+# Diamond Builds
 
-Parts for the keyboard:
-- 24 MX switches (Boba U4).
-- 18 1u MX keycaps (MT3 Blanks).
-- 6 1.5u MX keycaps (MT3 Blanks).
-- Diamond [case](stls/readme.md).
-- [2 Supermini NRF52840](https://www.aliexpress.com/item/1005006035267231.html).
-- [2 500mAh 3.7v battery - 752035](https://www.aliexpress.com/item/1005005984848543.html)
-- [24 Single Switch PCBs](https://keycapsss.com/keyboard-parts/pcbs/173/mxledbit-single-switch-pcb-mx-choc-hot-swap-socket).
-- [2 6x6x6 switches](https://www.aliexpress.com/item/4001166999847.html).
-- [2 SS12F15 switches](https://www.aliexpress.com/item/4000699324084.html).
-- [Dupont Cables](https://aliexpress.com/item/1005004155181609.html).
-- [28 AWG Wires](https://www.aliexpress.com/item/1005006249194665.html).
-- [1n4148 diodes + diode legs](https://www.aliexpress.com/item/1005003540554760.html).
-- [65x45 Metal Plates](https://www.aliexpress.com/item/1005006610531442.html) or [65x45 Magnets](https://www.aliexpress.com/item/4000152137062.html) to add weight.
+## [Diamond](builds/diamond/diamond.md)
 
+![img](builds/diamond/diamond.jpeg)
 
-[Here](img/diamond.md) you can see some build images.
+## [Wired Diamond](builds/wired_diamond/wired_diamond.md)
 
-### ZMK
+![img](builds/wired_diamond/wired_diamond.jpeg)
 
-For more info, check my [keyboards](https://github.com/rafaelromao/keyboards) repo.
+## [Choc Diamond](builds/choc_diamond/choc_diamond.md)
+
+![img](builds/choc_diamond/choc_diamond.jpeg)
+
+# STL Files
+
+The STL files are provided for the right side only. To print the left side you will have to mirror them.
+
+- [Base Right](stls/v2/base_right.stl)
+- [Cover Right](stls/v2/cover_right.stl)
+- [MX Body Right](stls/v2/body_right.stl)
+- [MX Body Right - Tilted Thumbs](stls/v2/body_right_tilted.stl)
+- [Choc Body Right](stls/v2/choc_body_right.stl)
+- [Choc Body Right - Tilted Thumbs](stls/v2/choc_body_right_tilted.stl)
+- [Unibody Base](stls/v2/unibody_base.stl)
+- [Unibody Base Cover](stls/v2/unibody_base_cover.stl)
+
+# Firmware
+
+Check my [keyboards](https://github.com/rafaelromao/keyboards) repo to find the ZMK firmware for these boards.
