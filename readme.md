@@ -29,12 +29,11 @@ The STL files are provided for the right side only. To print the left side you w
 
 - [Base Right](stls/v2/base_right.stl)
 - [Cover Right](stls/v2/cover_right.stl)
+- [Cover Right with Cutout](stls/v2/cover_right_with_cutout.stl)
 - [MX Body Right](stls/v2/body_right.stl)
 - [MX Body Right - Tilted Thumbs](stls/v2/body_right_tilted.stl)
 - [Choc Body Right](stls/v2/choc_body_right.stl)
 - [Choc Body Right - Tilted Thumbs](stls/v2/choc_body_right_tilted.stl)
-- [Unibody Base](stls/v2/unibody_base.stl)
-- [Unibody Base Cover](stls/v2/unibody_base_cover.stl)
 
 # Firmware
 

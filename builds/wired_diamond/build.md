@@ -34,5 +34,14 @@ Left side completed
 Leds
 ![img](10.jpeg)
 
-Final build
-![img](wired_diamond.jpeg)
+Old build
+![img](wired_diamond_old.jpeg)
+
+New Keycaps, Switches and Cover Colors
+![img](11.jpeg)
+
+New Cable Management cutout
+![img](12.jpeg)
+
+New Build
+![img](13.jpeg)
