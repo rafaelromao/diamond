@@ -2,12 +2,12 @@
 
 ## A 24 keys handwired split keyboard.
 
-Diamond is a handwired board originally designed by me but heavily inspired by the [Rommana](https://github.com/AlaaSaadAbdo/Rommana) and using the switch holders of the [Dactyl Cygnus](https://github.com/juhakaup/keyboards).
+Diamond is a handwired board originally designed by me but heavily inspired by the [Rommana](https://github.com/AlaaSaadAbdo/Rommana) and using the switch holders from the [Dactyl Cygnus](https://github.com/juhakaup/keyboards).
 - It contains 24 keys only, in the format 1333+2.
 - It should be handwired, ideally using single switch PCBs.
 - The MCU, reset button and on/off switch goes in the base, below a cover used to hide them.
 - These components should be mounted upside down, under this cover.
-- The cables for column and rows will pass through 3 holes in the cover and can be tightened in the end of assembling to make them less visible in the final build. 
+- The cables for column and rows will pass through holes or cutouts in the cover and can be tightened in the end of assembling to make them less visible in the final build. 
 
 # Diamond Builds
 
