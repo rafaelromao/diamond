@@ -22,43 +22,4 @@ packs come in round numbers anyway.
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
 or epoxy for the magnets.
 
-## Before you solder
-
-- **Battery polarity.** Silkscreen `+` marks pin 1 of the JST socket. Cheap
-  752025 cells ship with either polarity. Check the plug with a multimeter
-  first. If it's reversed, swap the two crimps in the plug housing (lift the
-  tab with a needle).
-- **Magnet polarity.** Every left-half magnet goes in with the same pole facing
-  out, and every right-half magnet with the other pole facing out. That makes
-  both stacking and the unibody join attract. Mark one face of each magnet
-  stack before you start.
-
-## Assembly order (per half)
-
-1. **Pick the face.** The left half gets its parts on the face silkscreened
-   `LEFT: parts on this face`. The right half gets them on the other face.
-   Switches always go on the opposite face from the sockets.
-2. **Jumpers.** On the face *without* the Xiao, bridge the three solder
-   jumpers labelled D0, D1, D2 (inside the Xiao's outline). Leave the other
-   three open.
-3. **Xiao.** Lay it flat on its face, USB towards the board edge. Tack one
-   corner, check alignment, then solder each castellated pad from the outside.
-   Feed solder into the plated holes for **GND, VBAT and NFC1** from the other
-   face until it wicks through to the module's bottom pads. Use a small chisel
-   tip.
-4. **Power switch and JST socket** on the same face as the Xiao.
-5. **Hot-swap sockets**, 12, on the same face.
-6. **Test** before closing. Flash the firmware, short each socket's two pads
-   with tweezers, and check every key registers.
-7. **Case.** Glue the magnets in (polarity!), drop the battery in its fence,
-   plug it in, and screw the PCB onto the four standoffs. Then insert the
-   switches and keycaps.
-
-## Printing
-
-Print each half floor-down, no supports: the openings are bridged. Use 0.2 mm
-layers, 3 walls and 20% infill. Nylon suits the self-tapping screws: it's
-tough enough to take a thread without cracking. Dry the filament before
-printing, and print the standoffs solid (perimeters reaching the pilot hole)
-so the screws bite into plastic, not infill. The floor pockets for the 6 × 2 mm magnets open
-on the underside. Press the magnets in and wick a drop of CA glue around them.
+Soldering, assembly and printing: see [BUILD.md](BUILD.md).

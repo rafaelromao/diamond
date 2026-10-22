@@ -1,0 +1,112 @@
+# Slim Diamond: soldering and assembly
+
+The Xiao, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall. The Xiao's LED and reset button face the case floor, so flash and test it before closing the case.
+
+Everything is soldered with an iron: no paste, no hot air. Build one half at a
+time. Both halves use the same PCB, turned over for the right half.
+
+## Tools
+
+- Temperature-controlled iron with a **small chisel tip** (1.6–2 mm) for the Xiao, sockets and JST tabs, and a **fine conical tip** for the power switch.
+  - Leaded solder: about 330 °C.
+  - Lead-free: about 360 °C.
+- Thin solder (0.5–0.6 mm), a **flux pen**, fine tweezers, kapton tape, isopropyl alcohol and a brush.
+- A multimeter with a continuity beep.
+- Optional: a magnifier or phone camera to inspect the small pads.
+
+## The two faces
+
+Each board has a **parts face** and a **switch face**. The silkscreen tells you which is which:
+
+| Half | Parts face (silkscreen) | Switch face |
+|---|---|---|
+| Left | `LEFT: parts on this face` | the other one |
+| Right | `RIGHT: parts on this face` | the other one |
+
+- **Parts face:** Xiao, power switch, JST socket and the 12 hot-swap sockets. It faces the case floor.
+- **Switch face:** the key switches clip in here, and you bridge the jumpers and fill the Xiao's holes from this side.
+
+The Xiao always lies flat on the parts face, with its pad side against the PCB and its components (USB-C, shield, reset button) pointing away from it, towards the case floor.
+
+## Before you start
+
+- **Flash and test the Xiao first.** Plug it into USB and double-tap reset: a USB drive appears. Copy the firmware onto it:
+
+  | Half | With a dongle | Without a dongle |
+  |---|---|---|
+  | Left | `slim_diamond_peripheral_left-zmk.uf2` | `slim_diamond_central_left-zmk.uf2` |
+  | Right | `slim_diamond_peripheral_right-zmk.uf2` | `slim_diamond_peripheral_right-zmk.uf2` |
+
+  A dead module is much easier to swap now than after soldering.
+- **Battery polarity.** Silkscreen `+` marks pin 1 of the JST socket. Cheap 752025 cells ship with either polarity: check the plug with the multimeter. If it's reversed, swap the two crimps in the plug housing (lift each tab with a needle).
+- **Magnet polarity.** Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.
+
+## 1. Bridge the D0–D2 jumpers (switch face)
+
+On the switch face, inside the Xiao's outline, there are three small pad pairs labelled **D0, D1, D2**, next to `XIAO on B: bridge D0-D2` (left half) or `XIAO on F: bridge D0-D2` (right half). Flux them and bridge each pair with a small blob of solder.
+
+![Left half, switch face](renders/xiao_left_half.png)
+![Right half, switch face (mirrored, as you see it)](renders/xiao_right_half.png)
+
+*Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs, and later fill the two boxed hole groups (step 2).*
+
+Leave the other three jumpers open. They're on the parts face, under where the Xiao will sit.
+
+**Check:** each bridged pair beeps on the multimeter.
+
+## 2. Solder the Xiao (parts face)
+
+1. Flux the 14 edge pads. Lay the Xiao flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
+2. **Tack two opposite corners:** put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.
+3. Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.
+4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (VBAT and GND), and the single slot in the other box (NFC1). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the Xiao's pad underneath.
+   **Fill only the boxed holes.** The unboxed ones belong to the other half and sit under bare module areas.
+5. Clean off the flux.
+
+**Check:**
+- The VBAT hole beeps to the middle pin of the power switch footprint.
+- The GND hole beeps to the Xiao's GND castellation.
+- No two adjacent castellations beep to each other.
+
+## 3. Power switch, MSK-12C02 (parts face)
+
+It goes next to the Xiao's USB-C, with the lever pointing out over the board edge and its two locating pegs in the small holes.
+
+1. Tin one of the four corner (shield) pads. Place the switch with tweezers and reheat that pad to tack it.
+2. Solder the other three shield pads.
+3. Solder the three signal pads with the fine tip and very little solder. A bridge between the middle pin and its near neighbour does no harm (both are VBAT). A bridge from the middle pin to the far one bypasses the switch: wick it away.
+
+## 4. JST battery socket (parts face)
+
+Its opening faces the battery's spot under the inner keys. Tack one signal pin, check it sits flat, and solder the other pin. Then solder the two large mounting tabs: they need more heat and more solder, because they take the force of plugging the battery in.
+
+## 5. Hot-swap sockets (parts face)
+
+Twelve, one per key. Each socket fits its outline only one way round.
+
+1. Tin one pad lightly, place the socket, and hold it flat with tweezers while you reheat the pad until the socket's metal tab sinks into the solder.
+2. Solder the second tab. Use enough solder to make a fillet, but keep it out of the socket's opening.
+
+## 6. Test (before the case)
+
+1. Plug in USB. With the firmware flashed and your computer paired or connected, short each socket's two contacts with tweezers. Every key should register.
+2. Plug in the battery, unplug USB and toggle the power switch: the half should stay connected.
+
+| Symptom | Look at |
+|---|---|
+| One key dead | That socket's two joints |
+| Pinky, ring-bottom or middle-home dead | Its D0–D2 jumper (step 1) |
+| Index-top dead (both halves) | The NFC1 hole (step 2.4) |
+| Works on USB, not on battery | The VBAT/GND holes, the power-switch joints, battery polarity |
+| Nothing works | The Xiao's castellations, or the firmware file |
+
+## 7. Case
+
+1. Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.
+2. Lay the battery inside its fence on the floor and plug it in.
+3. Set the PCB, parts face down, onto the four standoffs. The USB-C and the switch lever line up with their openings. Fit the **M3 × 6** button-head screws. They cut their own thread in the Nylon: turn them in slowly, and stop as soon as they're snug.
+4. Clip the switches in from the switch face, then the keycaps.
+
+## Printing the case
+
+Print each half floor-down, no supports: the openings are bridged. Use 0.2 mm layers, 3 walls and 20% infill. Nylon suits the self-tapping screws: it's tough enough to take a thread without cracking. Dry the filament before printing, and print the standoffs solid (perimeters reaching the pilot hole) so the screws bite into plastic, not infill.

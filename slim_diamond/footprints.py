@@ -168,6 +168,13 @@ def xiao():
                 L.append(tht(name, px, y, 1.2, 0.6, shape="oval", size_y=2.2, drill_y=1.4))
             else:
                 L.append(tht(name, px, y, 1.9, 0.8, shape="oval", size_y=1.45, drill_y=0.8))
+    # Mark the holes to fill with solder, on the face they are filled from (the one without the
+    # module): the B-mount holes on F (left half), the F-mount holes on B (right half).
+    (vx, vy), (_, gy), (nx, ny) = XIAO_BOTTOM["VBAT"], XIAO_BOTTOM["GND"], XIAO_BOTTOM["NFC1"]
+    for mount, feed in (("B", "F"), ("F", "B")):
+        sx = 1 if mount == "F" else -1
+        L += rect_lines(sx * vx - 1.3, gy - 1.0, sx * vx + 1.3, vy + 1.0, f"{feed}.SilkS")
+        L += rect_lines(sx * nx - 0.95, ny - 1.45, sx * nx + 0.95, ny + 1.45, f"{feed}.SilkS")
     for side in ("F", "B"):
         L += rect_lines(-8.75, -10.5, 8.75, 10.5, f"{side}.Fab", 0.1)
         L += rect_lines(-10.6, -11.6, 10.6, 10.8, f"{side}.CrtYd", 0.05)

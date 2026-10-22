@@ -233,9 +233,9 @@ def build():
     text(board, "RIGHT: parts on this face", (tx + 2.2, ty), pcbnew.F_SilkS, 0.8, -90)
     text(board, "LEFT: parts on this face", (tx + 2.2, ty), pcbnew.B_SilkS, 0.8, -90, mirror=True)
     for j, (lb, lf) in pairs.items():
-        text(board, f"D{lb - 1}", local(xc, xa, (jl["F"][0] + 2.3, jl["F"][1] + jrows[j])),
+        text(board, f"D{lb - 1}", local(xc, xa, (jl["F"][0] - 2.3, jl["F"][1] + jrows[j])),
              pcbnew.F_SilkS, 0.8, xa)
-        text(board, f"D{lb - 1}", local(xc, xa, (jl["B"][0] - 2.3, jl["B"][1] + jrows[j])),
+        text(board, f"D{lb - 1}", local(xc, xa, (jl["B"][0] + 2.3, jl["B"][1] + jrows[j])),
              pcbnew.B_SilkS, 0.8, xa, mirror=True)
 
     pcbnew.SaveBoard(BOARD, board)

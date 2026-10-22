@@ -31,7 +31,8 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 | `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
 | `case/case_left.stl`, `case/case_right.stl` | The printed case |
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
-| `BOM.md` | Parts list (AliExpress search terms), assembly order, printing notes |
+| `BOM.md` | Parts list (AliExpress search terms) |
+| `BUILD.md` | Hand-soldering and assembly guide, testing, printing |
 | `design.png` | Top view of the placement: sockets (red), Xiao, battery, JST, magnets, screws |
 | `*.py`, `*.sh` | The generators: everything above is built from them |
 
