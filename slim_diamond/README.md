@@ -15,6 +15,7 @@ transport.
 | Wiring | Diodeless, one pin per key (11 Xiao pins + NFC1) |
 | Case | 93 × 100 mm per half at the floor (the rim is 91 × 96); tent 6.6°; 18 mm at the seam, 8 mm at the outer edge (without keycaps) |
 | Power | XIAO nRF52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet |
+| Screws | 4 × M3 × 6 button head per half, self-tapping into the printed standoffs (2.5 mm pilot, 6 mm standoff; meant for a Nylon print). `SCREW` in `design.py` switches to heat-set inserts |
 | Magnets | 4 × 6×2 mm in each floor (back to back), 2 × 5×2 mm in each inner wall (unibody) |
 | Assembly | Iron only: no reflow-only parts |
 

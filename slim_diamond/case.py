@@ -30,7 +30,8 @@ PCB_T = D["pcb_t"]
 Z0 = FLOOR + D["z_in"]          # PCB bottom at the inner wall, over the desk
 RIM = 1.6                       # wall rises this far above the PCB's top face
 GIRDLE = 2.0                    # floor flare past the rim: the lean of the gem facets
-STANDOFF_R, SCREW_R = 2.4, 0.85  # M2 self-tapping into the printed standoff
+STANDOFF_R = D["screw"]["standoff_d"] / 2
+PILOT_R = D["screw"]["pilot_d"] / 2         # self-tapping pilot (or the heat-set insert's hole)
 USB_W, USB_H = 10.0, 4.4
 LEVER_W, LEVER_H = 5.0, 2.8
 
@@ -106,12 +107,12 @@ def build():
     cavity = prism(cav_pts, FLOOR, 80)
     shell = body - cavity
 
-    # Standoffs up to the PCB's bottom face, with a pilot hole for an M2 screw.
+    # Standoffs up to the PCB's bottom face, with a pilot hole for the screw.
     for hx, hy in D["mount_holes"]:
         X, Y = plan([(hx, hy)])[0]
         post = Manifold.cylinder(60, STANDOFF_R, circular_segments=24).translate((X, Y, FLOOR - 0.5))
         post = under_tilted_plane(post, 0.0)
-        hole = Manifold.cylinder(60, SCREW_R, circular_segments=16).translate((X, Y, FLOOR - 1.0))
+        hole = Manifold.cylinder(60, PILOT_R, circular_segments=20).translate((X, Y, FLOOR - 1.0))
         shell = (shell + post) - hole
 
     # Floor magnets (back-to-back), pressed in from below; 0.5 mm skin above.

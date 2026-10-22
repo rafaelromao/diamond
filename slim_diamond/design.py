@@ -43,6 +43,10 @@ AIR = 0.4                          # vertical clearance under every part
 WALL = 1.6                         # case wall thickness
 CAP_CLEAR = 0.75                   # keycap to wall
 FLOOR = 2.6                        # floor; 6x2 magnets sit in pockets in it
+# Case screws: M3 button head (ISO 7380), self-tapping into the printed standoffs: in Nylon a
+# thread-forming screw grips well and needs no heat. For heat-set inserts instead, set pilot_d
+# to the insert's hole (about 4.0 for an M3 x 4 x 4.2 insert) and standoff_d to about 7.5.
+SCREW = {"name": "M3", "pcb_hole": 3.2, "head_d": 5.7, "standoff_d": 6.0, "pilot_d": 2.5}
 MAG_FLOOR = (6.2, 2.1)             # pocket for 6x2 disc magnets (back-to-back)
 MAG_SIDE = (5.2, 2.1)              # pocket for 5x2 disc magnets (unibody)
 
@@ -305,8 +309,10 @@ def main():
                     best_j = (d, lc)
         assert best_j, f"no room for the {side} jumpers"
         jblocks[side] = best_j[1]
-    # --- M2 mounting holes: head clear of switch housings on top, standoff clear underneath.
-    room = pcb.buffer(-2.6).difference(housings.buffer(2.1)).difference(busy.buffer(2.8))
+    # --- mounting holes: head clear of switch housings on top, standoff clear underneath.
+    room = (pcb.buffer(-(SCREW["standoff_d"] / 2 + 0.2))
+            .difference(housings.buffer(SCREW["head_d"] / 2 + 0.3))
+            .difference(busy.buffer(SCREW["standoff_d"] / 2 + 0.4)))
     grid = [(gx / 2, gy / 2) for gx in range(-120, 100) for gy in range(-80, 160)
             if room.contains(Point(gx / 2, gy / 2))]
     holes = []
@@ -346,6 +352,7 @@ def main():
         "battery": {"bounds": list(batt.bounds)},
         "jst": {"x": jst.centroid.x, "y": jst.centroid.y, "bounds": list(jst.bounds)},
         "mount_holes": [list(h) for h in holes],
+        "screw": SCREW,
         "jumpers_local": jblocks,
         "wall_in": wall_in, "wall_out": wall_in + WALL, "wall": WALL, "x_out": x_out,
         "tent_deg": tent, "slope": slope, "z_out": z_out, "z_in": z_in, "floor": FLOOR, "pcb_t": PCB_T,

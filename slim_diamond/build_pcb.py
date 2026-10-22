@@ -211,7 +211,7 @@ def build():
     set_pads(jst, {"1": "BAT+", "2": "GND", "MP": "GND"}, board, nets)
 
     for i, h in enumerate(D["mount_holes"], 1):
-        add_fp(board, "MountingHole_M2", f"H{i}", tuple(h), 0, "M2")
+        add_fp(board, f"MountingHole_{D['screw']['name']}", f"H{i}", tuple(h), 0, D["screw"]["name"])
 
     # --- ground pour on both faces; none under the Xiao's antenna, no vias under the module.
     pcb_pts = [tuple(p) for p in D["pcb_outline"][:-1]]

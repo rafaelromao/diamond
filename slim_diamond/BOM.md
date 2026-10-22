@@ -16,7 +16,7 @@ packs come in round numbers anyway.
 | 8 | Slide switch MSK-12C02 | 2 (+3) | `MSK-12C02 SMD slide switch` | The 7-pad SMD one with two locating pins. |
 | 9 | Disc magnets 6 × 2 mm, N52 | 8 (+4) | `6x2mm N52 neodymium magnet` | Four in each floor: the halves stack back to back. |
 | 10 | Disc magnets 5 × 2 mm, N52 | 4 (+4) | `5x2mm N52 neodymium magnet` | Two in each inner wall: the halves join as a unibody. |
-| 11 | M2 × 5 self-tapping screws, pan head | 8 | `M2x5 self tapping screw pan head` | Four per half, into the printed standoffs. |
+| 11 | M3 × 6 self-tapping screws, button head (ISO 7380) | 8 | `M3x6 self tapping screw button head` | Four per half, threading into the printed standoffs (2.5 mm pilot holes). 6 mm is the longest that fits the short standoffs on the outer side. The low button head sits between the switches. |
 | 12 | Filament | ~60 g | PLA or PETG | Case left + right, 22 cm³ each. |
 
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
@@ -57,5 +57,8 @@ or epoxy for the magnets.
 ## Printing
 
 Print each half floor-down, no supports: the openings are bridged. Use 0.2 mm
-layers, 3 walls and 20% infill. The floor pockets for the 6 × 2 mm magnets open
+layers, 3 walls and 20% infill. Nylon suits the self-tapping screws: it's
+tough enough to take a thread without cracking. Dry the filament before
+printing, and print the standoffs solid (perimeters reaching the pilot hole)
+so the screws bite into plastic, not infill. The floor pockets for the 6 × 2 mm magnets open
 on the underside. Press the magnets in and wick a drop of CA glue around them.

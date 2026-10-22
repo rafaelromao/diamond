@@ -7,6 +7,7 @@ so the parts go on the F face. Only one face gets populated.
 The Choc hot-swap geometry follows kiswitch's SW_Hotswap_Kailh_Choc_V1 (MIT);
 the Xiao pad positions follow Seeed's XIAO-nRF52840-SMD footprint.
 """
+import json
 import os
 
 from shapely.geometry import Point, box
@@ -227,12 +228,15 @@ def jumper(name, side):
 
 
 def mount_hole():
-    L = header("MountingHole_M2", "M2 screw hole", attr="exclude_from_pos_files exclude_from_bom")
-    L.append(npth(0, 0, 2.2))
+    """Case screw hole, sized by design.json's screw; silkscreen ring = the head."""
+    screw = json.load(open("design.json"))["screw"]
+    name = f"MountingHole_{screw['name']}"
+    L = header(name, f"{screw['name']} screw hole", attr="exclude_from_pos_files exclude_from_bom")
+    L.append(npth(0, 0, screw["pcb_hole"]))
     for side in ("F", "B"):
-        L.append(f'  (fp_circle (center 0 0) (end 2.3 0) (stroke (width 0.12) (type solid))'
+        L.append(f'  (fp_circle (center 0 0) (end {fmt(screw["head_d"] / 2)} 0) (stroke (width 0.12) (type solid))'
                  f' (fill none) (layer "{side}.SilkS"))')
-    write("MountingHole_M2", L)
+    write(name, L)
 
 
 if __name__ == "__main__":
