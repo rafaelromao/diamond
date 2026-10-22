@@ -1,66 +1,66 @@
 {
  "assign": {
-  "pinky": "L11",
-  "ring_bottom": "JA",
-  "ring_home": "JB",
-  "ring_top": "L4",
-  "middle_top": "L5",
-  "middle_home": "L6",
-  "middle_bottom": "JC",
-  "index_top": "L7",
-  "index_home": "NFC1",
-  "index_bottom": "L8",
-  "thumb_outer": "L9",
-  "thumb_inner": "L10"
+  "pinky": "JA",
+  "ring_bottom": "JB",
+  "ring_home": "L4",
+  "ring_top": "L5",
+  "middle_top": "L6",
+  "middle_home": "JC",
+  "middle_bottom": "L7",
+  "index_top": "NFC1",
+  "index_home": "L8",
+  "index_bottom": "L9",
+  "thumb_outer": "L10",
+  "thumb_inner": "L11"
  },
  "pins": {
   "pinky": {
-   "left": "D10",
-   "right": "D3"
-  },
-  "ring_bottom": {
    "left": "D0",
    "right": "D0"
   },
-  "ring_home": {
+  "ring_bottom": {
    "left": "D1",
    "right": "D1"
   },
-  "ring_top": {
+  "ring_home": {
    "left": "D3",
    "right": "D10"
   },
-  "middle_top": {
+  "ring_top": {
    "left": "D4",
    "right": "D9"
   },
-  "middle_home": {
+  "middle_top": {
    "left": "D5",
    "right": "D8"
   },
-  "middle_bottom": {
+  "middle_home": {
    "left": "D2",
    "right": "D2"
   },
-  "index_top": {
+  "middle_bottom": {
    "left": "D6",
    "right": "D7"
   },
-  "index_home": {
+  "index_top": {
    "left": "P0.09 (NFC1)",
    "right": "P0.09 (NFC1)"
   },
-  "index_bottom": {
+  "index_home": {
    "left": "D7",
    "right": "D6"
   },
-  "thumb_outer": {
+  "index_bottom": {
    "left": "D8",
    "right": "D5"
   },
-  "thumb_inner": {
+  "thumb_outer": {
    "left": "D9",
    "right": "D4"
+  },
+  "thumb_inner": {
+   "left": "D10",
+   "right": "D3"
   }
  }
 }

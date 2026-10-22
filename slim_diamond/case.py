@@ -1,10 +1,13 @@
 """Slim Diamond case: a faceted tray under the tented PCB. Writes case/*.stl.
 
 Built in the desk frame: floor flat on the desk at z = 0, the PCB tilted up
-towards the inner wall (the unibody seam) by design.json's tent angle. The
-gem look comes from a Minkowski sum with an octagonal bicone: 45-degree
-facets along the top and bottom edges and on every corner, with walls no
-thicker than the plain outline.
+towards the inner wall (the unibody seam) by design.json's tent angle.
+
+The gem look: the outline is a cut-diamond silhouette (design.py), and the
+outer walls lean in from a floor GIRDLE mm wider than the rim, each one flat
+facet. Stacked back to back the floors meet at the widest line, so the pair
+reads as a cut gem from the side: crown above, pavilion below. The seam stays
+a vertical face for the unibody join.
 
 Also writes the case, battery and keycaps as VRML in the PCB's frame, for
 KiCad's 3D renders.
@@ -26,7 +29,7 @@ FLOOR = D["floor"]
 PCB_T = D["pcb_t"]
 Z0 = FLOOR + D["z_in"]          # PCB bottom at the inner wall, over the desk
 RIM = 1.6                       # wall rises this far above the PCB's top face
-FACET = 1.2                     # size of the 45-degree facets
+GIRDLE = 2.0                    # floor flare past the rim: the lean of the gem facets
 STANDOFF_R, SCREW_R = 2.4, 0.85  # M2 self-tapping into the printed standoff
 USB_W, USB_H = 10.0, 4.4
 LEVER_W, LEVER_H = 5.0, 2.8
@@ -67,12 +70,6 @@ def under_tilted_plane(m, zp):
     return m.trim_by_plane((-n[0], -n[1], -n[2]), -offset)
 
 
-def bicone(r, sides=8):
-    pts = [(r * math.cos(2 * math.pi * (i + 0.5) / sides), r * math.sin(2 * math.pi * (i + 0.5) / sides), 0)
-           for i in range(sides)] + [(0, 0, r), (0, 0, -r)]
-    return Manifold.hull_points(pts)
-
-
 def local_frame(c, ang, p):
     a = math.radians(ang)
     return (c[0] + p[0] * math.cos(a) - p[1] * math.sin(a), c[1] + p[0] * math.sin(a) + p[1] * math.cos(a))
@@ -91,14 +88,19 @@ def build():
     cav_pts = [tuple(p) for p in D["cavity_outline"][:-1]]
     top_zp = PCB_T + RIM
 
-    # Outer body: inset by FACET, then grown back with the bicone.
-    core = section(case_pts).offset(-FACET, JoinType.Miter)
-    core = core.extrude(60).translate((0, 0, FACET))
-    core = under_tilted_plane(core, top_zp - FACET)
-    body = Manifold.minkowski_sum(core, bicone(FACET))
-    # the seam must stay a flat face: cut the bicone's bulge off it
+    # Outer body: the hull of the rim (case outline on the tilted top plane) and the floor
+    # (the outline grown by GIRDLE, except at the seam). The outline is convex, so every
+    # wall is one flat facet.
+    rim = plan(case_pts)
+    girdle = section(case_pts).offset(GIRDLE, JoinType.Miter, miter_limit=10)
+    girdle = [p for poly in girdle.to_polygons() for p in poly]
+    n = (-math.sin(TENT), math.cos(TENT))           # top plane: n . (X, Z) = const
+    p0 = to_desk(WALL_IN, 0, top_zp)
+    const = n[0] * p0[0] + n[1] * p0[2]
+    pts = [(x, y, (const - n[0] * x) / n[1]) for x, y in rim] + \
+          [(min(x, WALL_OUT), y, 0.0) for x, y in girdle]
+    body = Manifold.hull_points(pts)
     body = body.trim_by_plane((-1, 0, 0), -WALL_OUT)
-    body = body.trim_by_plane((0, 0, 1), 0)
 
     # Cavity: everything above the floor inside the cavity outline.
     cavity = prism(cav_pts, FLOOR, 80)

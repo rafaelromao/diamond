@@ -9,3 +9,4 @@ pcb/slim_diamond-backups/
 .render/
 /slim_diamond.pretty/
 __pycache__/
+xiao_alternatives.json

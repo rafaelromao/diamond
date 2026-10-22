@@ -2,7 +2,8 @@
 
   bare        no 3D models
   parts       left half as built: switches on top, Xiao / switch / JST on the bottom, battery
-  case        just the case (on a tiny hidden board inside the inner wall)
+  case        just the case (on a speck of board at its centre)
+  unibody, stacked   both halves (scene.py's models), each on a speck of board hidden in a floor
   full        parts + case
 """
 import json
@@ -39,9 +40,7 @@ def save(board, name):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    if os.path.exists(os.path.join(OUT, "3d")):
-        shutil.rmtree(os.path.join(OUT, "3d"))
-    shutil.copytree("pcb/3d", os.path.join(OUT, "3d"))
+    shutil.copytree("pcb/3d", os.path.join(OUT, "3d"), dirs_exist_ok=True)   # scene.py's live there too
 
     b = pcbnew.LoadBoard(SRC)
     for fp in b.GetFootprints():
@@ -57,12 +56,24 @@ def main():
     model_fp(b, "CASE", "${KIPRJMOD}/3d/case.wrl")
     save(b, "full")
 
-    # case alone: a 0.6 mm speck of board at the case's centre (the camera centres on the board)
-    b = pcbnew.NewBoard(os.path.join(OUT, "case.kicad_pcb"))
+    # case alone: a speck of board at the case's centre (the camera centres on the board)
     xs = [p[0] for p in D["case_outline"]]
     ys = [p[1] for p in D["case_outline"]]
-    x, y = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
-    pts = [(x - 0.3, y - 0.3), (x + 0.3, y - 0.3), (x + 0.3, y + 0.3), (x - 0.3, y + 0.3)]
+    speck_board("case", ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2), "${KIPRJMOD}/3d/case.wrl")
+
+    # both halves together (scene.py)
+    scenes = os.path.join(OUT, "scenes.json")
+    if os.path.exists(scenes):
+        for name, sc in json.load(open(scenes)).items():
+            speck_board(name, sc["speck"], f"${{KIPRJMOD}}/3d/{name}.wrl")
+
+
+def speck_board(name, at, wrl):
+    """A fresh 0.1 mm board at `at` carrying one model: renders a model on its own (a bigger
+    speck casts a visible shadow)."""
+    b = pcbnew.NewBoard(os.path.join(OUT, f"{name}.kicad_pcb"))
+    x, y = at
+    pts = [(x - 0.05, y - 0.05), (x + 0.05, y - 0.05), (x + 0.05, y + 0.05), (x - 0.05, y + 0.05)]
     for a, c in zip(pts, pts[1:] + pts[:1]):
         s = pcbnew.PCB_SHAPE(b)
         s.SetShape(pcbnew.SHAPE_T_SEGMENT)
@@ -70,8 +81,8 @@ def main():
         s.SetEnd(pcbnew.VECTOR2I(mm(c[0] + OFF[0]), mm(c[1] + OFF[1])))
         s.SetLayer(pcbnew.Edge_Cuts)
         b.Add(s)
-    model_fp(b, "CASE", "${KIPRJMOD}/3d/case.wrl")
-    save(b, "case")
+    model_fp(b, name.upper(), wrl)
+    save(b, name)
 
 
 if __name__ == "__main__":

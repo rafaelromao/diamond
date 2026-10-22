@@ -17,7 +17,7 @@ import json
 import math
 
 from shapely import affinity
-from shapely.geometry import Point, box
+from shapely.geometry import Point, Polygon, box
 from shapely.ops import unary_union
 
 from layout import cap, layout_left
@@ -30,9 +30,11 @@ SOCKET_DEPTH = 1.85                # Kailh hot-swap socket
 JST_W, JST_D, JST_H = 9.2, 10.9, 4.9  # JST PH S2B-PH-SM4-TB, pads included
 PWR_W, PWR_D, PWR_H = 8.8, 4.6, 1.6  # MSK-12C02, body + pads (lever pokes out of the wall)
 PCB_T = 1.6
-# Where the search below put the Xiao (centre, angle); pinned so layout tweaks don't move it.
+# Where the search below put the Xiao (centre, angle, power-switch offset); pinned so layout
+# tweaks don't move it.
 # None runs the search again.
-XIAO_SPOT = ((-13.5, 32.0), -95)
+XIAO_SPOT = ((-10.0, 34.0), -140, 16.4)
+GEM_FACETS = 10                    # sides of the joined outline (both halves)
 XIAO_CHANNEL = 1.6                 # routing room between the Xiao's pads and any socket
 JLC_MAX = 100.0                    # JLCPCB's cheapest tier: up to 100 x 100 mm
 AIR = 0.4                          # vertical clearance under every part
@@ -74,6 +76,40 @@ def smooth(g):
     return g.buffer(2.5, join_style=2).buffer(-2.5, join_style=2)
 
 
+def enclosing_polygon(shape, k):
+    """The convex polygon of at most k sides around shape, with the least area: start from the
+    convex hull and repeatedly drop the edge whose removal (extending its neighbours to meet)
+    adds the least area."""
+    pts = list(shape.convex_hull.exterior.coords)[:-1]
+
+    def meet(a, b, c, d):
+        den = (a[0] - b[0]) * (c[1] - d[1]) - (a[1] - b[1]) * (c[0] - d[0])
+        if abs(den) < 1e-9:
+            return None
+        t = ((a[0] - c[0]) * (c[1] - d[1]) - (a[1] - c[1]) * (c[0] - d[0])) / den
+        return (a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]))
+
+    while len(pts) > k:
+        best = None
+        n = len(pts)
+        for i in range(n):
+            m = meet(pts[i - 1], pts[i], pts[(i + 1) % n], pts[(i + 2) % n])
+            if m is None:
+                continue
+            new = pts[:]
+            new[i] = m
+            del new[(i + 1) % n]
+            p = Polygon(new)
+            if p.is_valid and p.contains(shape.buffer(-1e-6)):
+                cost = p.area
+                if best is None or cost < best[0]:
+                    best = (cost, new)
+        if best is None:
+            break
+        pts = best[1]
+    return Polygon(pts)
+
+
 def largest(g):
     return max(getattr(g, "geoms", [g]), key=lambda p: p.area)
 
@@ -98,13 +134,19 @@ def main():
     # socket pads of the outer keys reach past the keycaps: the board must cover them
     body = smooth(unary_union([capzone, seam, under.buffer(0.65, join_style=2)]))
 
-    # --- Xiao + power switch: a spot clear of every socket, with the USB port and the
-    # switch lever on an outside edge. Candidates are scored by how much they grow the case.
-    base_area = smooth(body).area
-    # The battery under the inner keys sets the tent (about 0.115 rise per mm); the Xiao
-    # must not ask for more, so it has to sit far enough in.
+    # --- Xiao + power switch, and the outline they shape. The outline is a cut-diamond
+    # silhouette: the fewest-facet convex polygon (GEM_FACETS sides) around both halves joined at
+    # the seam; side by side it reads as a gem, and each half is its seam side.
+    # The Xiao sits clear of every socket, with its USB port and the switch lever (beside the USB
+    # end) on the outline's edge. Score: the joined convex hull's area, i.e. the bulk it adds.
+    # The battery under the inner keys sets the tent (about 0.115 rise per mm); the Xiao must
+    # not ask for more, so it has to sit far enough in.
     BATTERY_SLOPE = 0.115
     xiao_min_x = x_out + (XIAO_DEPTH - SOCKET_DEPTH) / BATTERY_SLOPE
+
+    def mirrored(g):
+        return unary_union([g, affinity.scale(g, -1, 1, origin=(wall_in, 0))])
+
     def candidates():
         for ang in range(-180, 180, 5):
             for gx in range(-60, 40, 2):
@@ -117,63 +159,59 @@ def main():
                 for dy in range(-4, 5):
                     yield ang + da, x + dx * 0.5, y + dy * 0.5
 
-    def search(cands):
-      best = None
-      for ang, gx, gy in cands:
-                c = (gx, gy)
-                xiao = place(rect(XIAO_W, XIAO_L), c, ang)
-                if xiao.bounds[2] > wall_in or xiao.buffer(XIAO_CHANNEL).intersects(under) \
-                        or not xiao.intersects(body) or xiao.bounds[0] < xiao_min_x:
+    def search(cands, ranked=None):
+        best = None
+        for ang, gx, gy in cands:
+            c = (gx, gy)
+            xiao = place(rect(XIAO_W, XIAO_L), c, ang)
+            if xiao.bounds[2] > wall_in - 0.65 or xiao.bounds[0] < xiao_min_x \
+                    or xiao.buffer(XIAO_CHANNEL).intersects(under):
+                continue
+            for side in (-1, 1):
+                # a routing channel between the switch and the Xiao's pads, and around it
+                off = side * (XIAO_W / 2 + XIAO_CHANNEL + PWR_W / 2)
+                sw = place(box(off - PWR_W / 2, -XIAO_L / 2, off + PWR_W / 2, -XIAO_L / 2 + PWR_D), c, ang)
+                if sw.bounds[2] > wall_in - 0.65 or sw.buffer(XIAO_CHANNEL).intersects(under):
                     continue
-                front = place(box(-5, -XIAO_L / 2 - 8, 5, -XIAO_L / 2), c, ang)
-                if front.intersects(body):
+                hull = mirrored(unary_union([body, xiao.buffer(0.65, join_style=2),
+                                             sw.buffer(0.65, join_style=2)])).convex_hull
+                # USB end and lever on the edge: the strips 1-9 mm in front of them lie outside
+                front = place(box(min(-5, off - PWR_W / 2), -XIAO_L / 2 - 9,
+                                  max(5, off + PWR_W / 2), -XIAO_L / 2 - 1.65), c, ang)
+                hb = hull.bounds
+                if front.intersects(hull) or max(hb[2] - wall_in, hb[3] - hb[1]) > JLC_MAX - 1:
                     continue
-                grown = smooth(unary_union([body, xiao]))
-                gb = grown.bounds
-                if grown.geom_type != "Polygon" or max(gb[2] - gb[0], gb[3] - gb[1]) > JLC_MAX - 0.5:
-                    continue
-                score = grown.area - base_area
-                if best is None or score < best[0] - 1e-6:
-                    best = (score, c, ang, xiao)
-      return best
+                if ranked is not None:
+                    ranked.append((hull.area, c, ang, off))
+                if best is None or hull.area < best[0] - 1e-6:
+                    best = (hull.area, c, ang, xiao, sw, off)
+        return best
 
     if XIAO_SPOT:
-        xiao_c, xiao_ang = XIAO_SPOT
+        xiao_c, xiao_ang, pwr_off = XIAO_SPOT
         xiao = place(rect(XIAO_W, XIAO_L), xiao_c, xiao_ang)
+        power = place(box(pwr_off - PWR_W / 2, -XIAO_L / 2, pwr_off + PWR_W / 2, -XIAO_L / 2 + PWR_D),
+                      xiao_c, xiao_ang)
     else:
-        best = search(candidates())
-        _, xiao_c, xiao_ang, xiao = search(refine(best[2], *best[1]))
-
-    # --- power switch: in the notch between the Xiao and the outer thumb key, filled up to
-    # the straight line joining them, lever poking out of that edge (towards the typist).
-    hull = unary_union([xiao, caps["thumb_outer"].buffer(CAP_CLEAR, join_style=2)]).convex_hull
-    # the new edge: the longest hull side running outside the board (the notch's open side)
-    board_now = unary_union([body, xiao])
-    edge = max((sg for sg in zip(hull.exterior.coords, hull.exterior.coords[1:])
-                if not board_now.contains(Point((sg[0][0] + sg[1][0]) / 2, (sg[0][1] + sg[1][1]) / 2))),
-               key=lambda sg: math.dist(*sg))
-    (ex0, ey0), (ex1, ey1) = edge
-    elen = math.dist(edge[0], edge[1])
-    tx, ty = (ex1 - ex0) / elen, (ey1 - ey0) / elen
-    nx, ny = ty, -tx                                   # pick the normal pointing away from the board
-    if Point(ex0 + tx * elen / 2 + nx, ey0 + ty * elen / 2 + ny).within(unary_union([body, xiao, hull])):
-        nx, ny = -nx, -ny
-    pwr_ang = math.degrees(math.atan2(nx, -ny))        # local -y (the lever) along the normal
-    blocked_sw = unary_union([under.buffer(0.4), xiao.buffer(0.8)])
-    fits = []
-    for k in range(0, 201):
-        t = k / 200
-        # front of the switch 0.65 mm inside the edge, like the Xiao's USB end
-        fx, fy = ex0 + tx * elen * t - nx * 0.65, ey0 + ty * elen * t - ny * 0.65
-        c = (fx - nx * PWR_D / 2, fy - ny * PWR_D / 2)
-        cand = place(rect(PWR_W, PWR_D), c, pwr_ang)
-        if not cand.intersects(blocked_sw) and hull.contains(cand):
-            fits.append((cand, c))
-    # the middle of the stretch that fits leaves routing room on both sides
-    power, power_box_c = fits[len(fits) // 2] if fits else (None, None)
-    assert power is not None, "no room for the power switch in the notch"
+        ranked = []
+        best = search(candidates(), ranked)
+        _, xiao_c, xiao_ang, xiao, power, pwr_off = search(refine(best[2], *best[1]))
+        print("Xiao spot (pin it in XIAO_SPOT):", (xiao_c, xiao_ang, round(pwr_off, 2)))
+        # runners-up, at least 6 mm apart: alternatives when the board won't route
+        alts = []
+        for area, c, ang, off in sorted(ranked):
+            if all(math.dist(c, a[0]) > 6 or ang != a[1] for a in alts):
+                alts.append((c, ang, round(off, 2)))
+            if len(alts) == 8:
+                break
+        json.dump(alts, open("xiao_alternatives.json", "w"))
+    gem = enclosing_polygon(mirrored(unary_union([body, xiao.buffer(0.65, join_style=2),
+                                                  power.buffer(0.65, join_style=2)])), GEM_FACETS)
+    gem = largest(gem.intersection(box(-1e3, -1e3, wall_in, 1e3)))
+    inner = gem.buffer(-0.65, join_style=2)       # where parts may sit, 0.65 mm off the edge
+    pwr_ang = xiao_ang
     # switch body centre 1.75 mm in from the edge: shield pads keep 0.3 mm, the lever pokes out
-    power_c = local_to_board(power_box_c, pwr_ang, (0, -PWR_D / 2 + 1.75))
+    power_c = local_to_board(xiao_c, xiao_ang, (pwr_off, -XIAO_L / 2 + 1.75))
     usb_dir = (math.sin(math.radians(xiao_ang)), -math.cos(math.radians(xiao_ang)))
 
     def tent_for(items):
@@ -181,7 +219,11 @@ def main():
         z_out = SOCKET_DEPTH + AIR
         slope = 0.0
         for shape, h in items:
-            slope = max(slope, (h + AIR - z_out) / (shape.bounds[0] - x_out))
+            run = shape.bounds[0] - x_out
+            if h + AIR <= z_out:
+                continue
+            # past the outermost key the PCB is at its lowest: nothing taller fits there
+            slope = max(slope, (h + AIR - z_out) / run if run > 1.0 else math.inf)
         return z_out, slope
 
     def items_for(batt, extra=()):
@@ -193,7 +235,7 @@ def main():
 
     # --- battery: anywhere inside the case, clear of the Xiao and switch, where it needs
     # the least tent (sitting under sockets costs their depth on top of its own).
-    inside = smooth(unary_union([body, xiao, power])).buffer(-0.3)
+    inside = gem.buffer(-0.3)
     keep_off = unary_union([xiao, power]).buffer(0.5)
     best = None
     for ang in (0, 90):
@@ -210,32 +252,28 @@ def main():
                     best = (key, batt)
     batt = best[1]
 
-    # --- JST connector: in a socket-free spot near the battery's lead end.
+    # --- JST connector: the socket-free spot needing the least tent, nearest the battery.
+    # 1 mm off the walls: the tilt swings the connector's bottom towards them.
     blocked = unary_union([under, batt, xiao, power]).buffer(0.4)
-    jst = None
-    for d in range(0, 160):
-        for cy in (batt.bounds[1] - JST_D / 2 - 0.5 - d * 0.5, batt.bounds[1] - JST_D / 2 - 0.5 + d * 0.5):
-            # 1 mm off the wall: the tilt swings the connector's bottom towards it
-            for cx10 in range(int((wall_in - JST_W / 2 - 1.0) * 10), -400, -2):
-                j = place(rect(JST_W, JST_D), (cx10 / 10, cy), 0)
-                if body.contains(j) and not j.intersects(blocked):
-                    jst = j
-                    break
-            if jst:
-                break
-        if jst:
-            break
-    assert jst is not None
+    room = gem.buffer(-1.0, join_style=2)
+    best = None
+    for gx in range(-60, 40):
+        for gy in range(-40, 80):
+            j = place(rect(JST_W, JST_D), (gx, gy), 0)
+            if not room.contains(j) or j.intersects(blocked):
+                continue
+            _, slope = tent_for(items_for(batt, [(j, JST_H)]))
+            key = (round(slope, 5), j.distance(batt))
+            if best is None or key < best[0]:
+                best = (key, j)
+    jst = best[1]
 
     z_out, slope = tent_for(items_for(batt, [(jst, JST_H)]))
     tent = math.degrees(math.atan(slope))
     z_in = z_out + slope * (wall_in - x_out)
 
-    # --- outline. The Diamond look: straight facets and mitred corners, no fillets.
-    cav = unary_union([body, xiao.buffer(0.65, join_style=2), power.buffer(0.65, join_style=2),
-                       hull.difference(hull.exterior.buffer(0.01)).buffer(0)])
-    cav = cav.buffer(4.0, join_style=2).buffer(-4.0, join_style=2)   # no slots narrower than 8 mm
-    cav = largest(cav.intersection(box(-1e3, -1e3, wall_in, 1e3)))
+    # --- the cavity is the gem; the case wall and the PCB follow it.
+    cav = gem
     case = largest(cav.buffer(WALL, join_style=2, mitre_limit=1.5)
                    .intersection(box(-1e3, -1e3, wall_in + WALL, 1e3)))
     pcb = largest(cav.buffer(-0.3, join_style=2))
@@ -293,7 +331,12 @@ def main():
     # Inner wall: two, near the ends of its straight part.
     wall_pts = [c for c in case.exterior.coords if abs(c[0] - (wall_in + WALL)) < 1e-6]
     wy0, wy1 = min(c[1] for c in wall_pts), max(c[1] for c in wall_pts)
-    side_spots = [wy0 + 7, wy1 - 7]
+    # near the ends of the straight seam, with each magnet's boss (about 6 mm square, 4 mm deep)
+    # clear of the parts that sit against the inner wall
+    near_wall = unary_union([g for g in (batt, jst, xiao, power) if g.bounds[2] > wall_in - 5])
+    free = [y / 2 for y in range(int((wy0 + 5) * 2), int((wy1 - 5) * 2))
+            if not box(wall_in - 4.5, y / 2 - 4.5, wall_in, y / 2 + 4.5).intersects(near_wall)]
+    side_spots = [min(free), max(free)]
 
     result = {
         "name": "Slim Diamond",
