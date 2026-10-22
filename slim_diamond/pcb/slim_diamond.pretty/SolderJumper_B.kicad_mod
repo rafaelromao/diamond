@@ -1,0 +1,11 @@
+(footprint "SolderJumper_B"
+  (version 20241229)
+  (generator "slim_diamond")
+  (layer "F.Cu")
+  (descr "Solder jumper, open, B face")
+  (property "Reference" "REF**" (at 0 0 0) (layer "F.SilkS") hide (effects (font (size 1 1) (thickness 0.15))))
+  (property "Value" "SolderJumper_B" (at 0 0 0) (layer "F.Fab") hide (effects (font (size 1 1) (thickness 0.15))))
+  (attr smd)
+  (pad "1" smd roundrect (at -0.65 0 0) (size 0.9 1.4) (layers "B.Cu" "B.Mask") (roundrect_rratio 0.2))
+  (pad "2" smd roundrect (at 0.65 0 0) (size 0.9 1.4) (layers "B.Cu" "B.Mask") (roundrect_rratio 0.2))
+)

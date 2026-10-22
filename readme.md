@@ -23,6 +23,14 @@ Diamond is a handwired board originally designed by me but heavily inspired by t
 
 ![img](builds/choc_diamond/choc_diamond.jpeg)
 
+## [Slim Diamond](slim_diamond/README.md)
+
+A wireless Choc version on a reversible PCB: XIAO nRF52840, 752025 battery,
+tented by the battery underneath, and magnets to join the halves or stack
+them back to back.
+
+![img](slim_diamond/renders/full.png)
+
 # STL Files
 
 The STL files are provided for the right side only. To print the left side you will have to mirror them.
