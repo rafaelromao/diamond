@@ -49,11 +49,13 @@ PADS = D["pads"]                # anti-slip bump-ons in slots under the floor (d
 TOL = 0.6                       # clearance around and above every part in the base
 PILOT_R = SCREW["pilot_d"] / 2  # self-tapping pilot (or the heat-set insert's hole)
 PILOT_FLOOR = 0.6               # pilot holes stop this far above the desk
-USB_W, USB_H = 13.0, 7.0       # a USB-C cable's overmold: up to 12.35 x 6.5 mm (Type-C spec)
+USB_W, USB_H = 13.4, 7.4       # a USB-C cable's overmold: up to 12.35 x 6.5 mm (Type-C spec)
+USB_FILLET = 1.5                # its corners, still clear of a square-cornered 12.35 x 6.5 plug
 USB_Z = -(1.0 + 1.65)           # receptacle centre under the PCB's bottom face: Xiao PCB + half the shell
 XIAO_END = DZ.XIAO_L / 2        # the module's USB end, in its own frame (-y)
 LEVER_W, LEVER_FLARE = 5.0, 9.0 # switch slot: the lever's travel, widening to the outside for a nail
 LEVER_Z = -2.15                 # slot floor under the PCB's bottom face (the switch pocket's)
+LEVER_FILLET = 1.0              # along the slot floor's edges
 
 
 def to_desk(x, y, zp=0.0):
@@ -115,12 +117,19 @@ def openings():
     PCB goes in, and the slot widens outwards so a fingernail reaches it.
     """
     xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
-    usb = DZ.place(box(-USB_W / 2, -XIAO_END - 20, USB_W / 2, -XIAO_END), xc, xa)
+    # the recess's rounded section (x across the port, z up), extruded out along the port's -y
+    f = USB_FILLET
+    usb = (CrossSection.square((USB_W - 2 * f, USB_H - 2 * f), center=True)
+           .offset(f, JoinType.Round, circular_segments=32).extrude(20).rotate((90, 0, 0))
+           .translate((0, -XIAO_END, USB_Z)).rotate((0, 0, xa)).translate((xc[0], xc[1], 0)))
+    # the slot, inset by its fillet and grown back by a ball: rounded along the floor
     pw = D["power_switch"]
+    f = LEVER_FILLET
     slot = DZ.place(Polygon([(-LEVER_W / 2, -1.6), (LEVER_W / 2, -1.6),
                              (LEVER_FLARE / 2, -9.0), (-LEVER_FLARE / 2, -9.0)]), (pw["x"], pw["y"]), pw["r"])
-    return {"usb": to_desk_solid(slab(usb, USB_Z - USB_H / 2, USB_Z + USB_H / 2)),
-            "switch": to_desk_solid(slab(slot, LEVER_Z, 40))}
+    slot = slab(slot.buffer(-f, join_style=2), LEVER_Z + f, 40).minkowski_sum(
+        Manifold.sphere(f, circular_segments=24))
+    return {"usb": to_desk_solid(usb), "switch": to_desk_solid(slot)}
 
 
 def pad_slot(a, b, grow=0.0):
