@@ -100,13 +100,18 @@ Twelve, one per key. Each socket fits its outline only one way round.
 | Works on USB, not on battery | The VBAT/GND holes, the power-switch joints, battery polarity |
 | Nothing works | The Xiao's castellations, or the firmware file |
 
-## 7. Case
+## 7. Case and plate
+
+The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the Xiao.
 
 1. Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.
-2. Lay the battery inside its fence on the floor and plug it in.
-3. Set the PCB, parts face down, onto the four standoffs. The USB-C and the switch lever line up with their openings. Fit the **M3 × 6** button-head screws. They cut their own thread in the Nylon: turn them in slowly, and stop as soon as they're snug.
-4. Clip the switches in from the switch face, then the keycaps.
+2. Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.
+3. Lower the PCB, parts face down, into the base. Each part drops into its pocket, and the USB-C port and the switch lever line up with their openings in the wall. Nothing should need force: every pocket has 0.6 mm of clearance.
+4. Lay the plate on top, its pillars and screw bosses resting on the PCB, and fit the four **M3 × 8 flat-head** screws through the plate and PCB. They cut their own thread in the Nylon: turn them in slowly, and stop when the heads sit flush in their countersinks.
+5. Clip the switches through the plate into the sockets, then fit the keycaps.
 
-## Printing the case
+## Printing
 
-Print each half floor-down, no supports: the openings are bridged. Use 0.2 mm layers, 3 walls and 20% infill. Nylon suits the self-tapping screws: it's tough enough to take a thread without cracking. Dry the filament before printing, and print the standoffs solid (perimeters reaching the pilot hole) so the screws bite into plastic, not infill.
+- **Base:** floor-down, no supports (the USB and lever openings bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.
+- **Plate:** **top face down**: the STL is already oriented that way, with the pillars and screw bosses pointing up. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change `cut_tol` in `design.py` and regenerate.
+- **Nylon:** dry the filament before printing. It's tough enough to take the self-tapping threads without cracking, and its softness damps key noise.

@@ -201,13 +201,9 @@ def build():
     # Unused throw (3) on VBAT: in the off position the switch just joins VBAT to itself.
     # Every pad gets a net, so the router keeps its clearance from all of them.
     set_pads(pw, {"2": "VBAT", "1": "BAT+", "3": "VBAT", "SH": "GND"}, board, nets)
-    # JST opening faces the battery.
-    jb = D["jst"]["bounds"]
-    bb = D["battery"]["bounds"]
-    facing = 0 if (bb[1] + bb[3]) / 2 > (jb[1] + jb[3]) / 2 else 180
-    # footprint spans y -4.6 (pads) .. 6.25 (opening): its centre is 0.83 below the origin
-    jy = D["jst"]["y"] - 0.83 * (1 if facing == 0 else -1)
-    jst = add_fp(board, "JST_PH_S2B_Reversible", "J1", (D["jst"]["x"], jy), facing, "JST PH 2.0 battery")
+    # JST: placed by design.py (footprint origin and angle), its opening towards the plug room.
+    jst = add_fp(board, "JST_PH_S2B_Reversible", "J1", (D["jst"]["x"], D["jst"]["y"]), D["jst"]["r"],
+                 "JST PH 2.0 battery")
     set_pads(jst, {"1": "BAT+", "2": "GND", "MP": "GND"}, board, nets)
 
     for i, h in enumerate(D["mount_holes"], 1):

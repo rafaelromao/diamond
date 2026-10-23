@@ -13,9 +13,10 @@ transport.
 | Key layout | The Diamond's angles and stagger (from `body_right.stl`), packed at Choc spacing (18 × 17 mm) |
 | PCB | 87.6 × 92.3 mm, 2 layers, 1.6 mm, reversible: one design, order 5. Same cut-diamond outline, so two boards side by side form the diamond |
 | Wiring | Diodeless, one pin per key (11 Xiao pins + NFC1) |
-| Case | 93 × 100 mm per half at the floor (the rim is 91 × 96); tent 6.6°; 18 mm at the seam, 8 mm at the outer edge (without keycaps) |
+| Case | Solid base, a pocket per part (0.6 mm clearance), 93 × 100 mm per half at the girdle (the rim is 91 × 96), with a 45° chamfer under it; tent 6.6°; 18.6 mm at the seam, 8.7 mm at the outer edge (plate included, keycaps excluded) |
+| Top plate | Covers the whole board: 1.2 mm Choc v1 plate, 1.0 mm over the PCB (the flange sits 2.2 mm up), 14.0 mm cutouts (`cut_tol` 0.1 per side), a 0.5 mm pocket over the Xiao area for solder blobs, support pillars, countersunk screw bosses, chamfered bottom edge |
 | Power | XIAO nRF52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet |
-| Screws | 4 × M3 × 6 button head per half, self-tapping into the printed standoffs (2.5 mm pilot, 6 mm standoff; meant for a Nylon print). `SCREW` in `design.py` switches to heat-set inserts |
+| Screws | 4 × M3 × 8 flat head (90° countersunk) per half: through the plate and PCB, self-tapping into the solid Nylon base (2.5 mm pilot). `SCREW` in `design.py` switches to heat-set inserts |
 | Magnets | 4 × 6×2 mm in each floor (back to back), 2 × 5×2 mm in each inner wall (unibody) |
 | Assembly | Iron only: no reflow-only parts |
 
@@ -29,7 +30,8 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 |---|---|
 | `fab/slim_diamond_jlcpcb.zip` | Gerbers + drill files: upload to JLCPCB as they are |
 | `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
-| `case/case_left.stl`, `case/case_right.stl` | The printed case |
+| `case/case_left.stl`, `case/case_right.stl` | The printed base |
+| `case/plate_left.stl`, `case/plate_right.stl` | The printed top plate, oriented top face down for printing |
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
 | `BOM.md` | Parts list (AliExpress search terms) |
 | `BUILD.md` | Hand-soldering and assembly guide, testing, printing |
@@ -45,6 +47,8 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 | ![](renders/parts_top.png) | ![](renders/parts_bottom.png) |
 | **Case** | **Full build, side (the tent)** |
 | ![](renders/case.png) | ![](renders/full_side.png) |
+| **Top plate** | **Top plate, underside** |
+| ![](renders/plate.png) | ![](renders/plate_under.png) |
 | **Joined as a unibody** | **Joined, from above** |
 | ![](renders/unibody.png) | ![](renders/unibody_top.png) |
 | **Stacked back to back** | **Stacked, side** |
@@ -95,8 +99,8 @@ Java 25.
 ```sh
 python3 design.py        # placement, tent, outlines, magnets, screws -> design.json, design.png
 FREEROUTING=/path/freerouting.jar ./route.sh   # footprints, board, routing, pours, DRC
-python3 case.py          # case STLs (and the case/battery 3D models for renders)
-python3 check_fit.py     # every part under the PCB, and the PCB, against the case: all 0 mm³
+python3 case.py          # base and plate STLs (and their 3D models for renders)
+python3 check_fit.py     # parts, plate, solder blobs, screws and magnets against the case: all 0 mm³
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh
 ```
 

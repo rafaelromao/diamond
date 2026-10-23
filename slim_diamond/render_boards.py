@@ -4,7 +4,7 @@
   parts       left half as built: switches on top, Xiao / switch / JST on the bottom, battery
   case        just the case (on a speck of board at its centre)
   unibody, stacked   both halves (scene.py's models), each on a speck of board hidden in a floor
-  full        parts + case
+  full        parts + plate + case
 """
 import json
 import os
@@ -47,12 +47,22 @@ def main():
         fp.Models().clear()
     save(b, "bare")
 
+    # The parts on the bottom face: keep the footprints (and their copper) exactly where they
+    # are, and turn only the 3D models over, under the board. Flipping the footprints would
+    # mirror them about their own centre: the pads move off their tracks and the USB end
+    # points the wrong way.
     b = pcbnew.LoadBoard(SRC)
     for fp in b.GetFootprints():
         if fp.GetReference() in ("U1", "SW13", "J1"):
-            fp.Flip(fp.GetPosition(), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
+            models = fp.Models()
+            for i in range(len(models)):
+                m = models[i]
+                m.m_Rotation = pcbnew.VECTOR3D(0, 180, 0)
+                m.m_Offset = pcbnew.VECTOR3D(0, 0, -1.6)
+                models[i] = m
     model_fp(b, "BT1", "${KIPRJMOD}/3d/battery.wrl")
     save(b, "parts")
+    model_fp(b, "PLATE", "${KIPRJMOD}/3d/plate.wrl")
     model_fp(b, "CASE", "${KIPRJMOD}/3d/case.wrl")
     save(b, "full")
 
@@ -60,6 +70,7 @@ def main():
     xs = [p[0] for p in D["case_outline"]]
     ys = [p[1] for p in D["case_outline"]]
     speck_board("case", ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2), "${KIPRJMOD}/3d/case.wrl")
+    speck_board("plate", ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2), "${KIPRJMOD}/3d/plate.wrl")
 
     # both halves together (scene.py)
     scenes = os.path.join(OUT, "scenes.json")

@@ -15,6 +15,11 @@ KEYCAP = (0.24, 0.26, 0.3)
 SOCKET = (0.1, 0.1, 0.1)
 XIAO_PCB = (0.1, 0.25, 0.55)
 SHIELD = (0.75, 0.75, 0.78)
+CHIP = (0.08, 0.08, 0.09)
+ANTENNA = (0.85, 0.83, 0.78)
+BUTTON = (0.62, 0.62, 0.64)
+LED = (0.95, 0.95, 0.9)
+GOLD = (0.85, 0.68, 0.25)
 METAL = (0.7, 0.7, 0.72)
 JST = (0.92, 0.9, 0.85)
 BATTERY = (0.55, 0.6, 0.7)
@@ -56,19 +61,31 @@ def frustum(w0, h0, w1, h1, z0, z1, x=0, y=0):
 def models(d="pcb/3d"):
     # Kailh Choc v1 + low-profile keycap, socket hanging under the board (left half: socket on B).
     switch = [
-        (box(-7.5, -7.5, 0, 7.5, 7.5, 2.5), SWITCH),
-        (frustum(13.8, 13.8, 12.5, 12.5, 2.5, 5.0), SWITCH),
+        (box(-6.9, -6.9, 0, 6.9, 6.9, 2.2), SWITCH),                 # body through the plate
+        (box(-7.5, -7.5, 2.2, 7.5, 7.5, 3.0), SWITCH),               # flange on the plate
+        (frustum(14.5, 14.5, 12.5, 12.5, 3.0, 5.0), SWITCH),
         (box(-2.6, -1.6, 5.0, 2.6, 1.6, 5.8), STEM),
         (frustum(17.5, 16.5, 15.6, 14.6, 5.8, 8.6), KEYCAP),
         (box(-2.45, -8.45, -1.6 - 1.85, 7.75, -1.25, -1.6), SOCKET),
     ]
     write_parts(f"{d}/choc_v1_with_cap.wrl", switch)
-    # XIAO nRF52840, drawn as mounted on the F face (KiCad mirrors it when the footprint is flipped).
+    # XIAO nRF52840 as mounted on the F face (pad side down, USB end at -y); render_boards.py
+    # turns it under the board for the parts on the bottom face. Seeed's layout: USB-C hanging
+    # 1.3 mm past the end, nRF52840 mid-board, chip antenna at the far end, reset button and
+    # LED beside the USB, castellated pins 2.54 mm apart down both long edges.
     xiao = [
         (box(-8.75, -10.5, 0, 8.75, 10.5, 1.0), XIAO_PCB),
-        (box(-6.0, -3.0, 1.0, 6.0, 7.0, 2.4), SHIELD),
-        (box(-4.5, -11.8, 1.0, 4.5, -4.4, 4.2), METAL),
+        (box(-4.47, -11.8, 1.0, 4.47, -4.45, 4.26), METAL),          # USB-C receptacle
+        (box(-3.5, -1.0, 1.0, 3.5, 6.0, 1.85), CHIP),                # nRF52840
+        (box(-1.6, 7.9, 1.0, 1.6, 9.5, 2.1), ANTENNA),               # chip antenna
+        (box(-7.4, -4.0, 1.0, -5.0, -2.4, 1.6), BUTTON),             # reset
+        (box(5.2, -3.6, 1.0, 6.2, -3.0, 1.35), LED),
+        (box(3.6, 0.0, 1.0, 5.6, 2.0, 1.6), CHIP),                   # charger
     ]
+    for i in range(7):
+        y = -7.62 + i * 2.54
+        for x0 in (-8.75, 8.15):
+            xiao.append((box(x0, y - 0.6, 0, x0 + 0.6, y + 0.6, 1.02), GOLD))
     write_parts(f"{d}/xiao_nrf52840.wrl", xiao)
     write_parts(f"{d}/msk12c02.wrl", [(box(-3.35, -1.35, 0, 3.35, 1.35, 1.4), METAL),
                                       (box(-0.75, 1.35, 0.2, 0.75, 2.85, 1.2), SOCKET)])

@@ -235,14 +235,11 @@ def jumper(name, side):
 
 
 def mount_hole():
-    """Case screw hole, sized by design.json's screw; silkscreen ring = the head."""
+    """Case screw hole, sized by design.json's screw (the head sits in the plate, not here)."""
     screw = json.load(open("design.json"))["screw"]
     name = f"MountingHole_{screw['name']}"
     L = header(name, f"{screw['name']} screw hole", attr="exclude_from_pos_files exclude_from_bom")
     L.append(npth(0, 0, screw["pcb_hole"]))
-    for side in ("F", "B"):
-        L.append(f'  (fp_circle (center 0 0) (end {fmt(screw["head_d"] / 2)} 0) (stroke (width 0.12) (type solid))'
-                 f' (fill none) (layer "{side}.SilkS"))')
     write(name, L)
 
 

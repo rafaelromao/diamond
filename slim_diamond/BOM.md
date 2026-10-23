@@ -16,8 +16,8 @@ packs come in round numbers anyway.
 | 8 | Slide switch MSK-12C02 | 2 (+3) | `MSK-12C02 SMD slide switch` | The 7-pad SMD one with two locating pins. |
 | 9 | Disc magnets 6 × 2 mm, N52 | 8 (+4) | `6x2mm N52 neodymium magnet` | Four in each floor: the halves stack back to back. |
 | 10 | Disc magnets 5 × 2 mm, N52 | 4 (+4) | `5x2mm N52 neodymium magnet` | Two in each inner wall: the halves join as a unibody. |
-| 11 | M3 × 6 self-tapping screws, button head (ISO 7380) | 8 | `M3x6 self tapping screw button head` | Four per half, threading into the printed standoffs (2.5 mm pilot holes). 6 mm is the longest that fits the short standoffs on the outer side. The low button head sits between the switches. |
-| 12 | Filament | ~60 g | PLA or PETG | Case left + right, 22 cm³ each. |
+| 11 | M3 × 8 flat-head screws, 90° countersunk (ISO 10642 / DIN 7991) | 8 | `M3x8 countersunk flat head screw` | Four per half: through the plate (the head sits flush in its countersink) and the PCB, threading into the solid base (2.5 mm pilot holes). |
+| 12 | Filament | ~170 g | Nylon (PA) | Case left + right (solid base, 59 cm³ each) and the two top plates (4.3 cm³ each). |
 
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
 or epoxy for the magnets.

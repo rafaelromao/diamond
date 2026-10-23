@@ -1,13 +1,20 @@
-"""Slim Diamond case: a faceted tray under the tented PCB. Writes case/*.stl.
+"""Slim Diamond case and top plate. Writes case/*.stl.
+
+The case is a solid base under the tented PCB: plastic everywhere up to the
+PCB's underside (sturdy, and no hollow body to ring), with a pocket for each
+part plus TOL clearance on every side and above it. The plate covers the whole
+top: the switches clip into it, flat-head screws countersink into it, and a
+shallow pocket in its underside clears the solder blobs around the Xiao.
 
 Built in the desk frame: floor flat on the desk at z = 0, the PCB tilted up
-towards the inner wall (the unibody seam) by design.json's tent angle.
+towards the inner wall (the unibody seam) by design.json's tent angle. The
+plate is built flat, in the PCB's frame.
 
 The gem look: the outline is a cut-diamond silhouette (design.py), and the
-outer walls lean in from a floor GIRDLE mm wider than the rim, each one flat
-facet. Stacked back to back the floors meet at the widest line, so the pair
-reads as a cut gem from the side: crown above, pavilion below. The seam stays
-a vertical face for the unibody join.
+outer walls lean in from a girdle GIRDLE mm wider than the rim, each one flat
+facet, with a CHAMFER under the girdle. Stacked back to back the chamfers meet
+in a V at the widest line, so the pair reads as a cut gem from the side. The
+seam stays a vertical face for the unibody join.
 
 Also writes the case, battery and keycaps as VRML in the PCB's frame, for
 KiCad's 3D renders.
@@ -19,6 +26,11 @@ import os
 import numpy as np
 from manifold3d import CrossSection, FillRule, JoinType, Manifold
 
+import design as DZ
+from shapely import affinity
+from shapely.geometry import Polygon, box
+from shapely.ops import unary_union
+
 D = json.load(open("design.json"))
 OUT = "case"
 
@@ -28,10 +40,14 @@ WALL_OUT = D["wall_out"]
 FLOOR = D["floor"]
 PCB_T = D["pcb_t"]
 Z0 = FLOOR + D["z_in"]          # PCB bottom at the inner wall, over the desk
-RIM = 1.6                       # wall rises this far above the PCB's top face
+PLATE = D["plate"]
+SCREW = D["screw"]
+RIM = PLATE["gap"] + PLATE["thick"]   # the wall rises flush with the plate's top
 GIRDLE = 2.0                    # floor flare past the rim: the lean of the gem facets
-STANDOFF_R = D["screw"]["standoff_d"] / 2
-PILOT_R = D["screw"]["pilot_d"] / 2         # self-tapping pilot (or the heat-set insert's hole)
+CHAMFER = 1.5                   # 45-degree cut under the girdle
+TOL = 0.6                       # clearance around and above every part in the base
+PILOT_R = SCREW["pilot_d"] / 2  # self-tapping pilot (or the heat-set insert's hole)
+PILOT_FLOOR = 0.6               # pilot holes stop this far above the desk
 USB_W, USB_H = 10.0, 4.4
 LEVER_W, LEVER_H = 5.0, 2.8
 
@@ -84,36 +100,74 @@ def through_wall_cut(center_xy, ang, w, h, zc, depth=8.0):
     return box.translate((X, Y, zc))
 
 
+def to_desk_solid(m):
+    """PCB-frame solid (z above the PCB's bottom face) into the desk frame."""
+    c, s_ = math.cos(TENT), math.sin(TENT)
+    m = m.translate((-WALL_IN, 0, 0))
+    m = m.transform([[c, 0, -s_, 0], [0, 1, 0, 0], [s_, 0, c, 0]])
+    return m.translate((WALL_IN, 0, Z0))
+
+
+def slab(poly, z0, z1):
+    """A shapely polygon (PCB plan) extruded between PCB-frame heights z0 and z1."""
+    polys = getattr(poly, "geoms", [poly])
+    cs = CrossSection([list(p.exterior.coords)[:-1] for p in polys], FillRule.NonZero)
+    return cs.extrude(z1 - z0).translate((0, 0, z0))
+
+
+def part_footprints():
+    """What hangs under the PCB, as (name, PCB-plan polygon, height)."""
+    keys = DZ.layout_left()
+    xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
+    pw, jt = D["power_switch"], D["jst"]
+    return [
+        ("sockets", unary_union([DZ.under_switch(*keys[n]) for n in DZ.KEY_ORDER]), DZ.SOCKET_DEPTH),
+        ("xiao", DZ.place(DZ.rect(DZ.XIAO_W, DZ.XIAO_L), xc, xa), DZ.XIAO_DEPTH),
+        ("power switch", DZ.place(box(-DZ.PWR_W / 2, -1.75, DZ.PWR_W / 2, DZ.PWR_D - 1.75),
+                                  (pw["x"], pw["y"]), pw["r"]), DZ.PWR_H),
+        ("jst", DZ.place(box(-DZ.JST_W / 2, -4.6, DZ.JST_W / 2, 6.25), (jt["x"], jt["y"]), jt["r"]),
+         DZ.JST_H),
+    ]
+
+
 def build():
     case_pts = [tuple(p) for p in D["case_outline"][:-1]]
     cav_pts = [tuple(p) for p in D["cavity_outline"][:-1]]
     top_zp = PCB_T + RIM
 
-    # Outer body: the hull of the rim (case outline on the tilted top plane) and the floor
-    # (the outline grown by GIRDLE, except at the seam). The outline is convex, so every
-    # wall is one flat facet.
+    # Outer body: the hull of the rim (case outline on the tilted top plane), the girdle (the
+    # outline grown by GIRDLE) CHAMFER above the desk, and the girdle cut back by CHAMFER on
+    # the desk. The outline is convex, so every face is one flat facet.
     rim = plan(case_pts)
     girdle = section(case_pts).offset(GIRDLE, JoinType.Miter, miter_limit=10)
-    girdle = [p for poly in girdle.to_polygons() for p in poly]
+    foot = girdle.offset(-CHAMFER, JoinType.Miter, miter_limit=10)
+    ring = lambda cs: [p for poly in cs.to_polygons() for p in poly]
     n = (-math.sin(TENT), math.cos(TENT))           # top plane: n . (X, Z) = const
     p0 = to_desk(WALL_IN, 0, top_zp)
     const = n[0] * p0[0] + n[1] * p0[2]
     pts = [(x, y, (const - n[0] * x) / n[1]) for x, y in rim] + \
-          [(min(x, WALL_OUT), y, 0.0) for x, y in girdle]
+          [(min(x, WALL_OUT), y, CHAMFER) for x, y in ring(girdle)] + \
+          [(min(x, WALL_OUT - CHAMFER), y, 0.0) for x, y in ring(foot)]
     body = Manifold.hull_points(pts)
     body = body.trim_by_plane((-1, 0, 0), -WALL_OUT)
 
-    # Cavity: everything above the floor inside the cavity outline.
-    cavity = prism(cav_pts, FLOOR, 80)
-    shell = body - cavity
+    # The PCB and plate sit in the cavity above the PCB's bottom plane; below it the base is
+    # solid except for a pocket per part.
+    above = to_desk_solid(slab(Polygon(cav_pts), 0, 60))
+    voids = [above]
+    for name, poly, h in part_footprints():
+        voids.append(to_desk_solid(slab(poly.buffer(TOL, join_style=2), -(h + TOL), 0.5)))
+    # battery bay: the battery and the room for its plug and leads, from the floor up
+    bay = Polygon(D["jst"]["bay"]).buffer(TOL, join_style=2)
+    voids.append(section(list(bay.exterior.coords)[:-1]).extrude(60).translate((0, 0, FLOOR)))
+    shell = body
+    for v in voids:
+        shell -= v
 
-    # Standoffs up to the PCB's bottom face, with a pilot hole for the screw.
+    # Screw pilot holes, from the PCB down into the solid base.
     for hx, hy in D["mount_holes"]:
         X, Y = plan([(hx, hy)])[0]
-        post = Manifold.cylinder(60, STANDOFF_R, circular_segments=24).translate((X, Y, FLOOR - 0.5))
-        post = under_tilted_plane(post, 0.0)
-        hole = Manifold.cylinder(60, PILOT_R, circular_segments=20).translate((X, Y, FLOOR - 1.0))
-        shell = (shell + post) - hole
+        shell -= Manifold.cylinder(60, PILOT_R, circular_segments=20).translate((X, Y, PILOT_FLOOR))
 
     # Floor magnets (back-to-back), pressed in from below; 0.5 mm skin above.
     mf_d, mf_h = D["magnet_floor_size"]
@@ -121,13 +175,9 @@ def build():
         X, Y = plan([(mx, my)])[0]
         shell -= Manifold.cylinder(mf_h, mf_d / 2, circular_segments=32).translate((X, Y, -0.01))
     # Seam magnets (unibody), pressed into the inner wall from outside.
-    # The wall is thinner than the magnet: a boss inside backs each pocket. Kept low, under
-    # the parts that hang beneath the PCB near the seam.
     ms_d, ms_h = D["magnet_side_size"]
     z_mid = FLOOR + 2.8
     for my in D["magnets_side_y"]:
-        boss = Manifold.cube((ms_h + 1.2, ms_d + 3.0, z_mid + ms_d / 2 + 1.0 - FLOOR + 0.1))
-        shell += boss.translate((WALL_OUT - (ms_h + 1.2), my - (ms_d + 3.0) / 2, FLOOR - 0.1))
         m = Manifold.cylinder(ms_h + 0.01, ms_d / 2, circular_segments=32).rotate((0, -90, 0))
         shell -= m.translate((WALL_OUT + 0.005, my, z_mid))
 
@@ -141,16 +191,52 @@ def build():
     lever_xy = local_frame((pw["x"], pw["y"]), pw["r"], (0, -1.7 - 2.0))
     Xl = plan([lever_xy])[0][0]
     shell -= through_wall_cut(lever_xy, pw["r"], LEVER_W, LEVER_H, pcb_bottom_z(Xl) - 0.75)
-
-    # Battery: a low fence on the floor keeps it in place.
-    b = D["battery"]["bounds"]
-    fence = prism([(b[0] - 1.2, b[1] - 1.2), (b[2] + 1.2, b[1] - 1.2), (b[2] + 1.2, b[3] + 1.2),
-                   (b[0] - 1.2, b[3] + 1.2)], FLOOR - 0.1, FLOOR + 1.5)
-    fence -= prism([(b[0], b[1]), (b[2], b[1]), (b[2], b[3]), (b[0], b[3])], FLOOR - 0.5, FLOOR + 2)
-    fence -= prism([(b[0] + 4, b[1] - 3), (b[2] - 4, b[1] - 3), (b[2] - 4, b[3] + 3), (b[0] + 4, b[3] + 3)],
-                   FLOOR - 0.5, FLOOR + 2)   # gaps for the leads and fingers
-    shell += fence
     return shell
+
+
+def plate():
+    """The top plate, flat, in the PCB's frame: z = 0 is its underside (PLATE gap over the PCB)."""
+    t, gap, ch = PLATE["thick"], PLATE["gap"], PLATE["chamfer"]
+    outline = Polygon(D["pcb_outline"])
+    pts = [(x, y, ch) for x, y in outline.exterior.coords] + \
+          [(x, y, t) for x, y in outline.exterior.coords] + \
+          [(x, y, 0.0) for x, y in outline.buffer(-ch, join_style=2).exterior.coords]
+    body = Manifold.hull_points(pts)                       # bottom edge chamfered all round
+
+    keys = DZ.layout_left()
+    cut = PLATE["cut"] + 2 * PLATE["cut_tol"]
+    lower = PLATE["cut"] + 2 * TOL                          # switch body under the plate, with room
+    housings = unary_union([DZ.place(DZ.rect(lower, lower), *keys[n]) for n in DZ.KEY_ORDER])
+    blob = Polygon(D["blob_zone"])
+    head_r, hole_r, boss_r = SCREW["head_d"] / 2, SCREW["pcb_hole"] / 2, SCREW["boss_d"] / 2
+
+    # Spacer bosses under the screws, down to the PCB; pillars wherever the PCB's top is free.
+    adds = []
+    for hx, hy in D["mount_holes"]:
+        adds.append(Manifold.cylinder(gap + 0.01, boss_r, circular_segments=32).translate((hx, hy, -gap)))
+    free = (outline.buffer(-(ch + 1.6), join_style=2).difference(housings.buffer(1.5))
+            .difference(blob.buffer(1.5)))
+    for h in D["mount_holes"]:
+        free = free.difference(Polygon(box(h[0] - 1, h[1] - 1, h[0] + 1, h[1] + 1)).buffer(boss_r + 1.5))
+    pillars = []
+    for gx in range(-60, 50, 6):
+        for gy in range(-35, 75, 6):
+            if free.contains(Polygon(box(gx - 1.4, gy - 1.4, gx + 1.4, gy + 1.4))):
+                pillars.append((gx, gy))
+                adds.append(Manifold.cylinder(gap + 0.01, 1.4, circular_segments=16).translate((gx, gy, -gap)))
+    for a_ in adds:
+        body += a_
+
+    # Switch cutouts, countersinks, and the solder-blob pocket.
+    for (x, y), r in keys.values():
+        body -= Manifold.cube((cut, cut, 10), center=True).rotate((0, 0, r)).translate((x, y, 0))
+    for hx, hy in D["mount_holes"]:
+        depth = head_r - hole_r                              # 90-degree cone
+        body -= Manifold.cylinder(depth + 0.01, hole_r, head_r, circular_segments=40).translate(
+            (hx, hy, t - depth))
+        body -= Manifold.cylinder(t + gap + 1, hole_r, circular_segments=24).translate((hx, hy, -gap - 0.5))
+    body -= slab(blob, -gap - 1, PLATE["blob_pocket"])
+    return body, pillars
 
 
 def battery():
@@ -202,12 +288,22 @@ if __name__ == "__main__":
     left = real(plan_left)
     stl(left, f"{OUT}/case_left.stl")
     stl(mirrored(left), f"{OUT}/case_right.stl")
-    # for KiCad renders: case and battery in the PCB frame (plan coordinates)
+    plate_left, pillars = plate()
+    # print the plate top-down: its top is flat, the bosses and pillars point up
+    flat = real(plate_left).mirror((0, 0, 1)).translate((0, 0, PLATE["thick"]))
+    stl(flat, f"{OUT}/plate_left.stl")
+    stl(flat.mirror((1, 0, 0)), f"{OUT}/plate_right.stl")
+    # for KiCad renders: case, plate and battery in the PCB frame (plan coordinates)
     import vrml
     vrml.write_parts("pcb/3d/case.wrl", [(to_pcb_frame(plan_left), vrml.CASE)], z_from_pcb_bottom=True)
+    vrml.write_parts("pcb/3d/plate.wrl", [(plate_left.translate((0, 0, PCB_T + PLATE["gap"])), vrml.CASE)],
+                     z_from_pcb_bottom=True)
     vrml.write_parts("pcb/3d/battery.wrl", [(to_pcb_frame(battery()), vrml.BATTERY)], z_from_pcb_bottom=True)
     bb = left.bounding_box()
     print("case left: %.1f x %.1f x %.1f mm, volume %.1f cm3, genus %d" %
           (bb[3] - bb[0], bb[4] - bb[1], bb[5] - bb[2], left.volume() / 1000, left.genus()))
+    pb = plate_left.bounding_box()
+    print("plate: %.1f x %.1f mm, %.1f cm3, %d support pillars" %
+          (pb[3] - pb[0], pb[4] - pb[1], plate_left.volume() / 1000, len(pillars)))
     print("height at seam %.1f mm, at outer edge %.1f mm (case only, keys excluded)" %
           (pcb_bottom_z(WALL_IN) + PCB_T + RIM, pcb_bottom_z(plan([(D['x_out'], 0)])[0][0]) + PCB_T + RIM))

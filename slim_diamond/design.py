@@ -28,6 +28,7 @@ XIAO_DEPTH = 1.0 + 3.3             # Xiao PCB + USB-C shell, hanging under our P
 BATT_W, BATT_L, BATT_T = 20.5, 26.0, 7.5   # 752025, leads on a 20 mm side
 SOCKET_DEPTH = 1.85                # Kailh hot-swap socket
 JST_W, JST_D, JST_H = 9.2, 10.9, 4.9  # JST PH S2B-PH-SM4-TB, pads included
+PLUG_L = 9.0                       # room in front of the JST opening for the plug and its wires
 PWR_W, PWR_D, PWR_H = 8.8, 4.6, 1.6  # MSK-12C02, body + pads (lever pokes out of the wall)
 PCB_T = 1.6
 # Where the search below put the Xiao (centre, angle, power-switch offset); pinned so layout
@@ -43,10 +44,14 @@ AIR = 0.4                          # vertical clearance under every part
 WALL = 1.6                         # case wall thickness
 CAP_CLEAR = 0.75                   # keycap to wall
 FLOOR = 2.6                        # floor; 6x2 magnets sit in pockets in it
-# Case screws: M3 button head (ISO 7380), self-tapping into the printed standoffs: in Nylon a
-# thread-forming screw grips well and needs no heat. For heat-set inserts instead, set pilot_d
-# to the insert's hole (about 4.0 for an M3 x 4 x 4.2 insert) and standoff_d to about 7.5.
-SCREW = {"name": "M3", "pcb_hole": 3.2, "head_d": 5.7, "standoff_d": 6.0, "pilot_d": 2.5}
+# Case screws: M3 x 8 flat head (90-degree countersunk, ISO 10642 / DIN 7991), through the plate
+# and the PCB, self-tapping into the solid Nylon base: a thread-forming screw grips well there
+# and needs no heat. For heat-set inserts instead, set pilot_d to the insert's hole (about 4.0
+# for an M3 x 4 x 4.2 insert).
+SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d": 2.5, "length": 8.0}
+# Top plate (Choc v1: 13.8 mm body through the plate, flange 2.2 mm over the PCB, clips take
+# plates up to 1.3 mm). Printed holes come out small: the cutout gets CUT_TOL per side.
+PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
 MAG_FLOOR = (6.2, 2.1)             # pocket for 6x2 disc magnets (back-to-back)
 MAG_SIDE = (5.2, 2.1)              # pocket for 5x2 disc magnets (unibody)
 
@@ -256,23 +261,31 @@ def main():
                     best = (key, batt)
     batt = best[1]
 
-    # --- JST connector: the socket-free spot needing the least tent, nearest the battery.
+    # --- JST connector: the spot needing the least tent, nearest the battery, with room in
+    # front of its opening for the plug and its wires (PLUG_L). Any of four orientations.
     # 1 mm off the walls: the tilt swings the connector's bottom towards them.
     blocked = unary_union([under, batt, xiao, power]).buffer(0.4)
+    plug_blocked = unary_union([xiao, power, batt]).buffer(0.4)
     room = gem.buffer(-1.0, join_style=2)
     best = None
-    for gx in range(-60, 40):
-        for gy in range(-40, 80):
-            j = place(rect(JST_W, JST_D), (gx, gy), 0)
-            if not room.contains(j) or j.intersects(blocked):
-                continue
-            _, slope = tent_for(items_for(batt, [(j, JST_H)]))
-            key = (round(slope, 5), j.distance(batt))
-            if best is None or key < best[0]:
-                best = (key, j)
-    jst = best[1]
+    for jr in (0, 90, 180, 270):
+        for gx in range(-60, 40):
+            for gy in range(-40, 80):
+                # footprint origin; the body spans local y -4.6..6.25, the opening is at +y
+                j = place(box(-JST_W / 2, -4.6, JST_W / 2, 6.25), (gx, gy), jr)
+                plug = place(box(-JST_W / 2, 6.25, JST_W / 2, 6.25 + PLUG_L), (gx, gy), jr)
+                if not room.contains(j) or j.intersects(blocked) or not room.contains(plug) \
+                        or plug.intersects(plug_blocked):
+                    continue
+                _, slope = tent_for(items_for(batt, [(j, JST_H), (plug, JST_H)]))
+                key = (round(slope, 5), plug.distance(batt))
+                if best is None or key < best[0]:
+                    best = (key, j, plug, (gx, gy), jr)
+    _, jst, plug, jst_c, jst_r = best
+    # the battery bay reaches the plug: leads run from the battery's end into the plug's zone
+    bay = unary_union([batt, plug]).convex_hull
 
-    z_out, slope = tent_for(items_for(batt, [(jst, JST_H)]))
+    z_out, slope = tent_for(items_for(batt, [(jst, JST_H), (plug, JST_H)]))
     tent = math.degrees(math.atan(slope))
     z_in = z_out + slope * (wall_in - x_out)
 
@@ -282,7 +295,7 @@ def main():
                    .intersection(box(-1e3, -1e3, wall_in + WALL, 1e3)))
     pcb = largest(cav.buffer(-0.3, join_style=2))
 
-    busy = unary_union([under, xiao, power, jst, batt.buffer(1.5)])   # standoffs stand on the floor
+    busy = unary_union([under, xiao, power, jst, plug, batt.buffer(1.5)])
 
     # --- solder jumpers (D0..D2), inside the Xiao's outline on the face opposite the module,
     # so they are bridged from the visible side: the F-face block next to pins L1..L3 (left
@@ -309,10 +322,20 @@ def main():
                     best_j = (d, lc)
         assert best_j, f"no room for the {side} jumpers"
         jblocks[side] = best_j[1]
-    # --- mounting holes: head clear of switch housings on top, standoff clear underneath.
-    room = (pcb.buffer(-(SCREW["standoff_d"] / 2 + 0.2))
-            .difference(housings.buffer(SCREW["head_d"] / 2 + 0.3))
-            .difference(busy.buffer(SCREW["standoff_d"] / 2 + 0.4)))
+    # --- screw holes. A flat-head screw goes through the plate (countersunk, on a spacer boss
+    # down to the PCB) and the PCB into the solid base. On top: the countersink clears the
+    # switch flanges and the solder-blob zone. Underneath: the pilot hole keeps a wall from every
+    # pocket, and the base there is deep enough for the screw.
+    blob_zone = place(rect(XIAO_W + 2.0, XIAO_L + 2.0), xiao_c, xiao_ang)
+    flanges = unary_union([place(rect(15.0, 15.0), *keys[n]) for n in KEY_ORDER])
+    pockets = unary_union([under, xiao, power, jst, bay])
+    boss_r = SCREW["boss_d"] / 2
+    need = SCREW["length"] - PLATE["gap"] - PLATE["thick"] - PCB_T + 0.8   # pilot depth + margin
+    deep_enough = box(x_out + (need - FLOOR - z_out) / slope, -1e3, 1e3, 1e3)
+    room = (pcb.buffer(-(boss_r + 0.3)).intersection(deep_enough)
+            .difference(flanges.buffer(SCREW["head_d"] / 2 + 0.4))
+            .difference(blob_zone.buffer(boss_r + 0.3))
+            .difference(pockets.buffer(SCREW["pilot_d"] / 2 + 1.5)))
     grid = [(gx / 2, gy / 2) for gx in range(-120, 100) for gy in range(-80, 160)
             if room.contains(Point(gx / 2, gy / 2))]
     holes = []
@@ -350,7 +373,9 @@ def main():
         "xiao": {"x": xiao_c[0], "y": xiao_c[1], "r": xiao_ang, "usb_dir": usb_dir},
         "power_switch": {"x": power_c[0], "y": power_c[1], "r": pwr_ang},
         "battery": {"bounds": list(batt.bounds)},
-        "jst": {"x": jst.centroid.x, "y": jst.centroid.y, "bounds": list(jst.bounds)},
+        "jst": {"x": jst_c[0], "y": jst_c[1], "r": jst_r, "bounds": list(jst.bounds),
+                "plug": list(plug.exterior.coords), "bay": list(bay.exterior.coords)},
+        "plate": PLATE, "blob_zone": list(blob_zone.exterior.coords),
         "mount_holes": [list(h) for h in holes],
         "screw": SCREW,
         "jumpers_local": jblocks,
@@ -393,6 +418,7 @@ def main():
     draw(xiao, color="#36c", alpha=0.7)
     draw(power, color="#3cc")
     draw(jst, color="#e80")
+    draw(plug, color="#fc6", alpha=0.6)
     for lc in jblocks.values():
         draw(place(box(lc[0] - 1.6, lc[1] - 3.6, lc[0] + 1.6, lc[1] + 3.6), xiao_c, xiao_ang), color="#0a0")
     for h in holes:

@@ -1,54 +1,71 @@
-"""Interference check: parts under the PCB, and the PCB itself, against the case."""
-import json
-import math
+"""Interference check: every part against the case and plate, all must read 0 mm3.
 
-from manifold3d import CrossSection, FillRule, Manifold
-from shapely import affinity
-from shapely.geometry import box
+  - each part under the PCB, and the PCB itself, against the solid base
+  - the battery against the base and the sockets
+  - the plate against the case, the switch bodies through it, and the solder blobs
+  - each screw against every pocket, each magnet against every pocket
+"""
+import json
+
+from manifold3d import Manifold
+from shapely.geometry import Polygon
+from shapely.ops import unary_union
 
 import case as C
-from design import XIAO_DEPTH, JST_H, PWR_H, SOCKET_DEPTH, under_switch, place, rect
-from layout import layout_left
+import design as DZ
 
 D = json.load(open("design.json"))
-c, s = math.cos(C.TENT), math.sin(C.TENT)
+PL = D["plate"]
+results = []
 
 
-def to_desk(m):
-    """PCB frame (z above the PCB's bottom face) into the desk frame."""
-    m = m.translate((-C.WALL_IN, 0, 0))
-    m = m.transform([[c, 0, -s, 0], [0, 1, 0, 0], [s, 0, c, 0]])
-    return m.translate((C.WALL_IN, 0, C.Z0))
+def overlap(name, a, b):
+    v = (a ^ b).volume()
+    results.append(v)
+    print(f"{name:34s} {v:8.3f} mm3")
 
 
-def slab(poly, z0, z1):
-    polys = getattr(poly, "geoms", [poly])
-    cs = CrossSection([list(p.exterior.coords)[:-1] for p in polys], FillRule.NonZero)
-    return cs.extrude(z1 - z0).translate((0, 0, z0))
-
-
-case = C.build()
-keys = layout_left()
-parts = {
-    "sockets": (Manifold.batch_boolean if False else None, None),
-}
-items = []
-from shapely.ops import unary_union
-socks = unary_union([under_switch(*keys[n]) for n in keys])
-items.append(("sockets+pins", slab(socks, -SOCKET_DEPTH, 0)))
-x = D["xiao"]
-items.append(("xiao", slab(place(rect(17.5, 21.0), (x["x"], x["y"]), x["r"]), -XIAO_DEPTH, 0)))
-jb = D["jst"]["bounds"]
-items.append(("jst", slab(box(*jb), -JST_H, 0)))
-p = D["power_switch"]
-items.append(("power switch", slab(place(rect(6.7, 2.7), (p["x"], p["y"]), p["r"]), -PWR_H, 0)))
-from shapely.geometry import Polygon
-items.append(("pcb", slab(Polygon(D["pcb_outline"]), 0, C.PCB_T)))
-for name, solid in items:
-    v = (to_desk(solid) ^ case).volume()
-    print(f"{name:14s} overlap with case: {v:.3f} mm3")
+base = C.build()
+parts = C.part_footprints()
+for name, poly, h in parts:
+    overlap(f"{name} vs base", C.to_desk_solid(C.slab(poly, -h, 0)), base)
+overlap("pcb vs base", C.to_desk_solid(C.slab(Polygon(D["pcb_outline"]), 0, C.PCB_T)), base)
 batt = C.battery()
-print(f"{'battery':14s} overlap with case: {(batt ^ case).volume():.3f} mm3")
-# battery top vs PCB/sockets above it
-under_parts = to_desk(slab(socks, -SOCKET_DEPTH, 0))
-print(f"{'battery':14s} overlap with sockets: {(batt ^ under_parts).volume():.3f} mm3")
+sockets = next(p for n, p, h in parts if n == "sockets")
+overlap("battery vs base", batt, base)
+overlap("battery vs sockets", batt, C.to_desk_solid(C.slab(sockets, -DZ.SOCKET_DEPTH, 0)))
+
+# The plate, in place.
+plate, _ = C.plate()
+z_plate = C.PCB_T + PL["gap"]
+plate_desk = C.to_desk_solid(plate.translate((0, 0, z_plate)))
+overlap("plate vs base", plate_desk, base)
+keys = DZ.layout_left()
+bodies = unary_union([DZ.place(DZ.rect(PL["cut"], PL["cut"]), *keys[n]) for n in DZ.KEY_ORDER])
+overlap("switch bodies vs plate", C.slab(bodies, C.PCB_T, z_plate + PL["thick"]),
+        plate.translate((0, 0, z_plate)))
+blob = Polygon(D["blob_zone"]).buffer(-0.5)          # blobs up to 1.4 mm tall over the Xiao area
+overlap("solder blobs vs plate", C.slab(blob, C.PCB_T, C.PCB_T + 1.4), plate.translate((0, 0, z_plate)))
+
+# Screws (8 mm from the plate top, 3 mm shank) and magnets against every pocket.
+pockets = Manifold()
+for name, poly, h in parts:
+    pockets += C.to_desk_solid(C.slab(poly.buffer(C.TOL, join_style=2), -(h + C.TOL), 0))
+bay = Polygon(D["jst"]["bay"]).buffer(C.TOL, join_style=2)
+pockets += C.section(list(bay.exterior.coords)[:-1]).extrude(60).translate((0, 0, C.FLOOR))
+top = z_plate + PL["thick"]
+for i, (hx, hy) in enumerate(D["mount_holes"], 1):
+    screw = C.to_desk_solid(Manifold.cylinder(D["screw"]["length"], 1.5, circular_segments=20)
+                            .translate((hx, hy, top - D["screw"]["length"])))
+    overlap(f"screw {i} vs pockets", screw, pockets)
+mf_d, mf_h = D["magnet_floor_size"]
+for i, (mx, my) in enumerate(D["magnets_floor"], 1):
+    X, Y = C.plan([(mx, my)])[0]
+    overlap(f"floor magnet {i} (+0.5 skin) vs pockets",
+            Manifold.cylinder(mf_h + 0.5, mf_d / 2, circular_segments=32).translate((X, Y, 0)), pockets)
+ms_d, ms_h = D["magnet_side_size"]
+for i, my in enumerate(D["magnets_side_y"], 1):
+    m = Manifold.cylinder(ms_h + 0.5, ms_d / 2, circular_segments=32).rotate((0, -90, 0))
+    overlap(f"seam magnet {i} (+0.5 wall) vs pockets", m.translate((C.WALL_OUT, my, C.FLOOR + 2.8)), pockets)
+
+print("ALL CLEAR" if max(results) < 1e-3 else "INTERFERENCE")

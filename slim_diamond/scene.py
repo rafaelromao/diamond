@@ -33,12 +33,15 @@ def to_desk(m):
 
 def left_half():
     parts = [(C.build(), vrml.CASE), (C.battery(), vrml.BATTERY)]
+    plate, _ = C.plate()
+    parts.append((to_desk(plate.translate((0, 0, C.PCB_T + C.PLATE["gap"]))), vrml.CASE))
     pcb = C.section([tuple(p) for p in D["pcb_outline"][:-1]]).extrude(C.PCB_T)
     parts.append((to_desk(pcb), PCB_GREEN))
     t = C.PCB_T                                   # switch models start on the PCB's top face
     switch = [
-        (vrml.box(-7.5, -7.5, t, 7.5, 7.5, t + 2.5), vrml.SWITCH),
-        (vrml.frustum(13.8, 13.8, 12.5, 12.5, t + 2.5, t + 5.0), vrml.SWITCH),
+        (vrml.box(-6.9, -6.9, t, 6.9, 6.9, t + 2.2), vrml.SWITCH),
+        (vrml.box(-7.5, -7.5, t + 2.2, 7.5, 7.5, t + 3.0), vrml.SWITCH),
+        (vrml.frustum(14.5, 14.5, 12.5, 12.5, t + 3.0, t + 5.0), vrml.SWITCH),
         (vrml.frustum(17.5, 16.5, 15.6, 14.6, t + 5.8, t + 8.6), vrml.KEYCAP),
     ]
     for (x, y), r in layout_left().values():
