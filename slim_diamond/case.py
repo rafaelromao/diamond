@@ -243,6 +243,7 @@ def plate():
             .difference(blob.buffer(1.5)))
     for h in D["mount_holes"]:
         free = free.difference(Polygon(box(h[0] - 1, h[1] - 1, h[0] + 1, h[1] + 1)).buffer(boss_r + 1.5))
+    free = free.difference(reset_pocket_plan().buffer(1.5))
     pillars = []
     for gx in range(-60, 50, 6):
         for gy in range(-35, 75, 6):
@@ -261,7 +262,28 @@ def plate():
             (hx, hy, t - depth))
         body -= Manifold.cylinder(t + gap + 1, hole_r, circular_segments=24).translate((hx, hy, -gap - 0.5))
     body -= slab(blob, -gap - 1, PLATE["blob_pocket"])
+    body -= reset_cut()
     return body, pillars
+
+
+def reset_pocket_plan():
+    """The plate's pocket over the reset button's body, in plan."""
+    rb = D["reset_button"]
+    return DZ.place(DZ.rect(rb["pocket"], rb["pocket"]), (rb["x"], rb["y"]), rb["r"])
+
+
+def reset_cut():
+    """What the plate loses over the reset button (plate frame, z = 0 its underside): a pocket
+    from below over the body and collar, up to pocket_h over the PCB, and from there a 45-degree
+    cone to the top face, its throat just wider than the plunger. Printed top face down, the cone
+    narrows upwards at 45 degrees, which prints without support."""
+    rb = D["reset_button"]
+    gap, t = PLATE["gap"], PLATE["thick"]
+    z0 = rb["pocket_h"] - gap                                    # the pocket's roof, in the plate
+    r0 = rb["throat"] / 2
+    cone = Manifold.cylinder(t - z0 + 0.2, r0, r0 + t - z0 + 0.2, circular_segments=48)
+    return (slab(reset_pocket_plan(), -gap - 1, z0)
+            + cone.translate((rb["x"], rb["y"], z0)))
 
 
 def battery():

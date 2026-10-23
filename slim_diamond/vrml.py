@@ -90,6 +90,21 @@ def models(d="pcb/3d"):
     write_parts(f"{d}/xiao_nrf52840.wrl", xiao)
     write_parts(f"{d}/msk12c02.wrl", [(box(-3.35, -1.35, 0, 3.35, 1.35, 1.4), METAL),
                                       (box(-0.75, 1.35, 0.2, 0.75, 2.85, 1.2), SOCKET)])
+    # XKB TS-1187A reset button, on the F face (the left half's switch face): cover, collar,
+    # plunger (datasheet heights), and the four gull-wing legs.
+    import json
+    b = json.load(open("design.json"))["reset_button"]
+    w = b["body"] / 2
+    button = [(box(-w, -w, 0, w, w, b["cover_h"]), METAL),
+              (Manifold.cylinder(b["collar_h"] - b["cover_h"], b["collar_d"] / 2, circular_segments=32)
+               .translate((0, 0, b["cover_h"])), METAL),
+              (Manifold.cylinder(b["h"] - b["collar_h"], b["plunger_d"] / 2, circular_segments=32)
+               .translate((0, 0, b["collar_h"])), SOCKET)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            x0, x1 = sorted((sx * w, sx * b["span"] / 2))
+            button.append((box(x0, sy * 1.875 - 0.35, 0, x1, sy * 1.875 + 0.35, 0.25), METAL))
+    write_parts(f"{d}/ts1187a.wrl", button)
     write_parts(f"{d}/jst_ph_s2b.wrl", [(box(-3.95, -1.35, 0, 3.95, 6.25, 4.75), JST)])
 
 

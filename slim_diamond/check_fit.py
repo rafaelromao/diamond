@@ -3,6 +3,8 @@
   - each part under the PCB, and the PCB itself, against the solid base
   - the battery against the base and the sockets
   - the plate against the case, the switch bodies through it, and the solder blobs
+  - the reset button: its body against the plate, its plunger open from above and just under the
+    plate top, the reset fill holes' solder blobs, and its cone off the keycaps (3 mm margin)
   - each screw against every pocket, each magnet against every pocket and opening
   - a USB-C cable plugged in, and the power switch's lever as the PCB drops in
   - the anti-slip pad slots, with a 0.5 mm skin, against every pocket, magnet and pilot hole;
@@ -53,6 +55,37 @@ overlap("switch bodies vs plate", C.slab(bodies, C.PCB_T, z_plate + PL["thick"])
         plate.translate((0, 0, z_plate)))
 blob = Polygon(D["blob_zone"]).buffer(-0.5)          # blobs up to 1.4 mm tall over the Xiao area
 overlap("solder blobs vs plate", C.slab(blob, C.PCB_T, C.PCB_T + 1.4), plate.translate((0, 0, z_plate)))
+
+# The reset button (switch face): its body, collar and plunger against the plate; the plunger's
+# column up through the plate must be open (pressed straight down from above); a solder blob
+# on each reset fill hole (switch face) against the plate; and the cone's top, with margin,
+# off every keycap's footprint in plan.
+RB = D["reset_button"]
+rbc, rbr = (RB["x"], RB["y"]), RB["r"]
+plate_at = plate.translate((0, 0, z_plate))
+cyl = lambda h, d: Manifold.cylinder(h, d / 2, circular_segments=48)
+button = (C.slab(DZ.place(DZ.rect(RB["body"], RB["body"]), rbc, rbr), C.PCB_T, C.PCB_T + RB["cover_h"])
+          + cyl(RB["collar_h"], RB["collar_d"]).translate((*rbc, C.PCB_T))
+          + cyl(RB["h"], RB["plunger_d"]).translate((*rbc, C.PCB_T)))
+overlap("reset button body vs plate", button, plate_at)
+overlap("reset plunger column (reachable)", cyl(20, RB["plunger_d"]).translate((*rbc, C.PCB_T)), plate_at)
+top_z = z_plate + PL["thick"]
+under_top = top_z - (C.PCB_T + RB["h"])
+print(f"{'  plunger top under the plate top':34s} {under_top:8.3f} mm (travel {RB['travel']})")
+results.append(0.0 if 0 <= under_top <= 0.5 else 1.0)
+import footprints as FP
+xc_, xa_ = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
+for nm, sx in (("RSTR", 1), ("RSTL", -1)):
+    hx, hy = DZ.local_to_board(xc_, xa_, (sx * FP.XIAO_RST[0], FP.XIAO_RST[1]))
+    overlap(f"{nm} hole solder blob vs plate", cyl(1.4, 2.0).translate((hx, hy, C.PCB_T)), plate_at)
+from layout import cap
+caps = unary_union([cap(*keys[n]) for n in DZ.KEY_ORDER])
+cone_top = Point(rbc).buffer(RB["throat"] / 2 + PL["thick"] + PL["gap"] - RB["pocket_h"])
+margin = 3.0
+a = cone_top.buffer(margin).intersection(caps).area
+results.append(a)
+print(f"{'reset cone (+%.0f mm) vs keycaps, plan' % margin:34s} {a:8.3f} mm2   "
+      f"(plunger {caps.distance(Point(rbc)):.2f} mm, cone edge {caps.distance(cone_top):.2f} mm from a cap)")
 
 # Screws (8 mm from the plate top, 3 mm shank) and magnets against every pocket.
 pockets = Manifold()

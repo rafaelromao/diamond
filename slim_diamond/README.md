@@ -15,8 +15,9 @@ transport.
 | Wiring | Diodeless, one pin per key (11 Xiao pins + NFC1) |
 | Case | Solid base, a pocket per part (0.6 mm clearance), 0.5 mm around the PCB and plate (0.3 at the seam), 93 × 100.5 mm per half at the girdle (the rim is 91.6 × 96.5), with a 45° chamfer under it; tent 6.6°; 18.6 mm at the seam, 8.7 mm at the outer edge (plate included, keycaps excluded). Five pad slots under the floor (below) |
 | Anti-slip pads | 5 × 8×2 mm silicone bump-ons per half, as on the original Diamond's base: each slot under the floor (8.6 mm wide, 1.1 deep) holds two pad spots, 8.7 mm apart. Each half sticks its pad in a different end, so stacked, each pad drops into the other half's empty end and the floors (and magnets) still meet. Every key centre sits at least 2.8 mm inside each half's pads, so a press on a border key can't tip it |
-| Top plate | Covers the whole board: 1.2 mm Choc v1 plate, 1.0 mm over the PCB (the flange sits 2.2 mm up), 14.0 mm cutouts (`cut_tol` 0.1 per side), a 0.5 mm pocket over the Xiao area for solder blobs, support pillars, countersunk screw bosses, chamfered bottom edge |
+| Top plate | Covers the whole board: 1.2 mm Choc v1 plate, 1.0 mm over the PCB (the flange sits 2.2 mm up), 14.0 mm cutouts (`cut_tol` 0.1 per side), a 0.5 mm pocket over the Xiao area for solder blobs, a pocket and cone over the reset button, support pillars, countersunk screw bosses, chamfered bottom edge |
 | Power | XIAO nRF52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet. The wall has a recess the size of a USB-C overmold (13 × 7 mm) in front of the port, and a slot open to the top for the lever, widening outwards for a fingernail |
+| Reset | A 5.1 × 5.1 × 2.0 mm SMD tact switch (TS-1187A) on the switch face, in the nook between the index finger's bottom key and the thumbs, 7.6 mm from the nearest keycap. It reaches through a 45° cone in the plate (4.2 mm across at the top, 2.8 at the throat) with its plunger 0.2 mm under the plate's top: a fingertip presses it, keycaps and palms don't. Press once to reboot, twice for the bootloader, with the case closed |
 | Screws | 4 × M3 × 8 flat head (90° countersunk) per half: through the plate and PCB, self-tapping into the solid Nylon base (2.5 mm pilot). `SCREW` in `design.py` switches to heat-set inserts |
 | Magnets | 4 × 6×2 mm in each floor (back to back), 2 × 5×2 mm in each inner wall (unibody) |
 | Assembly | Iron only: no reflow-only parts |
@@ -36,7 +37,7 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
 | `BOM.md` | Parts list (AliExpress search terms) |
 | `BUILD.md` | Hand-soldering and assembly guide, testing, printing |
-| `design.png` | Top view of the placement: sockets (red), Xiao, battery, JST, magnets, screws, pad slots (grey: left pads filled, the right half's dashed) |
+| `design.png` | Top view of the placement: sockets (red), Xiao, battery, JST, magnets, screws, the reset button (red, its cone white), pad slots (grey: left pads filled, the right half's dashed) |
 | `renders/pads.png` | Both floors from below: where each half's pads go |
 | `*.py`, `*.sh` | The generators: everything above is built from them |
 
@@ -72,6 +73,14 @@ Diodeless needs 12 inputs and the Xiao's edge only has 11, so the 12th key uses
 the NFC1 pad on the Xiao's underside, through a plated hole you solder from the
 other face. NFC itself is not used.
 
+The reset button is wired the same way: the Xiao's reset test pad (pad 17 in
+Seeed's footprint, `EN` in their symbol; TP2 on the nRF52840's P0.18/RESET in
+Seeed's schematic) is reached through a plated hole filled from the switch face,
+and the button joins it to GND. Each half's reset hole has its own net (`RST_L`,
+`RST_R`) wired only to that half's button pads: turned over, one half's reset
+hole lands under the other half's GND test pad. No pin changes, so the firmware
+is unaffected.
+
 Pin map (from `pcb/pinout.json`):
 
 | Key | Left | Right |
@@ -103,7 +112,7 @@ python3 design.py        # placement, tent, outlines, magnets, screws -> design.
 FREEROUTING=/path/freerouting.jar ./route.sh   # footprints, board, routing, pours, DRC
 ./fab.sh                 # gerbers and drill files -> fab/slim_diamond_jlcpcb.zip
 python3 case.py          # base and plate STLs (and their 3D models for renders)
-python3 check_fit.py     # parts, plate, solder blobs, screws, magnets, pad slots, a USB-C plug and the lever against
+python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh
 ```
@@ -112,10 +121,14 @@ python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./
 holds the tolerances. The outline is the fewest-facet (`GEM_FACETS`) convex
 polygon around both halves joined. `XIAO_SPOT` pins the Xiao's position;
 set it to `None` to search again, and if the board won't route completely, try
-the runners-up the search writes to `xiao_alternatives.json`. `PAD_SLOTS` pins the
+the runners-up the search writes to `xiao_alternatives.json`. `RESET_SPOT` pins the reset button and `BUTTON` holds its datasheet heights
+and the plate's pocket and cone; `design.py` asserts its clearances. `PAD_SLOTS` pins the
 pad slots the same way (`None` searches again for the slots that keep every key
 centre deepest inside both halves' pads); the floor magnets are placed around them.
 
 Credits: the Choc hot-swap footprint follows [kiswitch](https://github.com/kiswitch/kiswitch)
 (MIT). The Xiao pad positions follow Seeed's
-[OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library).
+[OPL KiCad library](https://github.com/Seeed-Studio/OPL_Kicad_Library). The reset button's pads follow
+KiCad's `Button_Switch_SMD:SW_SPST_TL3342` from the
+[official footprint library](https://gitlab.com/kicad/libraries/kicad-footprints) (CC-BY-SA 4.0), which
+matches XKB's TS-1187A land pattern.

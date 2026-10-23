@@ -73,6 +73,21 @@ PAD_BALANCE = 2.0                  # every key centre this far inside each half'
 PAD_COUNT = 5                      # four (the original's) leave the thumbs and pinky 0.5 mm inside
 # Where the search below put the slots: centre (floor plan, mm) and angle (degrees); pinned so
 # layout tweaks don't move them. None runs the search again.
+# Reset button: XKB TS-1187A-B-D-B (LCSC C318884 is the 1.5 mm -A- height), a 5.1 x 5.1 mm SMD
+# tact switch with gull-wing legs, on the switch face. Datasheet heights over the PCB: cover 0.9,
+# plunger collar (3.8 across) 1.2, the 2.0 mm plunger's top H; H = 2.0 (height code D) leaves it
+# 0.2 mm under the plate's top (2.2), at the bottom of a cone through the plate. Travel 0.25.
+BUTTON = {"body": 5.1, "cover_h": 0.9, "collar_d": 3.8, "collar_h": 1.2, "plunger_d": 2.0, "h": 2.0,
+          "travel": 0.25, "span": 6.5,
+          # footprint keep-out (KiCad's SW_SPST_TL3342 courtyard: pads at +-3.15, +-1.9)
+          "keep": (8.5, 6.0),
+          # plate: a pocket over the body from below, then a 45-degree cone up to the top face
+          "pocket": 6.0, "pocket_h": 1.5, "throat": 2.8}
+BUTTON_CAP_MARGIN = 6.0            # plunger centre to the nearest keycap's footprint, at least
+# Where the button sits: centre and angle, in the nook between the index
+# column's bottom key and the two thumbs. Square to the board: Freerouting rounds rotated pads
+# and left a track 0.004 mm inside the clearance at the thumb row's angle.
+RESET_SPOT = ((29.5, 37.0), 0)
 PAD_SLOTS = [((-45.0, 10.0), 95), ((29.0, -24.0), 0), ((-25.5, -21.0), 135),
              ((18.0, 57.0), 20), ((33.0, 58.0), 85)]
 
@@ -456,6 +471,28 @@ def main():
                 break
             holes.append(nxt)
 
+    # --- reset button, on the switch face: clear of every keycap (with room for a fingertip),
+    # switch housing and plate cutout, both faces' sockets, the Xiao, power switch and JST on
+    # the parts face (the footprint's copy for the other half sits there), and the screw bosses.
+    btn_c, btn_r = RESET_SPOT
+    btn_keep = place(rect(*BUTTON["keep"]), btn_c, btn_r)
+    btn_pocket = place(rect(BUTTON["pocket"], BUTTON["pocket"]), btn_c, btn_r)
+    btn_cone = Point(btn_c).buffer(BUTTON["throat"] / 2 + PLATE["thick"] + PLATE["gap"] - BUTTON["pocket_h"])
+    btn_clear = {
+        "keycaps": capu.distance(Point(btn_c)),
+        "cone to keycaps": capu.distance(btn_cone),
+        "housings": btn_keep.distance(housings),
+        "plate cutouts": btn_pocket.distance(unary_union([place(rect(PLATE["cut"] + 2 * PLATE["cut_tol"],
+                                                                    PLATE["cut"] + 2 * PLATE["cut_tol"]),
+                                                               *keys[n]) for n in KEY_ORDER])),
+        "sockets": btn_keep.distance(under),
+        "xiao, switch, jst": btn_keep.distance(unary_union([xiao, power, jst, blob_zone])),
+        "screw bosses": min(btn_pocket.distance(Point(h).buffer(boss_r)) for h in holes),
+        "board edge": inner.exterior.distance(btn_keep) if inner.contains(btn_keep) else -1.0,
+    }
+    assert btn_clear["keycaps"] >= BUTTON_CAP_MARGIN and min(btn_clear.values()) >= 0.3, \
+        f"reset button too close: {btn_clear}"
+
     # --- anti-slip pads, on the floor: the desk plan, where the tent shortens x a little. The
     # foot is the case outline grown by GIRDLE and cut back by CHAMFER, ending CHAMFER short of
     # the seam (as case.py builds it).
@@ -516,6 +553,8 @@ def main():
         "mount_holes": [list(h) for h in holes],
         "screw": SCREW,
         "jumpers_local": jblocks,
+        "reset_button": {"x": btn_c[0], "y": btn_c[1], "r": btn_r, **BUTTON,
+                         "clearance": {k: round(v, 2) for k, v in btn_clear.items()}},
         "wall_in": wall_in, "wall_out": wall_in + WALL, "wall": WALL, "x_out": x_out,
         "tent_deg": tent, "slope": slope, "z_out": z_out, "z_in": z_in, "floor": FLOOR, "pcb_t": PCB_T,
         "pcb_outline": list(pcb.exterior.coords),
@@ -544,6 +583,8 @@ def main():
     print("xiao", [round(v, 1) for v in xiao_c], xiao_ang, "usb", [round(v, 2) for v in usb_dir])
     print("battery", [round(v, 1) for v in batt.bounds], "jst", [round(v, 1) for v in jst.bounds])
     print("holes", holes, "floor magnets", floor_spots, "inner wall y", round(wy0, 1), round(wy1, 1))
+    print("reset button", btn_c, btn_r, "clearances",
+          ", ".join(f"{k} {v:.2f}" for k, v in btn_clear.items()))
     print("pads, on the floor: left", [tuple(round(v, 2) for v in p) for p in pads_left])
     print("                    right", [tuple(round(v, 2) for v in flip(p)) for p in pads_right])
     print("balance: nearest key centre inside the pads by",
@@ -571,6 +612,8 @@ def main():
     draw(plug, color="#fc6", alpha=0.6)
     for lc in jblocks.values():
         draw(place(box(lc[0] - 1.6, lc[1] - 3.6, lc[0] + 1.6, lc[1] + 3.6), xiao_c, xiao_ang), color="#0a0")
+    draw(btn_keep, color="#e33")
+    draw(btn_cone, color="#fff")
     for h in holes:
         draw(Point(h).buffer(2.6).difference(Point(h).buffer(1.1)), color="#555")
     for p in floor_spots:

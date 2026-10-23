@@ -213,6 +213,36 @@
    -1.2
   ]
  },
+ "reset_button": {
+  "x": 29.5,
+  "y": 37.0,
+  "r": 0,
+  "body": 5.1,
+  "cover_h": 0.9,
+  "collar_d": 3.8,
+  "collar_h": 1.2,
+  "plunger_d": 2.0,
+  "h": 2.0,
+  "travel": 0.25,
+  "span": 6.5,
+  "keep": [
+   8.5,
+   6.0
+  ],
+  "pocket": 6.0,
+  "pocket_h": 1.5,
+  "throat": 2.8,
+  "clearance": {
+   "keycaps": 7.65,
+   "cone to keycaps": 5.55,
+   "housings": 3.8,
+   "plate cutouts": 4.87,
+   "sockets": 2.85,
+   "xiao, switch, jst": 13.4,
+   "screw bosses": 0.95,
+   "board edge": 4.25
+  }
+ },
  "wall_in": 38.65436023672302,
  "wall_out": 40.25436023672302,
  "wall": 1.6,

@@ -175,7 +175,9 @@ def build():
                                                   for i in range(len(ks))))
     assign = {ks[i]: ins[(i + best) % len(ins)] for i in range(len(ks))}
 
-    xmap = {"VBAT": "VBAT", "GND": "GND"}
+    # each mount's reset hole goes to its own half's button (footprints.py: the other mount's hole
+    # sits under the module's GND pad)
+    xmap = {"VBAT": "VBAT", "GND": "GND", "RSTL": "RST_L", "RSTR": "RST_R"}
     for k, inp in assign.items():
         if inp.startswith("L") or inp == "NFC1":
             xmap[inp] = f"K_{k}"
@@ -205,6 +207,11 @@ def build():
     jst = add_fp(board, "JST_PH_S2B_Reversible", "J1", (D["jst"]["x"], D["jst"]["y"]), D["jst"]["r"],
                  "JST PH 2.0 battery")
     set_pads(jst, {"1": "BAT+", "2": "GND", "MP": "GND"}, board, nets)
+
+    # --- reset button on the switch face: F for the left half, B for the right half.
+    rb = D["reset_button"]
+    btn = add_fp(board, "SW_TS1187A_Reversible", "SW14", (rb["x"], rb["y"]), rb["r"], "TS-1187A reset")
+    set_pads(btn, {"1": "RST_L", "2": "GND", "3": "RST_R", "4": "GND"}, board, nets)
 
     for i, h in enumerate(D["mount_holes"], 1):
         add_fp(board, f"MountingHole_{D['screw']['name']}", f"H{i}", tuple(h), 0, D["screw"]["name"])

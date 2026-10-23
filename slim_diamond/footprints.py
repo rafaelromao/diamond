@@ -5,7 +5,8 @@ the parts on the bottom (B) face, the right half with the board turned over,
 so the parts go on the F face. Only one face gets populated.
 
 The Choc hot-swap geometry follows kiswitch's SW_Hotswap_Kailh_Choc_V1 (MIT);
-the Xiao pad positions follow Seeed's XIAO-nRF52840-SMD footprint.
+the Xiao pad positions follow Seeed's XIAO-nRF52840-SMD footprint; the reset
+button's pads follow KiCad's Button_Switch_SMD:SW_SPST_TL3342 (CC-BY-SA 4.0).
 """
 import json
 import os
@@ -137,6 +138,12 @@ def xiao_pin_xy(pin, mount):
 
 # Bottom pads (Seeed F-mount positions, relative to centre).
 XIAO_BOTTOM = {"VBAT": (-4.47, -0.31), "GND": (-4.47, -2.22), "NFC1": (3.78, 9.24)}
+# The reset test pad (Seeed's pad 17, "EN" in their symbol: test point TP2 on the nRF52840's
+# P0.18/RESET in Seeed's schematic), Seeed (7.62, -16.5285) less the centre (8.9, -10.5). Its
+# GND neighbour (pad 18) mirrors onto it: the other mount's reset hole sits under this mount's
+# GND pad. So each mount's hole gets its own net, wired only to that half's button (see
+# reset_button()), and the hole the module grounds only grounds the unused button's pads.
+XIAO_RST = (-1.28, -6.03)
 
 
 def xiao():
@@ -168,6 +175,10 @@ def xiao():
                 L.append(tht(name, px, y, 1.2, 0.6, shape="oval", size_y=2.2, drill_y=1.4))
             else:
                 L.append(tht(name, px, y, 1.9, 0.8, shape="oval", size_y=1.45, drill_y=0.8))
+    # Reset: RSTR is the F-mount hole (right half), RSTL the B-mount one (left half).
+    rx, ry = XIAO_RST
+    L.append(tht("RSTR", rx, ry, 1.4, 0.8))
+    L.append(tht("RSTL", -rx, ry, 1.4, 0.8))
     # Mark the holes to fill with solder, on the face they are filled from (the one without the
     # module): the B-mount holes on F (left half), the F-mount holes on B (right half).
     (vx, vy), (_, gy), (nx, ny) = XIAO_BOTTOM["VBAT"], XIAO_BOTTOM["GND"], XIAO_BOTTOM["NFC1"]
@@ -175,6 +186,7 @@ def xiao():
         sx = 1 if mount == "F" else -1
         L += rect_lines(sx * vx - 1.3, gy - 1.0, sx * vx + 1.3, vy + 1.0, f"{feed}.SilkS")
         L += rect_lines(sx * nx - 0.95, ny - 1.45, sx * nx + 0.95, ny + 1.45, f"{feed}.SilkS")
+        L += rect_lines(sx * rx - 1.0, ry - 1.0, sx * rx + 1.0, ry + 1.0, f"{feed}.SilkS")
     for side in ("F", "B"):
         L += rect_lines(-8.75, -10.5, 8.75, 10.5, f"{side}.Fab", 0.1)
         L += rect_lines(-10.6, -11.6, 10.6, 10.8, f"{side}.CrtYd", 0.05)
@@ -226,6 +238,31 @@ def jst():
     write("JST_PH_S2B_Reversible", L)
 
 
+def reset_button():
+    """Reset button (XKB TS-1187A, 5.1 x 5.1 mm, gull-wing legs) on either face, plunger at the
+    origin. Pads as KiCad's SW_SPST_TL3342: the two pads at y = -1.9 are joined inside the
+    switch, and so are the two at +1.9; pressing joins the pairs.
+
+    F face: the left half's button (its switch face is F), pad 1 on RSTL, the left half's Xiao
+    reset hole. B face: the right half's, pad 3 on RSTR. Pads 2 and 4 to GND.
+    """
+    L = header("SW_TS1187A_Reversible", "XKB TS-1187A 5.1x5.1 mm SMD tact switch, either face; "
+               "pads after KiCad's SW_SPST_TL3342")
+    for side, (rst, gnd) in (("F", ("1", "2")), ("B", ("3", "4"))):
+        layers = [f"{side}.Cu", f"{side}.Mask"]
+        for sx in (-1, 1):
+            L.append(smd(rst, sx * 3.15, -1.9, 1.7, 1.0, layers, shape="rect"))
+            L.append(smd(gnd, sx * 3.15, 1.9, 1.7, 1.0, layers, shape="rect"))
+        L += rect_lines(-2.55, -2.55, 2.55, 2.55, f"{side}.Fab", 0.1)
+        L += rect_lines(-4.25, -3.0, 4.25, 3.0, f"{side}.CrtYd", 0.05)
+        # silkscreen: the body's top and bottom edges (the sides run into the pads)
+        L.append(line(-1.9, -2.75, 1.9, -2.75, f"{side}.SilkS"))
+        L.append(line(-1.9, 2.75, 1.9, 2.75, f"{side}.SilkS"))
+        L.append(text("RST", 0, -3.75, f"{side}.SilkS", 0.8, mirror=(side == "B")))
+    L.append(model("${KIPRJMOD}/3d/ts1187a.wrl"))
+    write("SW_TS1187A_Reversible", L)
+
+
 def jumper(name, side):
     """2-pad solder jumper, open, on one face; bridge it with the iron."""
     L = header(name, f"Solder jumper, open, {side} face")
@@ -249,6 +286,7 @@ if __name__ == "__main__":
     xiao()
     power_switch()
     jst()
+    reset_button()
     jumper("SolderJumper_F", "F")
     jumper("SolderJumper_B", "B")
     mount_hole()

@@ -50,6 +50,9 @@ def left_half():
     for (x, y), r in layout_left().values():
         for m, rgb in switch:
             parts.append((to_desk(m.rotate((0, 0, r)).translate((x, y, 0))), rgb))
+    rb = D["reset_button"]                         # the reset button, on the switch face
+    parts.append((to_desk(Manifold.cylinder(rb["h"], rb["plunger_d"] / 2, circular_segments=32)
+                          .translate((rb["x"], rb["y"], t))), vrml.SOCKET))
     return parts
 
 
