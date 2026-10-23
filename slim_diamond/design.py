@@ -57,6 +57,7 @@ SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d":
 PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
 MAG_FLOOR = (6.2, 2.1)             # pocket for 6x2 disc magnets (back-to-back)
 MAG_SIDE = (5.2, 2.1)              # pocket for 5x2 disc magnets (unibody)
+MAG_SIDE_PITCH = 8.5               # seam magnets at least this far apart: 3.3 mm of plastic between
 GIRDLE = 2.0                       # floor flare past the rim: the lean of the gem facets
 CHAMFER = 1.5                      # 45-degree cut under the girdle; the foot on the desk is inside it
 # Anti-slip pads, as on the original Diamond's base: 8 x 2 mm silicone bump-ons in stadium slots
@@ -531,7 +532,7 @@ def main():
     floor_spots = [max(grid, key=lambda p: (p[0] - cx0) ** 2 + (p[1] - cy0) ** 2)]
     while len(floor_spots) < 4:
         floor_spots.append(max(grid, key=lambda p: min(math.dist(p, q) for q in floor_spots)))
-    # Inner wall: two, near the ends of its straight part.
+    # Inner wall: as many as fit along its straight part, for a firm unibody join.
     wall_pts = [c for c in case.exterior.coords if abs(c[0] - (wall_in + WALL)) < 1e-6]
     wy0, wy1 = min(c[1] for c in wall_pts), max(c[1] for c in wall_pts)
     # near the ends of the straight seam, with each magnet's boss (about 6 mm square, 4 mm deep)
@@ -539,7 +540,20 @@ def main():
     near_wall = unary_union([g for g in (batt, jst, xiao, power) if g.bounds[2] > wall_in - 5])
     free = [y / 2 for y in range(int((wy0 + 5) * 2), int((wy1 - 5) * 2))
             if not box(wall_in - 4.5, y / 2 - 4.5, wall_in, y / 2 + 4.5).intersects(near_wall)]
-    side_spots = [min(free), max(free)]
+    # each run of free spots gets magnets evenly spread from end to end, MAG_SIDE_PITCH or more apart
+    runs = []
+    for y in free:
+        if runs and y - runs[-1][1] < 0.75:
+            runs[-1][1] = y
+        else:
+            runs.append([y, y])
+    side_spots = []
+    for a, b in runs:
+        n = int((b - a) // MAG_SIDE_PITCH) + 1
+        for i in range(n):
+            y = a + (b - a) * i / (n - 1) if n > 1 else (a + b) / 2
+            if not side_spots or y - side_spots[-1] >= MAG_SIDE_PITCH:
+                side_spots.append(round(y, 2))
 
     result = {
         "name": "Slim Diamond",
