@@ -98,6 +98,19 @@ figcaption { font-size: 0.85rem; color: var(--muted); }
 .doc img { max-width: 340px; width: 100%; display: inline-block; border-radius: 6px; margin-right: 8px; }
 .doc em { color: var(--muted); }
 footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 20px; }
+main img { cursor: zoom-in; }
+.zoom[hidden] { display: none; }
+.zoom { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; gap: 12px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); cursor: zoom-out;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+           max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.zoom img { max-width: 100%; max-height: calc(100vh - 96px); width: auto; height: auto; object-fit: contain;
+  border-radius: 6px; background: var(--surface); box-shadow: 0 8px 40px rgb(0 0 0 / 0.25); }
+.zoom p { margin: 0; font-size: 0.9rem; color: var(--muted); text-align: center; max-width: 70ch; }
+.zoom button { position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+  font: 500 1rem var(--body); background: var(--surface); color: var(--fg); border: 1px solid var(--rule);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.zoom button:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -584,6 +597,35 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 
   <footer>Renders: KiCad 9 ray tracer from the generated board and case. Layout after the handwired Diamond.</footer>
 </main>
+<div class="zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-label="Enlarged image">
+  <button type="button" id="zoom-close" aria-label="Close">Close ✕</button>
+  <img id="zoom-img" alt="">
+  <p id="zoom-cap"></p>
+</div>
+<script>
+(function () {
+  // Click any image on the page to see it large; click again, press Escape or Close to go back.
+  var box = document.getElementById("zoom"), big = document.getElementById("zoom-img"),
+      cap = document.getElementById("zoom-cap"), close = document.getElementById("zoom-close"), last = null;
+  function shut() { box.hidden = true; big.removeAttribute("src"); if (last) last.focus(); }
+  document.querySelectorAll("main img").forEach(function (img) {
+    img.tabIndex = 0;
+    function open() {
+      last = img;
+      big.src = img.currentSrc || img.src;
+      big.alt = img.alt;
+      var fig = img.closest("figure"), fc = fig && fig.querySelector("figcaption");
+      cap.textContent = fc ? fc.textContent : img.alt;
+      box.hidden = false;
+      close.focus();
+    }
+    img.addEventListener("click", open);
+    img.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  });
+  box.addEventListener("click", shut);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !box.hidden) shut(); });
+})();
+</script>
 
 </body>
 </html>
