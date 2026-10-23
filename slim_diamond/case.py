@@ -22,6 +22,7 @@ KiCad's 3D renders.
 import json
 import math
 import os
+import shutil
 
 import numpy as np
 from manifold3d import CrossSection, FillRule, JoinType, Manifold
@@ -33,6 +34,7 @@ from shapely.ops import unary_union
 
 D = json.load(open("design.json"))
 OUT = "case"
+STLS = "../stls/slim_diamond"   # the repo's STL folder gets the same files
 
 TENT = math.radians(D["tent_deg"])
 WALL_IN = D["wall_in"]
@@ -349,6 +351,9 @@ if __name__ == "__main__":
     flat = real(plate_left).mirror((0, 0, 1)).translate((0, 0, PLATE["thick"]))
     stl(flat, f"{OUT}/plate_left.stl")
     stl(flat.mirror((1, 0, 0)), f"{OUT}/plate_right.stl")
+    os.makedirs(STLS, exist_ok=True)
+    for name in ("case_left", "case_right", "plate_left", "plate_right"):
+        shutil.copyfile(f"{OUT}/{name}.stl", f"{STLS}/{name}.stl")
     # for KiCad renders: case, plate and battery in the PCB frame (plan coordinates)
     import vrml
     vrml.write_parts("pcb/3d/case.wrl", [(to_pcb_frame(plan_left), vrml.CASE), (to_pcb_frame(pads(0)), vrml.PAD)],
