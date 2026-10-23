@@ -37,6 +37,7 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
 | `BOM.md` | Parts list (AliExpress search terms) |
 | `BUILD.md` | Hand-soldering and assembly guide, testing, printing |
+| `build-log.html` | A one-page write-up of how the board and case were generated, with renders (open it via raw.githack or GitHub Pages: GitHub shows .html as source) |
 | `design.png` | Top view of the placement: sockets (red), Xiao, battery, JST, magnets, screws, the reset button (red, its cone white), pad slots (grey: left pads filled, the right half's dashed) |
 | `renders/pads.png` | Both floors from below: where each half's pads go |
 | `*.py`, `*.sh` | The generators: everything above is built from them |
