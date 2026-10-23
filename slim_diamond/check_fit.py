@@ -12,6 +12,7 @@
     and the balance: every key centre inside each half's pads, PAD_BALANCE in
 """
 import json
+from itertools import permutations
 import math
 
 from manifold3d import Manifold
@@ -100,15 +101,34 @@ for i, (hx, hy) in enumerate(D["mount_holes"], 1):
     screw = C.to_desk_solid(Manifold.cylinder(D["screw"]["length"], 1.5, circular_segments=20)
                             .translate((hx, hy, top - D["screw"]["length"])))
     overlap(f"screw {i} vs pockets", screw, pockets)
+# Every magnet pocket with 0.5 mm all round must lie in solid base: clear of the cavity, the part
+# pockets, the openings, the pad slots, the pilot holes and each other (the base built without
+# magnet pockets). The probes stop 0.01 mm short of the face they open on.
 mf_d, mf_h = D["magnet_floor_size"]
-for i, (mx, my) in enumerate(D["magnets_floor"], 1):
-    X, Y = C.plan([(mx, my)])[0]
-    overlap(f"floor magnet {i} (+0.5 skin) vs pockets",
-            Manifold.cylinder(mf_h + 0.5, mf_d / 2, circular_segments=32).translate((X, Y, 0)), pockets)
 ms_d, ms_h = D["magnet_side_size"]
-for i, my in enumerate(D["magnets_side_y"], 1):
-    m = Manifold.cylinder(ms_h + 0.5, ms_d / 2, circular_segments=32).rotate((0, -90, 0))
-    overlap(f"seam magnet {i} (+0.5 wall) vs pockets", m.translate((C.WALL_OUT, my, C.FLOOR + 2.8)), pockets)
+floor, side = C.D["magnets_floor"], C.D["magnets_side_y"]
+C.D["magnets_floor"], C.D["magnets_side_y"] = [], []
+solid = C.build()
+C.D["magnets_floor"], C.D["magnets_side_y"] = floor, side
+everything = Manifold.cube((1e3, 1e3, 1e3), center=True)
+pockets_m, probes = [], []
+for i, (mx, my) in enumerate(floor, 1):
+    X, Y = C.plan([(mx, my)])[0]
+    m = Manifold.cylinder(mf_h + 0.5, mf_d / 2 + 0.5, circular_segments=32).translate((X, Y, 0.01))
+    pockets_m.append(Manifold.cylinder(mf_h, mf_d / 2, circular_segments=32).translate((X, Y, 0)))
+    probes.append(m)
+    overlap(f"floor magnet {i} (+0.5 all round) vs voids", m - solid, everything)
+for i, my in enumerate(side, 1):
+    at = (C.WALL_OUT - 0.01, my, D["magnet_side_z"])
+    m = Manifold.cylinder(ms_h + 0.5, ms_d / 2 + 0.5, circular_segments=32).rotate((0, -90, 0)).translate(at)
+    pockets_m.append(Manifold.cylinder(ms_h, ms_d / 2, circular_segments=32).rotate((0, -90, 0)).translate(at))
+    probes.append(m)
+    overlap(f"seam magnet {i} (+0.5 all round) vs voids", m - solid, everything)
+# each pocket keeps 0.5 mm of plastic from every other magnet's pocket
+near = Manifold()
+for i, j in permutations(range(len(probes)), 2):
+    near += probes[i] ^ pockets_m[j]
+overlap("magnets (+0.5) vs each other", near, everything)
 
 
 # A USB-C cable, plugged in: the overmold (12.35 x 6.5 mm, the Type-C maximum) stops 0.1 mm

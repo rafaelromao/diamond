@@ -55,9 +55,17 @@ SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d":
 # Top plate (Choc v1: 13.8 mm body through the plate, flange 2.2 mm over the PCB, clips take
 # plates up to 1.3 mm). Printed holes come out small: the cutout gets CUT_TOL per side.
 PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
-MAG_FLOOR = (6.2, 2.1)             # pocket for 6x2 disc magnets (back-to-back)
-MAG_SIDE = (5.2, 2.1)              # pocket for 5x2 disc magnets (unibody)
-MAG_SIDE_PITCH = 8.5               # seam magnets at least this far apart: 3.3 mm of plastic between
+# Magnets: 8x3 N52 discs everywhere, floor (back to back) and seam (unibody): one part to buy,
+# and of the common sizes the strongest join that fits the seam (6 x 8x3 beats 4 x 10x3 and
+# 8 x 5x2; a second row doesn't fit under the PCB). Pockets get 0.1 mm of clearance.
+MAG = (8.2, 3.1)
+MAG_FLOOR = MAG_SIDE = MAG
+# magnets.py finds both sets by measuring the solid base, 0.5 mm of plastic round every pocket:
+# the floor's four as far apart as they can be, then the most the seam holds in one row (2.5 mm
+# of plastic between pockets). Pinned here; rerun it if the layout changes.
+MAG_FLOOR_SPOTS = [[-36.54, 14.45], [-10.88, -22.05], [2.21, 48.95], [31.4, 15.45]]  # 44.3 mm apart
+MAG_SIDE_SPOTS = (6.3, [10.1, 20.92, 31.74, 42.57, 53.39, 64.21])   # (centre height, y of each)
+MAG_SEAM_STRIP = MAG[1] + 0.5 + 0.5    # floor magnets keep this far from the seam face, for the row
 GIRDLE = 2.0                       # floor flare past the rim: the lean of the gem facets
 CHAMFER = 1.5                      # 45-degree cut under the girdle; the foot on the desk is inside it
 # Anti-slip pads, as on the original Diamond's base: 8 x 2 mm silicone bump-ons in stadium slots
@@ -527,33 +535,13 @@ def main():
             .difference(slot_zone.buffer(MAG_FLOOR[0] / 2 + PAD_KEEP + 0.2)))
     for h in holes:
         room = room.difference(Point(h).buffer(MAG_FLOOR[0] / 2 + 3.5))
-    grid = [(gx, gy) for gx in range(-60, 60) for gy in range(-40, 80) if room.contains(Point(gx, gy))]
-    cx0, cy0 = cav.centroid.x, cav.centroid.y
-    floor_spots = [max(grid, key=lambda p: (p[0] - cx0) ** 2 + (p[1] - cy0) ** 2)]
-    while len(floor_spots) < 4:
-        floor_spots.append(max(grid, key=lambda p: min(math.dist(p, q) for q in floor_spots)))
-    # Inner wall: as many as fit along its straight part, for a firm unibody join.
+    room = room.intersection(box(-1e3, -1e3, wall_in + WALL - MAG_SEAM_STRIP - MAG_FLOOR[0] / 2 - 0.5, 1e3))
+    floor_room = room                    # magnets.py adds the depth: where the base is deep enough
+    floor_spots = MAG_FLOOR_SPOTS or []
+    # Inner wall: the pinned row (MAG_SIDE_SPOTS), checked against the base by check_fit.py.
     wall_pts = [c for c in case.exterior.coords if abs(c[0] - (wall_in + WALL)) < 1e-6]
     wy0, wy1 = min(c[1] for c in wall_pts), max(c[1] for c in wall_pts)
-    # near the ends of the straight seam, with each magnet's boss (about 6 mm square, 4 mm deep)
-    # clear of the parts that sit against the inner wall
-    near_wall = unary_union([g for g in (batt, jst, xiao, power) if g.bounds[2] > wall_in - 5])
-    free = [y / 2 for y in range(int((wy0 + 5) * 2), int((wy1 - 5) * 2))
-            if not box(wall_in - 4.5, y / 2 - 4.5, wall_in, y / 2 + 4.5).intersects(near_wall)]
-    # each run of free spots gets magnets evenly spread from end to end, MAG_SIDE_PITCH or more apart
-    runs = []
-    for y in free:
-        if runs and y - runs[-1][1] < 0.75:
-            runs[-1][1] = y
-        else:
-            runs.append([y, y])
-    side_spots = []
-    for a, b in runs:
-        n = int((b - a) // MAG_SIDE_PITCH) + 1
-        for i in range(n):
-            y = a + (b - a) * i / (n - 1) if n > 1 else (a + b) / 2
-            if not side_spots or y - side_spots[-1] >= MAG_SIDE_PITCH:
-                side_spots.append(round(y, 2))
+    side_z, side_spots = MAG_SIDE_SPOTS
 
     result = {
         "name": "Slim Diamond",
@@ -576,8 +564,9 @@ def main():
         "pcb_inner_ring": list(pcb.buffer(-0.45, join_style=2).exterior.coords),
         "case_outline": list(case.exterior.coords),
         "cavity_outline": list(cav.exterior.coords),
-        "magnets_floor": [list(map(float, p)) for p in floor_spots], "magnet_floor_size": MAG_FLOOR,
-        "magnets_side_y": side_spots, "magnet_side_size": MAG_SIDE,
+        "magnets_floor": [list(map(float, p)) for p in floor_spots],
+        "magnet_floor_room": [list(g.exterior.coords) for g in getattr(floor_room, "geoms", [floor_room])], "magnet_floor_size": MAG_FLOOR,
+        "magnets_side_y": side_spots, "magnet_side_z": side_z, "magnet_side_size": MAG_SIDE,
         "battery_size": [BATT_W, BATT_L, BATT_T],
         "girdle": GIRDLE, "chamfer": CHAMFER,
         # pad slots under the floor, as their two spots (PCB plan, like everything here: case.py

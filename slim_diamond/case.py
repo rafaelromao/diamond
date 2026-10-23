@@ -220,7 +220,7 @@ def build():
         shell -= pad_slot(a, b)
     # Seam magnets (unibody), pressed into the inner wall from outside.
     ms_d, ms_h = D["magnet_side_size"]
-    z_mid = FLOOR + 2.8
+    z_mid = D["magnet_side_z"]
     for my in D["magnets_side_y"]:
         m = Manifold.cylinder(ms_h + 0.01, ms_d / 2, circular_segments=32).rotate((0, -90, 0))
         shell -= m.translate((WALL_OUT + 0.005, my, z_mid))

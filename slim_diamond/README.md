@@ -19,7 +19,7 @@ transport.
 | Power | XIAO nRF52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet. The wall has a recess the size of a USB-C overmold (13.4 × 7.4 mm, rounded corners) in front of the port, and a slot open to the top for the lever, widening outwards for a fingernail, with a rounded floor |
 | Reset | A 5.1 × 5.1 × 2.0 mm SMD tact switch (TS-1187A) on the switch face, in the nook between the index finger's bottom key and the thumbs, 7.6 mm from the nearest keycap. It reaches through a 45° cone in the plate (4.2 mm across at the top, 2.8 at the throat) with its plunger 0.2 mm under the plate's top: a fingertip presses it, keycaps and palms don't. Press once to reboot, twice for the bootloader, with the case closed |
 | Screws | 4 × M3 × 8 flat head (90° countersunk) per half: through the plate and PCB, self-tapping into the solid Nylon base (2.5 mm pilot). `SCREW` in `design.py` switches to heat-set inserts |
-| Magnets | 4 × 6×2 mm in each floor (back to back), 6 × 5×2 mm in each inner wall (unibody), along the seam wherever the battery and its socket leave room |
+| Magnets | 8×3 mm N52 throughout, 10 per half: 4 in the floor (back to back), spread as far apart as the floor's depth allows (44 mm between the closest two), and 6 in a row along the inner wall (unibody), the most that fit. Every pocket keeps 0.5 mm of plastic all round |
 | Assembly | Iron only: no reflow-only parts |
 
 The tent isn't a setting. It is the smallest angle that leaves room under the
@@ -112,6 +112,7 @@ Java 25.
 python3 design.py        # placement, tent, outlines, magnets, screws -> design.json, design.png
 FREEROUTING=/path/freerouting.jar ./route.sh   # footprints, board, routing, pours, DRC
 ./fab.sh                 # gerbers and drill files -> fab/slim_diamond_jlcpcb.zip
+python3 magnets.py       # only after a layout change: measures the base for the magnets to pin in design.py
 python3 case.py          # base and plate STLs (and their 3D models for renders)
 python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
@@ -125,7 +126,8 @@ set it to `None` to search again, and if the board won't route completely, try
 the runners-up the search writes to `xiao_alternatives.json`. `RESET_SPOT` pins the reset button and `BUTTON` holds its datasheet heights
 and the plate's pocket and cone; `design.py` asserts its clearances. `PAD_SLOTS` pins the
 pad slots the same way (`None` searches again for the slots that keep every key
-centre deepest inside both halves' pads); the floor magnets are placed around them.
+centre deepest inside both halves' pads). `MAG_FLOOR_SPOTS` and `MAG_SIDE_SPOTS` pin the
+magnets, found by `magnets.py` against the solid base around the pads, parts and screws.
 
 Credits: the Choc hot-swap footprint follows [kiswitch](https://github.com/kiswitch/kiswitch)
 (MIT). The Xiao pad positions follow Seeed's
