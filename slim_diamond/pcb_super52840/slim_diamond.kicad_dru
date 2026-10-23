@@ -1,5 +1,0 @@
-(version 1)
-# Pads also reached by a routed track only need one thermal spoke to the pour.
-(rule "one spoke is enough"
-  (condition "A.Type == 'Zone'")
-  (constraint min_resolved_spokes 1))

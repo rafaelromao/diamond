@@ -5,7 +5,7 @@ The module, battery and battery socket all end up inside the case, under the PCB
 Everything is soldered with an iron: no paste, no hot air. Build one half at a
 time. Both halves use the same PCB, turned over for the right half.
 
-**The module** is a Seeed XIAO nRF52840 or a NologoTech Super52840. Each has its own board (see the README): build with the board made for your module. The steps are the same for both; where they differ, the step says so.
+**The module** is a Seeed XIAO nRF52840 or a NologoTech Super52840. The board takes either: a battery selector, set in step 1, matches it to your module. The other steps are the same for both.
 
 ## Tools
 
@@ -43,36 +43,42 @@ The module always lies flat on the parts face, with its pad side against the PCB
 - **Battery polarity.** Silkscreen `+` marks pin 1 of the JST socket. Cheap 752025 cells ship with either polarity: check the plug with the multimeter. If it's reversed, swap the two crimps in the plug housing (lift each tab with a needle).
 - **Magnet polarity.** Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.
 
-## 1. Bridge the D0–D2 jumpers (switch face)
+## 1. Bridge the D0–D2 jumpers and the battery selector (switch face)
 
-On the switch face, inside the module's outline, there are three small pad pairs labelled **D0, D1, D2**, next to `XIAO on B: bridge D0-D2` (left half) or `XIAO on F: bridge D0-D2` (right half); on the Super52840 board, `S52840 on B:` / `S52840 on F:`. Flux them and bridge each pair with a small blob of solder.
+On the switch face, inside the module's outline, there are three small pad pairs labelled **D0, D1, D2**, on the face without the module. Flux them and bridge each pair with a small blob of solder.
+
+Next to them is the **battery selector**: two rows of two pad pairs, labelled `+MID` and `+USB`. The two modules have their battery pads in the same spots, swapped, and the row you bridge decides which battery hole is +:
+
+| Module | Bridge both pairs in row |
+|---|---|
+| Seeed XIAO nRF52840 | `+MID` (its + pad is the one nearer the module's middle) |
+| Super52840 | `+USB` (its B+ pad is the one nearer the USB end) |
+
+**Bridge one row only.** Both rows short the battery; the wrong row connects it backwards. Both halves get the same row.
 
 ![Left half, switch face](renders/xiao_left_half.png)
 ![Right half, switch face (mirrored, as you see it)](renders/xiao_right_half.png)
 
-*Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs, and later fill the three boxed hole groups (step 2).*
+*Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs and one selector row, and later fill the three boxed hole groups (step 2).*
 
-Leave the other three jumpers open. They're on the parts face, under where the module will sit.
+Leave the jumpers on the other face open: they're on the parts face, under where the module will sit.
 
-**Check:** each bridged pair beeps on the multimeter.
+**Check:** each bridged pair beeps on the multimeter, and the unbridged selector row doesn't.
 
 ## 2. Solder the module (parts face)
 
 1. Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
 2. **Tack two opposite corners:** put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.
 3. Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.
-4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery: VBAT and GND), the hole in the second box (NFC1 on the XIAO, P0.09 on the Super52840), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pad underneath.
+4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery), both holes in the second box (P0.09: one under each module's pad, so fill both), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pad underneath.
    **Fill only the boxed holes.** The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.
 5. Clean off the flux.
 
-**Super52840:** the steps are the same, on its own board (`fab/slim_diamond_super52840_jlcpcb.zip`, silkscreen `S52840 on B:` / `S52840 on F:`). Its holes are small (0.5 mm), so use thin solder and give each one time to fill. **Before laying the module down, check the board matches it:** the hole in the battery box nearer the module's middle must line up with the module's B- pad, and the one nearer the USB end with B+.
-
-![Super52840, left half, switch face](renders/super52840_left_half.png)
-![Super52840, right half, switch face (mirrored, as you see it)](renders/super52840_right_half.png)
+The battery holes and one P0.09 hole are small (0.5 mm): use thin solder and give each one time to fill.
 
 **Check:**
-- The VBAT hole beeps to the middle pin of the power switch footprint.
-- The GND hole beeps to the module's GND castellation. If the VBAT hole beeps to GND instead, the module is on the wrong board: unsolder it before you plug in a battery.
+- **Before any battery goes in:** the power switch's middle pin (VBAT) must **not** beep to the module's GND castellation. A beep means the wrong selector row, or both: fix it first.
+- The battery hole the selector made + beeps to the power switch's middle pin.
 - The RST hole does **not** beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
 - No two adjacent castellations beep to each other.
 
@@ -115,7 +121,7 @@ It goes on the **switch face**, in the gap above the thumb keys, inside its outl
 | One key dead | That socket's two joints |
 | Pinky, ring-bottom or middle-home dead | Its D0–D2 jumper (step 1) |
 | Index-top dead (both halves) | The NFC1 / P0.09 hole (step 2.4) |
-| Works on USB, not on battery | The VBAT/GND holes, the power-switch joints, battery polarity |
+| Works on USB, not on battery | The battery holes, the selector row (step 1), the power-switch joints, battery polarity |
 | Reset button does nothing | The RST hole (step 2.4) and the button's legs (step 6) |
 | Half never starts, or keeps rebooting | RST bridged to GND: the RST hole or the button's legs |
 | Nothing works | The module's castellations, or the firmware file |

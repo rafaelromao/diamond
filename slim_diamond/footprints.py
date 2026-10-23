@@ -136,31 +136,31 @@ def xiao_pin_xy(pin, mount):
     return (-x, y) if mount == "B" else (x, y)
 
 
-# The modules that fit the Xiao's spot: the same 14 castellated pins (D0..D10 on the same nRF52840
-# pins), different pads underneath. Positions are F-mount, relative to the pin rows' centre, USB at
-# -y. Each bottom pad is (position, pad size, drill): a plated hole fed with solder from the other
-# face. "keepout": non-plated holes clearing what pokes out of the module's underside.
-MODULES = {
-    # Seeed's OPL footprint: VBAT, GND and NFC1 (P0.09).
-    "xiao": {"fp": "XIAO_nRF52840_Reversible", "label": "XIAO",
-             "descr": "Seeed XIAO nRF52840 (BLE), castellated, on either face; bottom pads via plated holes",
-             "bottom": {"VBAT": ((-4.47, -0.31), (1.9, 1.45), (0.8, 0.8)),
-                        "GND": ((-4.47, -2.22), (1.9, 1.45), (0.8, 0.8)),
-                        "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))},
-             "keepout": []},
-    # NologoTech Super52840 (and its "NRF52840 RE:1.4" twin): measured from photos against the
-    # 2.54 mm pin pitch; its RST, GND, CLK and DIO pads land within 0.1 mm of the Xiao's. B+ and
-    # B- sit where the Xiao has GND and VBAT: swapped. A row of nine GPIO pads (P0.09, P0.10,
-    # P1.05, P1.07, P1.03, P1.01, P0.19, P0.15, P0.31) runs 5.06 mm off the centre line, 1.54
-    # apart, so the battery holes stay small and at the pads' inner end: 0.25 mm clear of that
-    # row under the other half's module. Four plated USB-C leg slots poke through its board.
-    "super52840": {"fp": "Super52840_Reversible", "label": "S52840",
-                   "descr": "NologoTech Super52840, castellated, on either face; bottom pads via plated holes",
-                   "bottom": {"VBAT": ((-3.9, -2.27), (0.75, 0.75), (0.5, 0.5)),       # B+
-                              "GND": ((-3.9, -0.35), (0.75, 0.75), (0.5, 0.5)),        # B-
-                              "NFC1": ((5.06, 9.73), (0.9, 0.9), (0.5, 0.5))},         # P0.09
-                   "keepout": [((sx * 4.35, y), (1.1, 1.8)) for sx in (1, -1) for y in (-4.0, -8.8)]},
-}
+# The board takes either Xiao-sized nRF52840 module: the Seeed XIAO nRF52840, or the NologoTech
+# Super52840 (also sold as "MINI NRF52840", "NRF52840 RE:1.4"). Both have the same 14 castellated
+# pins, on the same nRF52840 pins (D0..D10); they differ underneath. Positions are F-mount,
+# relative to the pin rows' centre, USB at -y.
+#  - Xiao (Seeed's OPL footprint): VBAT (-4.455, -0.315) and GND (-4.455, -2.215), 2.5 x 1.1
+#    pads; NFC1 (P0.09) at (3.8, 9.31) and NFC2 at (5.705, 9.31), 1.1 x 2.5.
+#  - Super52840, measured from photos against the 2.54 mm pin pitch (its RST, GND and SWD pads
+#    land within 0.1 mm of the Xiao's): B- (-4.45, -0.35) and B+ (-4.41, -2.27), 1.93 x 0.97, so
+#    the battery's polarity is the Xiao's swapped; a row of nine GPIO pads 1.06 mm wide at x 5.06,
+#    1.54 apart from P0.09 at y 9.73 down to P0.31 at -2.56; four plated USB-C leg slots.
+# Battery: one small hole per pad spot, inside both modules' pads and 0.25 mm clear of the
+# Super52840's GPIO row under the other half's module. Which is + is the selector's choice
+# (build_pcb.py): BATM is the hole nearer the middle, BATU the one nearer the USB end.
+# P0.09: a hole at each module's pad, on one net. Under a Xiao, the Super52840's hole touches its
+# NFC2 pad: P0.10, unused and idle, so the contact is harmless.
+BOTTOM = {"BATM": ((-3.9, -0.33), (0.75, 0.75), (0.5, 0.5)),
+          "BATU": ((-3.9, -2.25), (0.75, 0.75), (0.5, 0.5)),
+          "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))}
+P009 = ((5.06, 9.73), (0.9, 0.9), (0.5, 0.5))        # the Super52840's P0.09, also NFC1's net
+# non-plated clearance under the Super52840's USB-C legs
+KEEPOUT = [((sx * 4.35, y), (1.1, 1.8)) for sx in (1, -1) for y in (-4.0, -8.8)]
+# The battery selector (build_pcb.py's SELECTOR) sits inside the outline too, between the D0-D2
+# jumpers and the antenna end, clear of both modules' bottom pads.
+
+
 # The reset test pad (Seeed's pad 17, "EN" in their symbol: test point TP2 on the nRF52840's
 # P0.18/RESET in Seeed's schematic), Seeed (7.62, -16.5285) less the centre (8.9, -10.5). Its
 # GND neighbour (pad 18) mirrors onto it: the other mount's reset hole sits under this mount's
@@ -169,8 +169,8 @@ MODULES = {
 XIAO_RST = (-1.28, -6.03)
 
 
-def xiao(module="xiao"):
-    """A Xiao-sized nRF52840 module (MODULES) soldered flat (castellated), on either face.
+def xiao():
+    """A Xiao-sized nRF52840 module soldered flat (castellated), on either face.
 
     Pads are named by LOCATION, numbered as the left half (module on B) sees
     them: L1 is where pin 1 (D0) sits on the left half. On the right half the
@@ -178,12 +178,13 @@ def xiao(module="xiao"):
 
     Each location has a pad on both faces, joined by a small plated hole just
     outside the module's edge, so you solder it from the outside with an iron.
-    The module's bottom pads (battery, NFC1/P0.09, reset) are reached through
+    The module's bottom pads (battery, P0.09, reset) are reached through
     plated holes: feed solder from the opposite face. Both mount positions are
     provided; the unused face's holes sit under the other mount's bare areas.
     """
-    m = MODULES[module]
-    L = header(m["fp"], m["descr"])
+    L = header("nRF52840_Module_Reversible",
+               "Seeed XIAO nRF52840 or NologoTech Super52840, castellated, on either face; "
+               "bottom pads via plated holes")
     for loc in range(1, 15):
         x, y = xiao_pin_xy(loc, "B")
         sx = 1 if x > 0 else -1
@@ -191,14 +192,14 @@ def xiao(module="xiao"):
         # one pad on both faces, its hole right under the module's castellation
         L.append(f'  (pad "L{loc}" thru_hole roundrect (at {fmt(cx)} {fmt(y)}) (size 3.2 1.7)'
                  f' (drill 0.5) (layers "*.Cu" "*.Mask") (roundrect_rratio 0.2))')
-    for name, ((x, y), (w, h), (dw, dh)) in m["bottom"].items():
+    for name, ((x, y), (w, h), (dw, dh)) in [*BOTTOM.items(), ("NFC1", P009)]:
         for mount in ("F", "B"):
             px = x if mount == "F" else -x
             if (w, dw) == (h, dh):
                 L.append(tht(name, px, y, w, dw))
             else:
                 L.append(tht(name, px, y, w, dw, shape="oval", size_y=h, drill_y=dh))
-    for (x, y), (w, h) in m["keepout"]:
+    for (x, y), (w, h) in KEEPOUT:
         L.append(f'  (pad "" np_thru_hole oval (at {fmt(x)} {fmt(y)}) (size {fmt(w)} {fmt(h)})'
                  f' (drill oval {fmt(w)} {fmt(h)}) (layers "*.Cu" "*.Mask"))')
     # Reset: RSTR is the F-mount hole (right half), RSTL the B-mount one (left half).
@@ -207,26 +208,22 @@ def xiao(module="xiao"):
     L.append(tht("RSTL", -rx, ry, 1.4, 0.8))
     # Mark the holes to fill with solder, on the face they are filled from (the one without the
     # module): the B-mount holes on F (left half), the F-mount holes on B (right half).
-    b = m["bottom"]
-    (vx, vy), (_, gy), (nx, ny) = b["VBAT"][0], b["GND"][0], b["NFC1"][0]
-    bw = max(b["VBAT"][1][0], b["GND"][1][0]) / 2 + 0.35      # silkscreen boxes round the holes
-    bh = max(b["VBAT"][1][1], b["GND"][1][1]) / 2 + 0.275
-    nw, nh = b["NFC1"][1][0] / 2 + 0.35, b["NFC1"][1][1] / 2 + 0.35
+    (vx, vy), (_, gy) = BOTTOM["BATM"][0], BOTTOM["BATU"][0]
+    (nx, ny), (px, py) = BOTTOM["NFC1"][0], P009[0]
     for mount, feed in (("B", "F"), ("F", "B")):
         sx = 1 if mount == "F" else -1
-        L += rect_lines(sx * vx - bw, min(vy, gy) - bh, sx * vx + bw, max(vy, gy) + bh, f"{feed}.SilkS")
-        L += rect_lines(sx * nx - nw, ny - nh, sx * nx + nw, ny + nh, f"{feed}.SilkS")
+        # silkscreen boxes round the holes to fill: the battery pair, both P0.09 holes, reset
+        L += rect_lines(sx * vx - 0.75, gy - 0.75, sx * vx + 0.75, vy + 0.75, f"{feed}.SilkS")
+        L += rect_lines(min(sx * nx, sx * px) - 0.95, ny - 1.45, max(sx * nx, sx * px) + 0.95, py + 0.8,
+                        f"{feed}.SilkS")
         L += rect_lines(sx * rx - 1.0, ry - 1.0, sx * rx + 1.0, ry + 1.0, f"{feed}.SilkS")
     for side in ("F", "B"):
         L += rect_lines(-8.75, -10.5, 8.75, 10.5, f"{side}.Fab", 0.1)
         L += rect_lines(-10.6, -11.6, 10.6, 10.8, f"{side}.CrtYd", 0.05)
         L.append(text("USB", 0, -8.9, f"{side}.Fab", 0.8, mirror=(side == "B")))
-        other = "B" if side == "F" else "F"
-        L.append(text(f"{m['label']} on {other}:", 0, 5.6, f"{side}.SilkS", 0.8, mirror=(side == "B")))
-        L.append(text("bridge D0-D2", 0, 6.9, f"{side}.SilkS", 0.8, mirror=(side == "B")))
     # antenna end: no copper pour under it (done with a rule area on the board)
     L.append(model("${KIPRJMOD}/3d/xiao_nrf52840.wrl"))
-    write(m["fp"], L)
+    write("nRF52840_Module_Reversible", L)
 
 
 # ------------------------------------------------------------------------------------------
@@ -313,8 +310,7 @@ def mount_hole():
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     choc()
-    for module in MODULES:
-        xiao(module)
+    xiao()
     power_switch()
     jst()
     reset_button()

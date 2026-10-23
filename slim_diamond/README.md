@@ -5,32 +5,29 @@ PCB per half, a XIAO-sized nRF52840 module, and a 752025 (250 mAh) battery in
 each half. The halves join magnetically into a unibody, or stack back to back for
 transport.
 
-## Two boards, one for each module
+## One board, either module
 
-The board comes in two versions. They differ only under the module; the case,
-the plate, every other part and the firmware are the same.
+The board takes a Seeed XIAO nRF52840 (the genuine one) or a NologoTech Super52840
+(also sold as "MINI NRF52840", "NRF52840 RE:1.4"). Both have the same 14 edge pins
+on the same nRF52840 pins, so the firmware is the same; they differ underneath,
+where the board reaches the battery, the 12th key and reset:
 
-| Module | Board | Fab files |
-|---|---|---|
-| Seeed XIAO nRF52840 (the genuine one) | `pcb/` | `fab/slim_diamond_jlcpcb.zip` |
-| NologoTech Super52840 (also sold as "MINI NRF52840", "NRF52840 RE:1.4") | `pcb_super52840/` | `fab/slim_diamond_super52840_jlcpcb.zip` |
-
-Both modules have the same 14 edge pins on the same nRF52840 pins, but different
-pads underneath, where this board reaches the battery, the 12th key and reset:
-
-- **Battery.** The Super52840's B+ and B- sit where the XIAO has GND and VBAT:
-  swapped. **Never fit a module on the other module's board**: the battery would
-  be connected backwards.
-- **12th key.** The XIAO's NFC1 pad, and the Super52840's P0.09 pad in its row of
-  nine extra GPIO pads: the same pin (P0.09), in another place.
+- **Battery.** Their battery pads are in the same two spots, but swapped: the XIAO's
+  + (VBAT) is the pad nearer the module's middle, the Super52840's + (B+) the one
+  nearer the USB end. A **battery selector** on the switch face picks which hole is
+  +: bridge the row labelled `+MID` for a XIAO, `+USB` for a Super52840. Never both:
+  that shorts the battery.
+- **12th key (P0.09).** The XIAO's NFC1 pad, or the Super52840's P0.09 pad in its row
+  of nine extra GPIO pads: a hole under each, on the same net. Under a XIAO, the
+  Super52840's hole touches its NFC2 pad (P0.10), which is unused and idle.
 - **Reset** is in the same place on both.
-- The Super52840's USB-C legs come through its board: its PCB has clearance holes
-  under them, and its USB-C sticks out 0.8 mm further, which the case's recess
-  takes.
+- The Super52840's USB-C legs come through its board: the PCB has clearance holes
+  under them, and its USB-C sticks out 0.8 mm further, which the case's recess takes.
 
-The Super52840's pads were measured from photos, against the 2.54 mm pin pitch
-(its RST, GND and SWD pads land within 0.1 mm of the XIAO's). Its battery holes sit
-0.25 mm from the GPIO row under the other half's module.
+The Super52840's pads were measured from photos, against the 2.54 mm pin pitch (its
+RST, GND and SWD pads land within 0.1 mm of the XIAO's). The battery holes are small
+and sit inside both modules' pads, 0.25 mm from the Super52840's GPIO row under the
+other half's module.
 
 ![All views](renders/all.png)
 
@@ -43,7 +40,7 @@ The Super52840's pads were measured from photos, against the 2.54 mm pin pitch
 | Case | Solid base, a pocket per part (0.6 mm clearance), 0.5 mm around the PCB and plate (0.3 at the seam), 93 × 100.5 mm per half at the girdle (the rim is 91.6 × 96.5), with a 45° chamfer under it; tent 6.6°; 18.6 mm at the seam, 8.7 mm at the outer edge (plate included, keycaps excluded). Five pad slots under the floor (below) |
 | Anti-slip pads | 5 × 8×2 mm silicone bump-ons per half, as on the original Diamond's base: each slot under the floor (8.6 mm wide, 1.1 deep) holds two pad spots, 8.7 mm apart. Each half sticks its pad in a different end, so stacked, each pad drops into the other half's empty end and the floors (and magnets) still meet. Every key centre sits at least 2.8 mm inside each half's pads, so a press on a border key can't tip it |
 | Top plate | Covers the whole board: 1.2 mm Choc v1 plate, 1.0 mm over the PCB (the flange sits 2.2 mm up), 14.0 mm cutouts (`cut_tol` 0.1 per side), a 0.5 mm pocket over the Xiao area for solder blobs, a pocket and cone over the reset button, support pillars, countersunk screw bosses, chamfered bottom edge |
-| Power | XIAO nRF52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet. The wall has a recess the size of a USB-C overmold (13.4 × 7.4 mm, rounded corners) in front of the port, and a slot open to the top for the lever, widening outwards for a fingernail, with a rounded floor |
+| Power | XIAO nRF52840 or Super52840, 752025 LiPo on a JST PH 2.0 socket, MSK-12C02 power switch next to the USB port on the lower outer facet. The wall has a recess the size of a USB-C overmold (13.4 × 7.4 mm, rounded corners) in front of the port, and a slot open to the top for the lever, widening outwards for a fingernail, with a rounded floor |
 | Reset | A 5.1 × 5.1 × 2.0 mm SMD tact switch (TS-1187A) on the switch face, in the nook between the index finger's bottom key and the thumbs, 7.6 mm from the nearest keycap. It reaches through a 45° cone in the plate (4.2 mm across at the top, 2.8 at the throat) with its plunger 0.2 mm under the plate's top: a fingertip presses it, keycaps and palms don't. Press once to reboot, twice for the bootloader, with the case closed |
 | Screws | 4 × M3 × 8 flat head (90° countersunk) per half: through the plate and PCB, self-tapping into the solid Nylon base (2.5 mm pilot). `SCREW` in `design.py` switches to heat-set inserts |
 | Magnets | 8×3 mm N52 throughout, 10 per half: 4 in the floor (back to back), spread as far apart as the floor's depth allows (44 mm between the closest two), and 6 in a row along the inner wall (unibody), the most that fit. Every pocket keeps 0.5 mm of plastic all round |
@@ -57,8 +54,8 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 
 | Path | What |
 |---|---|
-| `fab/slim_diamond_jlcpcb.zip`, `fab/slim_diamond_super52840_jlcpcb.zip` | Gerbers + drill files for the XIAO and the Super52840 board: upload to JLCPCB as they are |
-| `pcb/`, `pcb_super52840/` | The KiCad 9 projects, their footprint library, 3D stand-ins, and DRC rules |
+| `fab/slim_diamond_jlcpcb.zip` | Gerbers + drill files: upload to JLCPCB as they are |
+| `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
 | `case/case_left.stl`, `case/case_right.stl` | The printed base |
 | `case/plate_left.stl`, `case/plate_right.stl` | The printed top plate, oriented top face down for printing |
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
@@ -139,7 +136,6 @@ Java 25.
 python3 design.py        # placement, tent, outlines, magnets, screws -> design.json, design.png
 FREEROUTING=/path/freerouting.jar ./route.sh   # footprints, board, routing, pours, DRC
 ./fab.sh                 # gerbers and drill files -> fab/slim_diamond_jlcpcb.zip
-MODULE=super52840 ./route.sh && MODULE=super52840 ./fab.sh   # the same for the Super52840 board
 python3 magnets.py       # only after a layout change: measures the base for the magnets to pin in design.py
 python3 case.py          # base and plate STLs (and their 3D models for renders)
 python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against

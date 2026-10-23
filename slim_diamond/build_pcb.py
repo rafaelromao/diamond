@@ -6,8 +6,8 @@
 One reversible board serves both halves. Left half: parts on the B face.
 Right half: board turned over, parts on the F face.
 
-MODULE picks the controller (footprints.py's MODULES): xiao (default, in pcb/) or super52840
-(in pcb_super52840/). Everything but the module's footprint is the same.
+The module is a Seeed XIAO nRF52840 or a NologoTech Super52840 (footprints.py): their battery
+pads are swapped, so a solder-jumper selector on the switch face picks which battery hole is +.
 """
 import json
 import math
@@ -17,10 +17,12 @@ import sys
 import pcbnew
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MODULE = os.environ.get("MODULE") or "xiao"
-MODULE_FP = {"xiao": ("XIAO_nRF52840_Reversible", "XIAO nRF52840"),
-             "super52840": ("Super52840_Reversible", "Super52840")}[MODULE]
-PCB_DIR = os.path.join(HERE, "pcb" if MODULE == "xiao" else f"pcb_{MODULE}")
+PCB_DIR = os.path.join(HERE, "pcb")
+# The battery selector (footprints.py's SELECTOR): per row, which net each battery hole takes.
+# +MID: the hole nearer the module's middle is + (the Xiao's VBAT); +USB: the one nearer the USB
+# end is (the Super52840's B+). Bridge one row, never both.
+SELECTOR = {"+MID": (4.2, {"BATM": "VBAT", "BATU": "GND"}),
+            "+USB": (6.4, {"BATM": "GND", "BATU": "VBAT"})}
 BOARD = os.path.join(PCB_DIR, "slim_diamond.kicad_pcb")
 LIB = os.path.join(PCB_DIR, "slim_diamond.pretty")
 OFF = (100.0, 100.0)          # design origin on the KiCad page
@@ -151,7 +153,7 @@ def build():
 
     # --- Xiao.
     xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
-    xiao = add_fp(board, MODULE_FP[0], "U1", xc, xa, MODULE_FP[1])
+    xiao = add_fp(board, "nRF52840_Module_Reversible", "U1", xc, xa, "XIAO nRF52840 / Super52840")
 
     # Which Xiao input each key gets. Candidates: L4..L11 directly, the three jumpered
     # pairs (D0..D2), and NFC1. Keys and inputs are both sorted by angle around the Xiao
@@ -183,7 +185,7 @@ def build():
 
     # each mount's reset hole goes to its own half's button (footprints.py: the other mount's hole
     # sits under the module's GND pad)
-    xmap = {"VBAT": "VBAT", "GND": "GND", "RSTL": "RST_L", "RSTR": "RST_R"}
+    xmap = {"BATM": "BATM", "BATU": "BATU", "RSTL": "RST_L", "RSTR": "RST_R"}
     for k, inp in assign.items():
         if inp.startswith("L") or inp == "NFC1":
             xmap[inp] = f"K_{k}"
@@ -202,6 +204,19 @@ def build():
         jb = add_fp(board, "SolderJumper_B", f"JP{lf}", cb, xa, f"D{lb - 1} right")
         set_pads(jf, {"1": f"X_L{lb}", "2": f"K_{key}"}, board, nets)
         set_pads(jb, {"1": f"X_L{lf}", "2": f"K_{key}"}, board, nets)
+    # the battery selector: a row per polarity, on each face (bridged on the face without the
+    # module, like the D0-D2 jumpers; the B copy mirrored, so it reads the same turned over).
+    # Jumpers at x -1.4 (BATM) and +1.4 (BATU); each one's outer pad is the hole's net.
+    n = 0
+    for row, (y, nets_of) in SELECTOR.items():
+        for side, sx in (("F", 1), ("B", -1)):
+            for hole, cx in (("BATM", -1.4), ("BATU", 1.4)):
+                n += 1
+                c = sx * cx
+                jp = add_fp(board, f"SolderJumper_{side}", f"JS{n}", local(xc, xa, (c, y)), xa,
+                            f"{row} {hole}")
+                outer, inner = ("1", "2") if c < 0 else ("2", "1")
+                set_pads(jp, {outer: hole, inner: nets_of[hole]}, board, nets)
 
     # --- power: Xiao VBAT -> switch -> JST. Lever pokes out next to the USB port.
     pw = add_fp(board, "SW_MSK12C02_Reversible", "SW13", (D["power_switch"]["x"], D["power_switch"]["y"]),
@@ -255,6 +270,9 @@ def build():
              pcbnew.F_SilkS, 0.8, xa)
         text(board, f"D{lb - 1}", local(xc, xa, (jl["B"][0] + 2.3, jl["B"][1] + jrows[j])),
              pcbnew.B_SilkS, 0.8, xa, mirror=True)
+    for row, (y, _) in SELECTOR.items():
+        text(board, row, local(xc, xa, (-4.6, y)), pcbnew.F_SilkS, 0.8, xa)
+        text(board, row, local(xc, xa, (4.6, y)), pcbnew.B_SilkS, 0.8, xa, mirror=True)
 
     pcbnew.SaveBoard(BOARD, board)
     # GND is routed too (the pours and stitching vias come on top, after routing).

@@ -10,10 +10,3 @@ pcb/slim_diamond-backups/
 /slim_diamond.pretty/
 __pycache__/
 xiao_alternatives.json
-pcb_*/*.dsn
-pcb_*/*.ses
-pcb_*/*.kicad_prl
-pcb_*/route.log
-pcb_*/drc*.json
-pcb_*/pinout.txt
-pcb_*/slim_diamond-backups/
