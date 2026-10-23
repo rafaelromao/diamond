@@ -24,10 +24,11 @@ where the board reaches the battery, the 12th key and reset:
 - The Super52840's USB-C legs come through its board: the PCB has clearance holes
   under them, and its USB-C sticks out 0.8 mm further, which the case's recess takes.
 
-The Super52840's pads were measured from photos, against the 2.54 mm pin pitch (its
-RST, GND and SWD pads land within 0.1 mm of the XIAO's). The battery holes are small
-and sit inside both modules' pads, 0.25 mm from the Super52840's GPIO row under the
-other half's module.
+The Super52840's pads were measured from two photos, one beside a ruler, against the
+2.54 mm pin pitch (its RST, GND and SWD pads land within 0.2 mm of the XIAO's). The
+battery holes are small and sit inside both modules' pads, at least 0.25 mm from the
+Super52840's GPIO row under the other half's module, wherever between the two photos'
+readings that row really is.
 
 ![All views](renders/all.png)
 

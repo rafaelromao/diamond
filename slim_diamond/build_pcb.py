@@ -134,7 +134,7 @@ def build():
     # JLCPCB allows 0.127 mm; the margin covers Freerouting's rounding. Freerouting's result
     # depends on these, so route.sh can try a few pairs (TRACK_W, CLEARANCE).
     nc.SetTrackWidth(mm(float(os.environ.get("TRACK_W", 0.2))))
-    nc.SetClearance(mm(float(os.environ.get("CLEARANCE", 0.15))))
+    nc.SetClearance(mm(float(os.environ.get("CLEARANCE", 0.14))))   # 0.15 leaves 4 unrouted round the leg holes
     nc.SetViaDiameter(mm(0.6))
     nc.SetViaDrill(mm(0.3))
     ds.m_CopperEdgeClearance = mm(0.3)     # JLCPCB: 0.3 mm copper to routed edge

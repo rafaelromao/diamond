@@ -142,10 +142,11 @@ def xiao_pin_xy(pin, mount):
 # relative to the pin rows' centre, USB at -y.
 #  - Xiao (Seeed's OPL footprint): VBAT (-4.455, -0.315) and GND (-4.455, -2.215), 2.5 x 1.1
 #    pads; NFC1 (P0.09) at (3.8, 9.31) and NFC2 at (5.705, 9.31), 1.1 x 2.5.
-#  - Super52840, measured from photos against the 2.54 mm pin pitch (its RST, GND and SWD pads
-#    land within 0.1 mm of the Xiao's): B- (-4.45, -0.35) and B+ (-4.41, -2.27), 1.93 x 0.97, so
-#    the battery's polarity is the Xiao's swapped; a row of nine GPIO pads 1.06 mm wide at x 5.06,
-#    1.54 apart from P0.09 at y 9.73 down to P0.31 at -2.56; four plated USB-C leg slots.
+#  - Super52840, measured from two photos against the 2.54 mm pin pitch (its RST, GND and SWD
+#    pads land within 0.2 mm of the Xiao's): B- (-4.46, -0.36) and B+ (-4.44, -2.27), about
+#    2.0 x 1.0, so the battery's polarity is the Xiao's swapped; a row of nine GPIO pads 1.1 mm
+#    wide at x 5.06 to 5.3 (the photos disagree), 1.54 apart from P0.09 at y 9.76 down to P0.31
+#    at -2.56; four plated USB-C leg slots, about 0.7 x 2.0, at x +-4.35, y -4.76 and -8.94.
 # Battery: one small hole per pad spot, inside both modules' pads and 0.25 mm clear of the
 # Super52840's GPIO row under the other half's module. Which is + is the selector's choice
 # (build_pcb.py): BATM is the hole nearer the middle, BATU the one nearer the USB end.
@@ -154,9 +155,9 @@ def xiao_pin_xy(pin, mount):
 BOTTOM = {"BATM": ((-3.9, -0.33), (0.75, 0.75), (0.5, 0.5)),
           "BATU": ((-3.9, -2.25), (0.75, 0.75), (0.5, 0.5)),
           "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))}
-P009 = ((5.06, 9.73), (0.9, 0.9), (0.5, 0.5))        # the Super52840's P0.09, also NFC1's net
+P009 = ((5.2, 9.76), (0.9, 0.9), (0.5, 0.5))         # the Super52840's P0.09, also NFC1's net
 # non-plated clearance under the Super52840's USB-C legs
-KEEPOUT = [((sx * 4.35, y), (1.1, 1.8)) for sx in (1, -1) for y in (-4.0, -8.8)]
+KEEPOUT = [((sx * 4.35, y), (1.2, 2.6)) for sx in (1, -1) for y in (-4.76, -8.94)]
 # The battery selector (build_pcb.py's SELECTOR) sits inside the outline too, between the D0-D2
 # jumpers and the antenna end, clear of both modules' bottom pads.
 
