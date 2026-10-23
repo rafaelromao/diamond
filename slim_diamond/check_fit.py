@@ -139,6 +139,10 @@ plug = C.to_desk_solid(C.slab(DZ.place(box(-6.175, -C.XIAO_END - 30, 6.175, -C.X
                               C.USB_Z - 3.25, C.USB_Z + 3.25))
 overlap("usb plug vs base", plug, base)
 overlap("usb plug vs pcb", plug, C.to_desk_solid(C.slab(Polygon(D["pcb_outline"]), 0, C.PCB_T)))
+# The Super52840's USB-C shell (8.94 x 3.2) sticks out further than the Xiao's: its face is 11.34
+# from the pins' centre, not 10.55. Checked out to 11.6, in the shared case.
+shell = C.to_desk_solid(C.slab(DZ.place(box(-4.6, -11.6, 4.6, -9.0), xc, xa), C.USB_Z - 1.7, C.USB_Z + 1.7))
+overlap("super52840 usb shell vs base", shell, base)
 pw = D["power_switch"]
 lever = DZ.place(box(-1.5, -1.4 - 1.45, 1.5, -1.4), (pw["x"], pw["y"]), pw["r"])
 overlap("switch lever (dropping in) vs base", C.to_desk_solid(C.slab(lever, -1.2, 40)), base)

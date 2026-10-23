@@ -7,7 +7,7 @@ packs come in round numbers anyway.
 | # | Part | Qty | Search AliExpress for | Notes |
 |---|------|-----|------------------------|-------|
 | 1 | PCB, `fab/slim_diamond_jlcpcb.zip` | 2 (order 5) | (JLCPCB, not AliExpress) | 2 layers, 1.6 mm, 87.6 × 92.3 mm, HASL, any colour. The cheapest tier: 5 boards is 2 keyboards plus a spare. |
-| 2 | Seeed Studio XIAO nRF52840 | 2 | `Seeed XIAO nRF52840` | The plain one (not "Sense", not "Plus"). Prefer the genuine Seeed board: the build relies on its bottom pads (BAT, GND, NFC1) being where Seeed puts them. |
+| 2 | Seeed Studio XIAO nRF52840, **or** NologoTech Super52840 | 2 | `Seeed XIAO nRF52840` / `Super52840` or `MINI NRF52840 18x21` | Each has its own board (see README): order the matching fab zip. XIAO: the plain one (not "Sense", not "Plus"), genuine Seeed, since the board relies on its bottom pads (BAT, GND, NFC1). Super52840: the one with B+/B- pads and a row of nine GPIO pads underneath. |
 | 3 | Kailh Choc v1 switches | 24 (+2) | `Kailh choc low profile switch` | Any v1 (PG1350) switch. Not v2 (MX stem) and not Choc mini. |
 | 4 | Kailh Choc hot-swap sockets | 24 (+4) | `Kailh choc hotswap socket PG1350` | CPG135001S30, the low-profile socket. |
 | 5 | Choc keycaps, 1u | 24 | `MBK keycaps choc` / `CFX choc keycaps` | All 24 are 1u (17.5 × 16.5). Thumbs and pinky too. |

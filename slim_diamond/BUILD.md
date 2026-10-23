@@ -59,13 +59,18 @@ Leave the other three jumpers open. They're on the parts face, under where the X
 1. Flux the 14 edge pads. Lay the Xiao flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
 2. **Tack two opposite corners:** put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.
 3. Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.
-4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (VBAT and GND), the slot in the second box (NFC1), and the round hole in the small square box near the USB end (RST, the Xiao's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the Xiao's pad underneath.
+4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery: VBAT and GND), the hole in the second box (NFC1 on the XIAO, P0.09 on the Super52840), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the Xiao's pad underneath.
    **Fill only the boxed holes.** The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.
 5. Clean off the flux.
 
+**Super52840:** the steps are the same, on its own board (`fab/slim_diamond_super52840_jlcpcb.zip`, silkscreen `S52840 on B:` / `S52840 on F:`). Its holes are small (0.5 mm), so use thin solder and give each one time to fill. **Before laying the module down, check the board matches it:** the hole in the battery box nearer the module's middle must line up with the module's B- pad, and the one nearer the USB end with B+.
+
+![Super52840, left half, switch face](renders/super52840_left_half.png)
+![Super52840, right half, switch face (mirrored, as you see it)](renders/super52840_right_half.png)
+
 **Check:**
 - The VBAT hole beeps to the middle pin of the power switch footprint.
-- The GND hole beeps to the Xiao's GND castellation.
+- The GND hole beeps to the module's GND castellation. If the VBAT hole beeps to GND instead, the module is on the wrong board: unsolder it before you plug in a battery.
 - The RST hole does **not** beep to GND (the Xiao's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
 - No two adjacent castellations beep to each other.
 

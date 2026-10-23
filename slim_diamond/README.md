@@ -1,9 +1,36 @@
 # Slim Diamond
 
 A wireless Choc v1 Diamond: the Diamond's 1333+2 layout on one reversible
-PCB per half, a Seeed XIAO nRF52840, and a 752025 (250 mAh) battery in each
-half. The halves join magnetically into a unibody, or stack back to back for
+PCB per half, a XIAO-sized nRF52840 module, and a 752025 (250 mAh) battery in
+each half. The halves join magnetically into a unibody, or stack back to back for
 transport.
+
+## Two boards, one for each module
+
+The board comes in two versions. They differ only under the module; the case,
+the plate, every other part and the firmware are the same.
+
+| Module | Board | Fab files |
+|---|---|---|
+| Seeed XIAO nRF52840 (the genuine one) | `pcb/` | `fab/slim_diamond_jlcpcb.zip` |
+| NologoTech Super52840 (also sold as "MINI NRF52840", "NRF52840 RE:1.4") | `pcb_super52840/` | `fab/slim_diamond_super52840_jlcpcb.zip` |
+
+Both modules have the same 14 edge pins on the same nRF52840 pins, but different
+pads underneath, where this board reaches the battery, the 12th key and reset:
+
+- **Battery.** The Super52840's B+ and B- sit where the XIAO has GND and VBAT:
+  swapped. **Never fit a module on the other module's board**: the battery would
+  be connected backwards.
+- **12th key.** The XIAO's NFC1 pad, and the Super52840's P0.09 pad in its row of
+  nine extra GPIO pads: the same pin (P0.09), in another place.
+- **Reset** is in the same place on both.
+- The Super52840's USB-C legs come through its board: its PCB has clearance holes
+  under them, and its USB-C sticks out 0.8 mm further, which the case's recess
+  takes.
+
+The Super52840's pads were measured from photos, against the 2.54 mm pin pitch
+(its RST, GND and SWD pads land within 0.1 mm of the XIAO's). Its battery holes sit
+0.25 mm from the GPIO row under the other half's module.
 
 ![All views](renders/all.png)
 
@@ -30,8 +57,8 @@ and keeps the outer edge as low as the hot-swap sockets allow.
 
 | Path | What |
 |---|---|
-| `fab/slim_diamond_jlcpcb.zip` | Gerbers + drill files: upload to JLCPCB as they are |
-| `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
+| `fab/slim_diamond_jlcpcb.zip`, `fab/slim_diamond_super52840_jlcpcb.zip` | Gerbers + drill files for the XIAO and the Super52840 board: upload to JLCPCB as they are |
+| `pcb/`, `pcb_super52840/` | The KiCad 9 projects, their footprint library, 3D stand-ins, and DRC rules |
 | `case/case_left.stl`, `case/case_right.stl` | The printed base |
 | `case/plate_left.stl`, `case/plate_right.stl` | The printed top plate, oriented top face down for printing |
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
@@ -112,6 +139,7 @@ Java 25.
 python3 design.py        # placement, tent, outlines, magnets, screws -> design.json, design.png
 FREEROUTING=/path/freerouting.jar ./route.sh   # footprints, board, routing, pours, DRC
 ./fab.sh                 # gerbers and drill files -> fab/slim_diamond_jlcpcb.zip
+MODULE=super52840 ./route.sh && MODULE=super52840 ./fab.sh   # the same for the Super52840 board
 python3 magnets.py       # only after a layout change: measures the base for the magnets to pin in design.py
 python3 case.py          # base and plate STLs (and their 3D models for renders)
 python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against

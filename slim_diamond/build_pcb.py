@@ -5,6 +5,9 @@
 
 One reversible board serves both halves. Left half: parts on the B face.
 Right half: board turned over, parts on the F face.
+
+MODULE picks the controller (footprints.py's MODULES): xiao (default, in pcb/) or super52840
+(in pcb_super52840/). Everything but the module's footprint is the same.
 """
 import json
 import math
@@ -14,7 +17,10 @@ import sys
 import pcbnew
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PCB_DIR = os.path.join(HERE, "pcb")
+MODULE = os.environ.get("MODULE") or "xiao"
+MODULE_FP = {"xiao": ("XIAO_nRF52840_Reversible", "XIAO nRF52840"),
+             "super52840": ("Super52840_Reversible", "Super52840")}[MODULE]
+PCB_DIR = os.path.join(HERE, "pcb" if MODULE == "xiao" else f"pcb_{MODULE}")
 BOARD = os.path.join(PCB_DIR, "slim_diamond.kicad_pcb")
 LIB = os.path.join(PCB_DIR, "slim_diamond.pretty")
 OFF = (100.0, 100.0)          # design origin on the KiCad page
@@ -145,7 +151,7 @@ def build():
 
     # --- Xiao.
     xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
-    xiao = add_fp(board, "XIAO_nRF52840_Reversible", "U1", xc, xa, "XIAO nRF52840")
+    xiao = add_fp(board, MODULE_FP[0], "U1", xc, xa, MODULE_FP[1])
 
     # Which Xiao input each key gets. Candidates: L4..L11 directly, the three jumpered
     # pairs (D0..D2), and NFC1. Keys and inputs are both sorted by angle around the Xiao
@@ -223,6 +229,15 @@ def build():
     ring_in = [tuple(p) for p in D["pcb_inner_ring"][:-1]]
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, pcb_pts, layer, rule={"tracks", "vias"}, hole=ring_in)
+    # The module's non-plated holes (clearance for what pokes out of its underside) carry no net,
+    # so Freerouting would route through them: fence each off, 0.4 mm round.
+    for pad in xiao.Pads():
+        if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
+            bb = pad.GetBoundingBox()
+            x0, y0 = pcbnew.ToMM(bb.GetLeft()) - OFF[0] - 0.4, pcbnew.ToMM(bb.GetTop()) - OFF[1] - 0.4
+            x1, y1 = pcbnew.ToMM(bb.GetRight()) - OFF[0] + 0.4, pcbnew.ToMM(bb.GetBottom()) - OFF[1] + 0.4
+            for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+                zone(board, [(x0, y0), (x1, y0), (x1, y1), (x0, y1)], layer, rule={"tracks", "vias"})
 
     # (the antenna's no-pour area is added after routing: Freerouting would read it as a keepout.
     # Vias under the module are fine: they are tented, and the module's underside is solder mask.)

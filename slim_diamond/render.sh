@@ -30,6 +30,20 @@ magick .render/guide_B.png -crop 700x700+617+869 +repage -resize 900x900 .render
 for f in xiao_left_half xiao_right_half; do
     magick .render/$f.png -modulate 55,300 -level 0%,90% renders/$f.png
 done
+# the same close-ups of the Super52840 board (same outline, so the same crops)
+if [ -f pcb_super52840/slim_diamond.kicad_pcb ]; then
+    for side in F B; do
+        ./kicad.sh kicad-cli pcb export svg --mode-single --layers $side.Mask,$side.Silkscreen,Edge.Cuts \
+            --exclude-drawing-sheet --fit-page-to-board $( [ $side = B ] && echo --mirror ) \
+            -o .render/s52840_$side.svg pcb_super52840/slim_diamond.kicad_pcb >/dev/null 2>&1
+        rsvg-convert -w 1750 -b white .render/s52840_$side.svg -o .render/s52840_$side.png
+    done
+    magick .render/s52840_F.png -crop 700x700+434+869 +repage -resize 900x900 .render/super52840_left_half.png
+    magick .render/s52840_B.png -crop 700x700+617+869 +repage -resize 900x900 .render/super52840_right_half.png
+    for f in super52840_left_half super52840_right_half; do
+        magick .render/$f.png -modulate 55,300 -level 0%,90% renders/$f.png
+    done
+fi
 
 # All views on one sheet.
 magick montage \
