@@ -37,7 +37,7 @@ PCB_T = 1.6
 XIAO_SPOT = ((-10.0, 34.0), -140, 16.4)
 GEM_FACETS = 10                    # sides of the joined outline (both halves)
 XIAO_CHANNEL = 1.6                 # routing room between the Xiao's pads and any socket
-USB_NOTCH_W = 13.0                 # board-edge notch in front of the USB-C: overmolds are up to 12.35 wide
+USB_NOTCH_W = 14.2                 # board-edge notch in front of the USB-C: a 12.35 overmold, +-0.6 off centre
 JLC_MAX = 100.0                    # JLCPCB's cheapest tier: up to 100 x 100 mm
 AIR = 0.4                          # vertical clearance under every part
 

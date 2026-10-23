@@ -147,7 +147,9 @@ def xiao_pin_xy(pin, mount):
 #    pads land within 0.2 mm of the Xiao's): B- (-4.46, -0.36) and B+ (-4.44, -2.27), about
 #    2.0 x 1.0, so the battery's polarity is the Xiao's swapped; a row of nine GPIO pads 1.1 mm
 #    wide at x 5.06 to 5.3 (the photos disagree), 1.54 apart from P0.09 at y 9.76 down to P0.31
-#    at -2.56; four plated USB-C leg slots, about 0.7 x 2.0, at x +-4.35, y -4.76 and -8.94.
+#    at -2.56; four plated USB-C leg slots, about 0.7 x 2.0, at y -4.76 and -8.94. Its USB-C sits
+#    0.3 to 0.6 off centre, towards the D0..D6 side: legs at x about -4.65 and +4.05. Mirrored on
+#    the other half, so the clearance covers 3.55 to 5.15 on both sides.
 # Battery: one small hole per pad spot, inside both modules' pads and 0.25 mm clear of the
 # Super52840's GPIO row under the other half's module. Which is + is the selector's choice
 # (build_pcb.py): BATM is the hole nearer the middle, BATU the one nearer the USB end.
@@ -158,7 +160,7 @@ BOTTOM = {"BATM": ((-3.9, -0.33), (0.75, 0.75), (0.5, 0.5)),
           "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))}
 P009 = ((5.2, 9.76), (0.9, 0.9), (0.5, 0.5))         # the Super52840's P0.09, also NFC1's net
 # non-plated clearance under the Super52840's USB-C legs
-KEEPOUT = [((sx * 4.35, y), (1.2, 2.6)) for sx in (1, -1) for y in (-4.76, -8.94)]
+KEEPOUT = [((sx * 4.35, y), (1.6, 2.6)) for sx in (1, -1) for y in (-4.76, -8.94)]
 # The battery selector (build_pcb.py's SELECTOR) sits inside the outline too, between the D0-D2
 # jumpers and the antenna end, clear of both modules' bottom pads.
 
