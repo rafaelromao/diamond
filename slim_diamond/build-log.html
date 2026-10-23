@@ -119,13 +119,18 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
   </section>
 
   <div class="grid2">
+    <figure><img src="renders/full_side.png" alt="The left half seen from the front edge, tilted up towards the inner wall" width="1200" height="900" loading="lazy"><figcaption>From the front: the 6.6° tent rises towards the seam.</figcaption></figure>
+    <figure><img src="renders/parts_top.png" alt="The left half's PCB with switches and keycaps, seen from above at an angle" width="1200" height="900" loading="lazy"><figcaption>Switch side of the left half, with keycaps.</figcaption></figure>
+  </div>
+
+  <div class="grid2">
     <figure>
       <img src="renders/parts_bottom.png" alt="Underside of the left half's PCB with the Xiao, power switch, JST socket and hot-swap sockets" width="1200" height="900" loading="lazy">
       <figcaption>Parts face of the left half. The right half is the same board turned over.</figcaption>
     </figure>
     <figure>
-      <img src="renders/xiao_left_half.png" alt="Close-up of the switch face around the Xiao, showing D0 to D2 jumpers and boxed fill holes" width="700" height="700" loading="lazy">
-      <figcaption>Switch face around the Xiao: bridge D0–D2, fill the boxed holes from this side.</figcaption>
+      <img src="renders/board_bottom.png" alt="The bare PCB's back face, with the left half's part footprints" width="1200" height="900" loading="lazy">
+      <figcaption>Bare board, back face: the left half's parts go here.</figcaption>
     </figure>
   </div>
 
@@ -135,6 +140,12 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
     <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the Xiao's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
     <p>The Xiao's underside pads (VBAT, GND, NFC1, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
   </section>
+
+  <div class="grid3">
+    <figure><img src="renders/board_top.png" alt="The bare PCB's front face, with the right half's part footprints" width="1200" height="900" loading="lazy"><figcaption>Front face: the right half's parts go here.</figcaption></figure>
+    <figure><img src="renders/xiao_left_half.png" alt="Close-up of the left half's switch face around the Xiao, with the D0 to D2 jumpers and boxed fill holes" width="700" height="700" loading="lazy"><figcaption>Left half, switch face: bridge D0–D2, fill the boxed holes.</figcaption></figure>
+    <figure><img src="renders/xiao_right_half.png" alt="Close-up of the right half's switch face around the Xiao, mirrored as seen when turned over" width="700" height="700" loading="lazy"><figcaption>Right half, switch face, as you see it turned over.</figcaption></figure>
+  </div>
 
   <section class="stack">
     <span class="eyebrow">Toolchain</span>
@@ -146,6 +157,10 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
       <div class="tool"><b>kicad-cli</b><p>Design-rule check, Gerbers and drill files for JLCPCB, and every render on this page.</p></div>
       <div class="tool"><b>manifold3d</b><p>Builds the base and plate as solids, then intersects every part with them. Anything that isn't <span class="num">0 mm³</span> fails.</p></div>
     </div>
+    <figure class="col">
+      <img src="design.png" alt="Top view of the left half's placement: sockets, Xiao, battery, JST socket, magnets, screws, reset button and pad slots" width="782" height="833" loading="lazy">
+      <figcaption>The placement design.json describes, left half from above: sockets red, Xiao blue, battery yellow, floor magnets purple, anti-slip pads black, screws dark grey.</figcaption>
+    </figure>
   </section>
 
   <section class="stack">
@@ -188,14 +203,17 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <p class="note col">Excerpt of the output.</p>
   </section>
 
-  <div class="grid3">
+  <div class="grid2">
     <figure><img src="renders/case.png" alt="Printed base with pockets for each part, the USB-C recess and the switch slot" width="1200" height="900" loading="lazy"><figcaption>Solid base: a pocket per part.</figcaption></figure>
+    <figure><img src="renders/plate.png" alt="The top plate from above, with switch cutouts, countersunk screw holes and the reset cone" width="1200" height="900" loading="lazy"><figcaption>Top plate: switch cutouts, countersunk screws, the reset cone.</figcaption></figure>
     <figure><img src="renders/plate_under.png" alt="Underside of the top plate with support pillars and screw bosses" width="1200" height="900" loading="lazy"><figcaption>Plate underside: pillars, bosses, solder pocket.</figcaption></figure>
     <figure><img src="renders/pads.png" alt="Both floors from below, showing where each half's anti-slip pads go" width="1000" height="750" loading="lazy"><figcaption>Pads sit in different ends of each slot, so they interleave when stacked.</figcaption></figure>
   </div>
 
   <div class="grid2">
     <figure><img src="renders/unibody.png" alt="Both halves joined at the seam as a unibody" width="1200" height="900" loading="lazy"><figcaption>Joined at the seam by magnets.</figcaption></figure>
+    <figure><img src="renders/unibody_top.png" alt="Both halves joined, seen from above, forming the diamond outline" width="1200" height="900" loading="lazy"><figcaption>Joined, from above: the two outlines make the diamond.</figcaption></figure>
+    <figure><img src="renders/stacked.png" alt="Both halves stacked floor to floor, seen at an angle" width="1200" height="900" loading="lazy"><figcaption>Stacked back to back, keys facing out.</figcaption></figure>
     <figure><img src="renders/stacked_side.png" alt="Both halves stacked floor to floor, seen from the side" width="1200" height="900" loading="lazy"><figcaption>Stacked floor to floor for travel.</figcaption></figure>
   </div>
 
