@@ -43,8 +43,9 @@ Z0 = FLOOR + D["z_in"]          # PCB bottom at the inner wall, over the desk
 PLATE = D["plate"]
 SCREW = D["screw"]
 RIM = PLATE["gap"] + PLATE["thick"]   # the wall rises flush with the plate's top
-GIRDLE = 2.0                    # floor flare past the rim: the lean of the gem facets
-CHAMFER = 1.5                   # 45-degree cut under the girdle
+GIRDLE = DZ.GIRDLE              # floor flare past the rim: the lean of the gem facets
+CHAMFER = DZ.CHAMFER            # 45-degree cut under the girdle
+PADS = D["pads"]                # anti-slip bump-ons in slots under the floor (design.py)
 TOL = 0.6                       # clearance around and above every part in the base
 PILOT_R = SCREW["pilot_d"] / 2  # self-tapping pilot (or the heat-set insert's hole)
 PILOT_FLOOR = 0.6               # pilot holes stop this far above the desk
@@ -122,6 +123,27 @@ def openings():
             "switch": to_desk_solid(slab(slot, LEVER_Z, 40))}
 
 
+def pad_slot(a, b, grow=0.0):
+    """One pad slot from below (two pad spots, ends a and b in PCB plan), grown by `grow` on
+    every side and on top: a stadium PADS depth deep."""
+    w = PADS["slot_w"] / 2 + grow
+    ends = [Manifold.cylinder(PADS["depth"] + grow + 0.01, w, circular_segments=48)
+            .translate((X, Y, -0.01)) for X, Y in plan([a, b])]
+    return Manifold.batch_hull(ends)
+
+
+def pads(k):
+    """The bump-ons as they sit in their slots: k = 0 the left half's, k = 1 the right half's
+    where they land stacked on the left, before the turn-over (in the left's frame, z up)."""
+    d, h = PADS["size"]
+    out = Manifold()
+    for e in PADS["slots"]:
+        X, Y = plan([e[k]])[0]
+        dome = Manifold.cylinder(h, d / 2, d / 2 - 0.8, circular_segments=48)   # flat on the slot's roof
+        out += dome.mirror((0, 0, 1)).translate((X, Y, PADS["depth"]))
+    return out
+
+
 def part_footprints():
     """What hangs under the PCB, as (name, PCB-plan polygon, height)."""
     keys = DZ.layout_left()
@@ -181,6 +203,10 @@ def build():
     for mx, my in D["magnets_floor"]:
         X, Y = plan([(mx, my)])[0]
         shell -= Manifold.cylinder(mf_h, mf_d / 2, circular_segments=32).translate((X, Y, -0.01))
+    # Anti-slip pad slots, from below: each half's pad in one end, the other half's lands in the
+    # other end when they are stacked (design.py).
+    for a, b in PADS["slots"]:
+        shell -= pad_slot(a, b)
     # Seam magnets (unibody), pressed into the inner wall from outside.
     ms_d, ms_h = D["magnet_side_size"]
     z_mid = FLOOR + 2.8
@@ -294,7 +320,8 @@ if __name__ == "__main__":
     stl(flat.mirror((1, 0, 0)), f"{OUT}/plate_right.stl")
     # for KiCad renders: case, plate and battery in the PCB frame (plan coordinates)
     import vrml
-    vrml.write_parts("pcb/3d/case.wrl", [(to_pcb_frame(plan_left), vrml.CASE)], z_from_pcb_bottom=True)
+    vrml.write_parts("pcb/3d/case.wrl", [(to_pcb_frame(plan_left), vrml.CASE), (to_pcb_frame(pads(0)), vrml.PAD)],
+                     z_from_pcb_bottom=True)
     vrml.write_parts("pcb/3d/plate.wrl", [(plate_left.translate((0, 0, PCB_T + PLATE["gap"])), vrml.CASE)],
                      z_from_pcb_bottom=True)
     vrml.write_parts("pcb/3d/battery.wrl", [(to_pcb_frame(battery()), vrml.BATTERY)], z_from_pcb_bottom=True)

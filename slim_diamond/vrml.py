@@ -24,6 +24,7 @@ METAL = (0.7, 0.7, 0.72)
 JST = (0.92, 0.9, 0.85)
 BATTERY = (0.55, 0.6, 0.7)
 CASE = (0.16, 0.2, 0.32)
+PAD = (0.85, 0.86, 0.82)
 
 
 def write_parts(path, parts, z_from_pcb_bottom=False):

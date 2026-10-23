@@ -7,6 +7,9 @@ battery) and writes two VRML scenes into .render/:
   stacked.wrl   the right half under it, floor to floor: turned over, the
                 mirrored half is the left one mirrored in z
 
+Each half carries its own anti-slip pads: the left's in one end of each floor slot,
+the right's in the other end (case.pads), so stacked they interleave.
+
 render_boards.py hangs each scene on a speck of board hidden in a floor, and
 records where that speck is in .render/scenes.json.
 """
@@ -53,8 +56,10 @@ def left_half():
 def main():
     left = left_half()
     seam = D["wall_out"]
-    unibody = left + [(m.mirror((1, 0, 0)).translate((2 * seam, 0, 0)), rgb) for m, rgb in left]
-    stacked = left + [(m.mirror((0, 0, 1)), rgb) for m, rgb in left]
+    pads_left, pads_right = (C.pads(0), vrml.PAD), (C.pads(1), vrml.PAD)
+    unibody = left + [pads_left] + [(m.mirror((1, 0, 0)).translate((2 * seam, 0, 0)), rgb)
+                                    for m, rgb in left + [pads_right]]
+    stacked = left + [pads_left] + [(m.mirror((0, 0, 1)), rgb) for m, rgb in left + [pads_right]]
     # the speck of board render_boards.py adds: a point inside a floor, and the scene's
     # z shift that puts that floor around z = 0 (the board's top face)
     xs = [p[0] for p in D["case_outline"]]

@@ -17,7 +17,7 @@ import json
 import math
 
 from shapely import affinity
-from shapely.geometry import Point, Polygon, box
+from shapely.geometry import LineString, MultiPoint, Point, Polygon, box
 from shapely.ops import unary_union
 
 from layout import cap, layout_left
@@ -57,6 +57,24 @@ SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d":
 PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
 MAG_FLOOR = (6.2, 2.1)             # pocket for 6x2 disc magnets (back-to-back)
 MAG_SIDE = (5.2, 2.1)              # pocket for 5x2 disc magnets (unibody)
+GIRDLE = 2.0                       # floor flare past the rim: the lean of the gem facets
+CHAMFER = 1.5                      # 45-degree cut under the girdle; the foot on the desk is inside it
+# Anti-slip pads, as on the original Diamond's base: 8 x 2 mm silicone bump-ons in stadium slots
+# under the floor, two pad spots per slot. Each half sticks its pad in one end and leaves the
+# other empty: stacked, the other half's pad lands there, so the floors still meet. The case is
+# the same for both halves; only where the pads go differs.
+PAD = (8.0, 2.0)                   # bump-on diameter, height
+PAD_SLOT_W = 8.6                   # slot width: the pad + 0.3 per side (the original's 8.6)
+PAD_PITCH = 8.7                    # the slot's two spots, centre to centre (the original's 8.7)
+PAD_DEPTH = 1.1                    # a pad sticks out 0.9; stacked, 0.2 to spare in the other slot
+PAD_EDGE = 1.0                     # slot to the foot's edge, where the chamfer starts
+PAD_KEEP = 0.5                     # slot to the magnets and screw pilots (the magnets' skin rule)
+PAD_BALANCE = 2.0                  # every key centre this far inside each half's pads
+PAD_COUNT = 5                      # four (the original's) leave the thumbs and pinky 0.5 mm inside
+# Where the search below put the slots: centre (floor plan, mm) and angle (degrees); pinned so
+# layout tweaks don't move them. None runs the search again.
+PAD_SLOTS = [((-45.0, 10.0), 95), ((29.0, -24.0), 0), ((-25.5, -21.0), 135),
+             ((18.0, 57.0), 20), ((33.0, 58.0), 85)]
 
 KEY_ORDER = ["pinky", "ring_top", "ring_home", "ring_bottom",
              "middle_top", "middle_home", "middle_bottom",
@@ -130,6 +148,86 @@ def local_to_board(c, ang, p):
     a = math.radians(ang)
     return (c[0] + p[0] * math.cos(a) - p[1] * math.sin(a),
             c[1] + p[0] * math.sin(a) + p[1] * math.cos(a))
+
+
+def stadium(a, b, w):
+    return LineString([a, b]).buffer(w / 2)
+
+
+def support_margin(pads, points):
+    """How far the closest point lies inside the pads' convex hull (negative: outside)."""
+    hull = MultiPoint(pads).convex_hull
+    return min((1 if hull.contains(Point(p)) else -1) * hull.exterior.distance(Point(p)) for p in points)
+
+
+def slot_ends(c, ang, centre):
+    """A pad slot's two spots, the left half's first: counterclockwise round the floor's centre
+    seen from above (y down), so clockwise seen from below. The right half, the mirror image,
+    uses the other end, which is then clockwise seen from below too."""
+    a = math.radians(ang)
+    d = (math.cos(a) * PAD_PITCH / 2, math.sin(a) * PAD_PITCH / 2)
+    e1, e2 = (c[0] + d[0], c[1] + d[1]), (c[0] - d[0], c[1] - d[1])
+    cross = (e1[0] - centre[0]) * (e2[1] - centre[1]) - (e1[1] - centre[1]) * (e2[0] - centre[0])
+    return (e1, e2) if cross >= 0 else (e2, e1)
+
+
+def pad_slot_ok(c, ang, foot, blockers):
+    """The slot fits in the foot, PAD_EDGE in, and keeps clear of blockers [(point, radius)]."""
+    e1, e2 = slot_ends(c, ang, (0, 0))
+    seg = LineString([e1, e2])
+    return foot.buffer(-PAD_EDGE, join_style=2).contains(seg.buffer(PAD_SLOT_W / 2)) and \
+        all(seg.distance(Point(p)) >= r + PAD_SLOT_W / 2 for p, r in blockers)
+
+
+def search_pad_slots(foot, blockers, keys):
+    """PAD_COUNT slots near the foot's edge that keep every key centre deepest inside both
+    halves' pads (each half's hull of its own ends). Hill-climbs from seeded random starts on a
+    1 mm / 10 degree grid, then refines on 0.5 mm / 5 degrees."""
+    import random
+    centre = foot.centroid.coords[0]
+    core = foot.buffer(-(PAD_EDGE + PAD_SLOT_W / 2), join_style=2)
+
+    def cand(x, y, ang):
+        if not pad_slot_ok((x, y), ang, foot, blockers):
+            return None
+        return ((x, y), ang, slot_ends((x, y), ang, centre))
+
+    b = foot.bounds
+    pool = [c for x in range(int(b[0]), int(b[2]) + 1) for y in range(int(b[1]), int(b[3]) + 1)
+            if core.contains(Point(x, y)) and core.exterior.distance(Point(x, y)) < 3
+            for ang in range(0, 180, 10) for c in [cand(x, y, ang)] if c]
+
+    def score(sel):
+        for i in range(len(sel)):
+            for j in range(i):
+                if LineString(sel[i][2]).distance(LineString(sel[j][2])) < PAD_SLOT_W + 1:
+                    return (-99, 0)
+        m = min(support_margin([s[2][k] for s in sel], keys) for k in (0, 1))
+        return (round(m, 2), MultiPoint([p for s in sel for p in s[2]]).convex_hull.area)
+
+    def climb(sel, options):
+        best = score(sel)
+        better = True
+        while better:
+            better = False
+            for i in range(len(sel)):
+                for o in options:
+                    s = score(sel[:i] + [o] + sel[i + 1:])
+                    if s > best:
+                        sel, best, better = sel[:i] + [o] + sel[i + 1:], s, True
+        return sel, best
+
+    random.seed(0)
+    sel, best = None, None
+    for _ in range(8):
+        s, sc = climb(random.sample(pool, PAD_COUNT), pool)
+        if best is None or sc > best:
+            sel, best = s, sc
+    for _ in range(3):
+        near = [c for (x, y), ang, _ in sel for dx in range(-3, 4) for dy in range(-3, 4)
+                for da in (-10, -5, 0, 5, 10) for c in [cand(x + dx / 2, y + dy / 2, ang + da)] if c]
+        sel, best = climb(sel, near)
+    return [(c, ang) for c, ang, _ in sel]
 
 
 def main():
@@ -358,8 +456,37 @@ def main():
                 break
             holes.append(nxt)
 
-    # --- magnets. Floor: four, spread out, away from the Xiao's antenna and the screws.
-    room = cav.buffer(-MAG_FLOOR[0] / 2 - 0.8).difference(xiao.buffer(8))
+    # --- anti-slip pads, on the floor: the desk plan, where the tent shortens x a little. The
+    # foot is the case outline grown by GIRDLE and cut back by CHAMFER, ending CHAMFER short of
+    # the seam (as case.py builds it).
+    cos_t = math.cos(math.radians(tent))
+    to_floor = lambda p: (wall_in + (p[0] - wall_in) * cos_t, p[1])
+    from_floor = lambda p: (wall_in + (p[0] - wall_in) / cos_t, p[1])
+    seam_x = wall_in + WALL
+    foot = (Polygon([to_floor(p) for p in case.exterior.coords])
+            .buffer(GIRDLE, join_style=2, mitre_limit=10).buffer(-CHAMFER, join_style=2, mitre_limit=10)
+            .intersection(box(-1e3, -1e3, seam_x - CHAMFER, 1e3)))
+    key_spots = [to_floor(keys[n][0]) for n in KEY_ORDER]
+    pilots = [(to_floor(h), SCREW["pilot_d"] / 2 + PAD_KEEP) for h in holes]
+    slots = PAD_SLOTS or search_pad_slots(foot, pilots, key_spots)
+    if not PAD_SLOTS:
+        print("pad slots (pin them in PAD_SLOTS):", slots)
+    for c, ang in slots:
+        assert pad_slot_ok(c, ang, foot, pilots), f"pad slot {c} doesn't fit: set PAD_SLOTS = None"
+    ends = [slot_ends(c, ang, foot.centroid.coords[0]) for c, ang in slots]
+    pads_left = [e[0] for e in ends]
+    pads_right = [e[1] for e in ends]          # the right half's, where they land stacked on the left
+    flip = lambda p: (2 * seam_x - p[0], p[1])
+    balance = {"left": support_margin(pads_left, key_spots),
+               "right": support_margin(pads_right, key_spots),
+               "unibody": support_margin(pads_left + [flip(p) for p in pads_right],
+                                         key_spots + [flip(p) for p in key_spots])}
+    assert min(balance.values()) >= PAD_BALANCE, f"pads leave a key too close to tipping: {balance}"
+    slot_zone = unary_union([stadium(from_floor(a), from_floor(b), PAD_SLOT_W) for a, b in ends])
+
+    # --- magnets. Floor: four, spread out, away from the Xiao's antenna, the screws and the pads.
+    room = (cav.buffer(-MAG_FLOOR[0] / 2 - 0.8).difference(xiao.buffer(8))
+            .difference(slot_zone.buffer(MAG_FLOOR[0] / 2 + PAD_KEEP + 0.2)))
     for h in holes:
         room = room.difference(Point(h).buffer(MAG_FLOOR[0] / 2 + 3.5))
     grid = [(gx, gy) for gx in range(-60, 60) for gy in range(-40, 80) if room.contains(Point(gx, gy))]
@@ -399,6 +526,14 @@ def main():
         "magnets_floor": [list(map(float, p)) for p in floor_spots], "magnet_floor_size": MAG_FLOOR,
         "magnets_side_y": side_spots, "magnet_side_size": MAG_SIDE,
         "battery_size": [BATT_W, BATT_L, BATT_T],
+        "girdle": GIRDLE, "chamfer": CHAMFER,
+        # pad slots under the floor, as their two spots (PCB plan, like everything here: case.py
+        # maps them to the floor): the left half's pad in the first, the right half's (mirrored
+        # about the seam) in the second. Balance: how far the nearest key centre lies inside
+        # each half's pads, and the unibody's, on the floor.
+        "pads": {"size": PAD, "slot_w": PAD_SLOT_W, "pitch": PAD_PITCH, "depth": PAD_DEPTH,
+                 "slots": [[list(from_floor(a)), list(from_floor(b))] for a, b in ends],
+                 "balance": balance},
     }
     json.dump(result, open("design.json", "w"), indent=1)
 
@@ -409,6 +544,10 @@ def main():
     print("xiao", [round(v, 1) for v in xiao_c], xiao_ang, "usb", [round(v, 2) for v in usb_dir])
     print("battery", [round(v, 1) for v in batt.bounds], "jst", [round(v, 1) for v in jst.bounds])
     print("holes", holes, "floor magnets", floor_spots, "inner wall y", round(wy0, 1), round(wy1, 1))
+    print("pads, on the floor: left", [tuple(round(v, 2) for v in p) for p in pads_left])
+    print("                    right", [tuple(round(v, 2) for v in flip(p)) for p in pads_right])
+    print("balance: nearest key centre inside the pads by",
+          ", ".join(f"{k} {v:.2f} mm" for k, v in balance.items()))
 
     import matplotlib
     matplotlib.use("Agg")
@@ -438,9 +577,44 @@ def main():
         draw(Point(p).buffer(MAG_FLOOR[0] / 2), color="#a3c", alpha=0.8)
     for sy in side_spots:
         draw(box(wall_in, sy - MAG_SIDE[0] / 2, wall_in + WALL, sy + MAG_SIDE[0] / 2), color="#a3c")
+    # pads: the slots, the left half's pads (filled) and where the right half's land (rings)
+    draw(slot_zone, color="#777", alpha=0.35)
+    for a, b in ends:
+        draw(Point(from_floor(a)).buffer(PAD[0] / 2), color="#111", alpha=0.75)
+        ax.plot(*Point(from_floor(b)).buffer(PAD[0] / 2).exterior.xy, color="#111", lw=1, ls="--")
     ax.set_aspect("equal"); ax.invert_yaxis(); ax.grid(alpha=0.3)
     ax.set_title(f"Slim Diamond (left, top view)  case {cb[2]-cb[0]:.0f}x{cb[3]-cb[1]:.0f} mm, tent {tent:.1f}°")
     fig.savefig("design.png", dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    pad_guide(foot, ends, key_spots, seam_x, plt)
+
+
+def pad_guide(foot, ends, key_spots, seam_x, plt):
+    """renders/pads.png: both floors seen from below (each half turned over about its
+    front-to-back axis), where to stick each half's pads."""
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6.5))
+    halves = (("Left half, from below", lambda p: (-p[0], p[1]), 0),
+              ("Right half, from below", lambda p: (p[0], p[1]), 1))
+    for ax, (title, view, k) in zip(axs, halves):
+        # turned over, the left floor reads mirrored; the right half (the left mirrored) reads
+        # like the left's plan, with its pads on the other ends
+        tr = lambda g: affinity.scale(g, -1 if k == 0 else 1, 1, origin=(0, 0))
+        ax.fill(*tr(foot).exterior.xy, color="#cfd3dc")
+        for a, b in ends:
+            ax.fill(*tr(stadium(a, b, PAD_SLOT_W)).exterior.xy, color="#8d93a3")
+            ax.fill(*tr(Point((a, b)[k]).buffer(PAD[0] / 2)).exterior.xy, color="#222")
+        for p in key_spots:
+            ax.plot(*view(p), "+", color="#555", ms=6)
+        sx = view((seam_x, 0))[0]
+        ax.axvline(sx, color="#c33", lw=1)
+        ax.text(sx, foot.bounds[1] - 3, "seam", color="#c33", ha="center")
+        ax.text(view(foot.centroid.coords[0])[0], foot.bounds[3] + 6, "thumbs (front)", ha="center")
+        ax.set_title(title)
+        ax.set_aspect("equal"); ax.invert_yaxis(); ax.axis("off")
+    fig.suptitle("Anti-slip pads: one per slot, in the end you reach second going clockwise "
+                 "round the floor (black). The other end stays empty for the other half's pad. + key centres.",
+                 fontsize=10)
+    fig.savefig("renders/pads.png", dpi=110, bbox_inches="tight")
 
 
 if __name__ == "__main__":

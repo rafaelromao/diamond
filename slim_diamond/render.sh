@@ -47,5 +47,6 @@ magick montage \
     -label 'Stacked back to back' renders/stacked.png \
     -label 'Stacked back to back, side' renders/stacked_side.png \
     -label 'Placement, top view' design.png \
+    -label 'Anti-slip pads, from below' renders/pads.png \
     -tile 5x3 -geometry 800x600+12+12 -pointsize 26 -background white \
     -title 'Slim Diamond' renders/all.png

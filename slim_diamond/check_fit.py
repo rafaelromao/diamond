@@ -5,11 +5,15 @@
   - the plate against the case, the switch bodies through it, and the solder blobs
   - each screw against every pocket, each magnet against every pocket and opening
   - a USB-C cable plugged in, and the power switch's lever as the PCB drops in
+  - the anti-slip pad slots, with a 0.5 mm skin, against every pocket, magnet and pilot hole;
+    stacked (the exported right half turned over), each half's pads against the other's floor;
+    and the balance: every key centre inside each half's pads, PAD_BALANCE in
 """
 import json
+import math
 
 from manifold3d import Manifold
-from shapely.geometry import Polygon
+from shapely.geometry import MultiPoint, Point, Polygon
 from shapely.ops import unary_union
 
 from shapely.geometry import box
@@ -85,5 +89,58 @@ overlap("usb plug vs pcb", plug, C.to_desk_solid(C.slab(Polygon(D["pcb_outline"]
 pw = D["power_switch"]
 lever = DZ.place(box(-1.5, -1.4 - 1.45, 1.5, -1.4), (pw["x"], pw["y"]), pw["r"])
 overlap("switch lever (dropping in) vs base", C.to_desk_solid(C.slab(lever, -1.2, 40)), base)
+
+# Pad slots: 0.5 mm of plastic around and above each one, clear of every pocket, magnet and pilot
+# hole, and of the chamfer (the ring around a slot is solid).
+SKIN = 0.5
+slots = Manifold()
+grown = Manifold()
+for a, b in C.PADS["slots"]:
+    slots += C.pad_slot(a, b)
+    grown += C.pad_slot(a, b, SKIN)
+magnets = Manifold()
+for mx, my in D["magnets_floor"]:
+    X, Y = C.plan([(mx, my)])[0]
+    magnets += Manifold.cylinder(mf_h, mf_d / 2, circular_segments=32).translate((X, Y, 0))
+pilots = Manifold()
+for hx, hy in D["mount_holes"]:
+    X, Y = C.plan([(hx, hy)])[0]
+    pilots += Manifold.cylinder(60, C.PILOT_R, circular_segments=20).translate((X, Y, C.PILOT_FLOOR))
+overlap("pad slots (+0.5 skin) vs pockets", grown, pockets)
+overlap("pad slots (+0.5 skin) vs magnets", grown, magnets)
+overlap("pad slots (+0.5 skin) vs pilot holes", grown, pilots)
+ring = (grown - slots).trim_by_plane((0, 0, 1), 0)            # above the desk only
+v = (ring - base).volume()
+results.append(v)
+print(f"{'pad slots: 0.5 mm skin all round':34s} {v:8.3f} mm3")
+
+# Stacked: the right half as exported, turned over about the seam (x -> 2 seam - x, z -> -z),
+# under the left one, floor to floor. Each half's pads must sit in the other's empty slot ends.
+seam = C.WALL_OUT
+turn = lambda m: m.mirror((1, 0, 0)).translate((2 * seam, 0, 0)).mirror((0, 0, 1))
+left_real = C.real(base)
+right_real = C.mirrored(left_real)                                  # case_right.stl
+left_pads = C.real(C.pads(0))
+right_pads = C.mirrored(C.real(C.pads(1)))                           # on the right half, z up
+overlap("stacked: left pads vs right floor", left_pads, turn(right_real))
+overlap("stacked: right pads vs left floor", turn(right_pads), left_real)
+overlap("stacked: left pads vs right pads", left_pads, turn(right_pads))
+
+# Balance: every key centre, on the floor, inside each half's pads (their hull) by PAD_BALANCE.
+keys_floor = [C.plan([(k["x"], k["y"])])[0] for k in D["keys"].values()]
+flip = lambda p: (2 * seam - p[0], p[1])
+need = DZ.PAD_BALANCE
+supports = {"left half": [C.plan([e[0]])[0] for e in C.PADS["slots"]],
+            "right half (stacked frame)": [C.plan([e[1]])[0] for e in C.PADS["slots"]]}
+supports["unibody"] = supports["left half"] + [flip(p) for p in supports["right half (stacked frame)"]]
+for name, pts in supports.items():
+    keys_ = keys_floor + ([flip(p) for p in keys_floor] if name == "unibody" else [])
+    hull = MultiPoint(pts).convex_hull
+    inside = hull.buffer(-need, join_style=2)
+    out = [p for p in keys_ if not inside.contains(Point(p))]
+    m = min(hull.exterior.distance(Point(p)) * (1 if hull.contains(Point(p)) else -1) for p in keys_)
+    results.append(len(out))
+    print(f"balance, {name:26s} nearest key {m:5.2f} mm inside ({need} needed): "
+          f"{'ok' if not out else f'{len(out)} keys outside'}")
 
 print("ALL CLEAR" if max(results) < 1e-3 else "INTERFERENCE")
