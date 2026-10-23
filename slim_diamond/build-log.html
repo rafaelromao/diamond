@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
 img { max-width: 100%; }
-/* Layout: a build log. One narrow reading column, figures that break wider, a spec sheet and a terminal-style check readout. */
+/* Layout: a project page. One narrow reading column, figures that break wider, a spec sheet and a terminal-style check readout. */
 :root {
   --bg: #eef0ec;          /* fibreglass, pale */
   --surface: #f8f9f6;
@@ -93,7 +93,7 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
 
 <main>
   <header class="col">
-    <span class="eyebrow">Build log · 24 keys · Choc v1 · ZMK</span>
+    <span class="eyebrow">Wireless split · 24 keys · Choc v1 · ZMK</span>
     <h1>Slim Diamond</h1>
     <p class="lede">A wireless, low-profile remake of the handwired Diamond (1333+2 per half). The layout and goals are mine; the PCB, the printed case and every check were generated as code by Claude, Anthropic's model, working in Claude Code.</p>
   </header>
@@ -162,13 +162,14 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
   </section>
 
   <section class="stack">
-    <span class="eyebrow">Review</span>
-    <h2>What the checks missed</h2>
-    <p class="col">Passing checks only prove what they test. A dedicated review pass, with a model asked to imagine the printed object in hand, caught problems the first checks didn't cover. Each one became a new check:</p>
+    <span class="eyebrow">Checks</span>
+    <h2>What gets checked</h2>
+    <p class="col">Every part that could collide is modelled, and the fit check fails on anything above <span class="num">0 mm³</span>. Some checks cover how the keyboard is assembled and used, not only where parts sit:</p>
     <div class="finds col">
-      <div class="find"><div><h3>The USB-C cable couldn't seat</h3><p>The port sat <span class="num">3.6 mm</span> behind the wall in a <span class="num">10 × 4.4 mm</span> hole, smaller than any cable's overmold. Now there's a recess the size of the largest Type-C overmold, and a notch in the PCB edge in front of the port.</p></div></div>
-      <div class="find"><div><h3>The switch lever blocked assembly</h3><p>The lever reached <span class="num">0.45 mm</span> into the wall, so the PCB couldn't drop straight in, and its tip sat <span class="num">2.3 mm</span> deep. Now a slot open to the top lets it slide down and a fingernail reach it.</p></div></div>
-      <div class="find"><div><h3>Too tight for the tolerances</h3><p><span class="num">0.3 mm</span> around the PCB is less than JLCPCB's ±<span class="num">0.2 mm</span> outline tolerance plus print shrinkage. Now it's <span class="num">0.5 mm</span>.</p></div></div>
+      <div class="find"><div><h3>A USB-C cable seats fully</h3><p>A recess the size of the largest Type-C overmold (<span class="num">12.35 × 6.5 mm</span>) reaches the port, and the PCB edge is notched in front of it. The check plugs in a cable of that size.</p></div></div>
+      <div class="find"><div><h3>The PCB drops straight in</h3><p>The power switch's lever reaches past the PCB edge, so it slides down a slot open to the top. The slot widens outwards so a fingernail reaches the lever. The check sweeps the lever along the drop-in path.</p></div></div>
+      <div class="find"><div><h3>Room for tolerances</h3><p><span class="num">0.5 mm</span> around the PCB and plate covers JLCPCB's ±<span class="num">0.2 mm</span> outline tolerance plus print shrinkage.</p></div></div>
+      <div class="find"><div><h3>Magnets in solid plastic</h3><p>Ten <span class="num">8 × 3 mm</span> magnets per half, six along the seam and four in the floor. Each pocket keeps <span class="num">0.5 mm</span> of plastic all round, measured against the printed base.</p></div></div>
     </div>
 <pre class="term">$ python check_fit.py
 sockets vs base                       0.000 mm3
@@ -179,10 +180,12 @@ usb plug vs base                      0.000 mm3
 usb plug vs pcb                       0.000 mm3
 switch lever (dropping in) vs base    0.000 mm3
 reset button body vs plate            0.000 mm3
+seam magnet 1 (+0.5 all round) vs voids    0.000 mm3
+magnets (+0.5) vs each other          0.000 mm3
 stacked: left pads vs right pads      0.000 mm3
 balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
 <span class="ok">ALL CLEAR</span></pre>
-    <p class="note col">Excerpt. Against the original design, the three new checks read 120, 1.9 and 4.4 mm³.</p>
+    <p class="note col">Excerpt of the output.</p>
   </section>
 
   <div class="grid3">
@@ -199,7 +202,7 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
   <section class="stack col">
     <span class="eyebrow">Status</span>
     <h2>Not built yet</h2>
-    <p>Nothing has been fabbed or printed. Every check is numeric, so the first print is the real test of the tolerances. Sources, Gerbers, STLs, a BOM and a hand-soldering guide are in the repo: <a href="https://github.com/rafaelromao/diamond/tree/slim-diamond/slim_diamond">rafaelromao/diamond, branch slim-diamond</a>.</p>
+    <p>Nothing has been fabbed or printed. Every check is numeric, so the first print is the real test of the tolerances. Sources, Gerbers, STLs, a BOM and a hand-soldering guide are in the repo: <a href="https://github.com/rafaelromao/diamond/tree/main/slim_diamond">rafaelromao/diamond</a>.</p>
   </section>
 
 
