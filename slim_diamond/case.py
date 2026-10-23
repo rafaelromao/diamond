@@ -48,8 +48,11 @@ CHAMFER = 1.5                   # 45-degree cut under the girdle
 TOL = 0.6                       # clearance around and above every part in the base
 PILOT_R = SCREW["pilot_d"] / 2  # self-tapping pilot (or the heat-set insert's hole)
 PILOT_FLOOR = 0.6               # pilot holes stop this far above the desk
-USB_W, USB_H = 10.0, 4.4
-LEVER_W, LEVER_H = 5.0, 2.8
+USB_W, USB_H = 13.0, 7.0       # a USB-C cable's overmold: up to 12.35 x 6.5 mm (Type-C spec)
+USB_Z = -(1.0 + 1.65)           # receptacle centre under the PCB's bottom face: Xiao PCB + half the shell
+XIAO_END = DZ.XIAO_L / 2        # the module's USB end, in its own frame (-y)
+LEVER_W, LEVER_FLARE = 5.0, 9.0 # switch slot: the lever's travel, widening to the outside for a nail
+LEVER_Z = -2.15                 # slot floor under the PCB's bottom face (the switch pocket's)
 
 
 def to_desk(x, y, zp=0.0):
@@ -87,19 +90,6 @@ def under_tilted_plane(m, zp):
     return m.trim_by_plane((-n[0], -n[1], -n[2]), -offset)
 
 
-def local_frame(c, ang, p):
-    a = math.radians(ang)
-    return (c[0] + p[0] * math.cos(a) - p[1] * math.sin(a), c[1] + p[0] * math.sin(a) + p[1] * math.cos(a))
-
-
-def through_wall_cut(center_xy, ang, w, h, zc, depth=8.0):
-    """Box cut through the wall at a PCB-plan point, facing the part's local -y."""
-    box = Manifold.cube((w, depth, h), center=True)
-    box = box.rotate((0, 0, ang))
-    X, Y = plan([center_xy])[0]
-    return box.translate((X, Y, zc))
-
-
 def to_desk_solid(m):
     """PCB-frame solid (z above the PCB's bottom face) into the desk frame."""
     c, s_ = math.cos(TENT), math.sin(TENT)
@@ -113,6 +103,23 @@ def slab(poly, z0, z1):
     polys = getattr(poly, "geoms", [poly])
     cs = CrossSection([list(p.exterior.coords)[:-1] for p in polys], FillRule.NonZero)
     return cs.extrude(z1 - z0).translate((0, 0, z0))
+
+
+def openings():
+    """The cuts through the outer wall, in the desk frame.
+
+    USB-C: a recess the size of a cable's overmold, from the receptacle's face out, so the plug
+    seats fully (the board edge is notched in front of it, see design.py). Power switch: a slot
+    open to the top. The lever reaches past the PCB's edge, so it slides down the slot as the
+    PCB goes in, and the slot widens outwards so a fingernail reaches it.
+    """
+    xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
+    usb = DZ.place(box(-USB_W / 2, -XIAO_END - 20, USB_W / 2, -XIAO_END), xc, xa)
+    pw = D["power_switch"]
+    slot = DZ.place(Polygon([(-LEVER_W / 2, -1.6), (LEVER_W / 2, -1.6),
+                             (LEVER_FLARE / 2, -9.0), (-LEVER_FLARE / 2, -9.0)]), (pw["x"], pw["y"]), pw["r"])
+    return {"usb": to_desk_solid(slab(usb, USB_Z - USB_H / 2, USB_Z + USB_H / 2)),
+            "switch": to_desk_solid(slab(slot, LEVER_Z, 40))}
 
 
 def part_footprints():
@@ -181,23 +188,15 @@ def build():
         m = Manifold.cylinder(ms_h + 0.01, ms_d / 2, circular_segments=32).rotate((0, -90, 0))
         shell -= m.translate((WALL_OUT + 0.005, my, z_mid))
 
-    # USB-C opening in front of the Xiao's USB end; the switch lever's in front of the switch.
-    xc, xa = (D["xiao"]["x"], D["xiao"]["y"]), D["xiao"]["r"]
-    usb_xy = local_frame(xc, xa, (0, -10.5 - 2.0))
-    Xu = plan([usb_xy])[0][0]
-    zc = pcb_bottom_z(Xu) - 1.0 - 1.65
-    shell -= through_wall_cut(usb_xy, xa, USB_W, USB_H, zc)
-    pw = D["power_switch"]
-    lever_xy = local_frame((pw["x"], pw["y"]), pw["r"], (0, -1.7 - 2.0))
-    Xl = plan([lever_xy])[0][0]
-    shell -= through_wall_cut(lever_xy, pw["r"], LEVER_W, LEVER_H, pcb_bottom_z(Xl) - 0.75)
+    for cut in openings().values():
+        shell -= cut
     return shell
 
 
 def plate():
     """The top plate, flat, in the PCB's frame: z = 0 is its underside (PLATE gap over the PCB)."""
     t, gap, ch = PLATE["thick"], PLATE["gap"], PLATE["chamfer"]
-    outline = Polygon(D["pcb_outline"])
+    outline = Polygon(D["plate_outline"])
     pts = [(x, y, ch) for x, y in outline.exterior.coords] + \
           [(x, y, t) for x, y in outline.exterior.coords] + \
           [(x, y, 0.0) for x, y in outline.buffer(-ch, join_style=2).exterior.coords]

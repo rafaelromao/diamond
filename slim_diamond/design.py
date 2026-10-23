@@ -29,7 +29,7 @@ BATT_W, BATT_L, BATT_T = 20.5, 26.0, 7.5   # 752025, leads on a 20 mm side
 SOCKET_DEPTH = 1.85                # Kailh hot-swap socket
 JST_W, JST_D, JST_H = 9.2, 10.9, 4.9  # JST PH S2B-PH-SM4-TB, pads included
 PLUG_L = 9.0                       # room in front of the JST opening for the plug and its wires
-PWR_W, PWR_D, PWR_H = 8.8, 4.6, 1.6  # MSK-12C02, body + pads (lever pokes out of the wall)
+PWR_W, PWR_D, PWR_H = 8.8, 4.6, 1.6  # MSK-12C02, body + pads (the lever reaches into the wall)
 PCB_T = 1.6
 # Where the search below put the Xiao (centre, angle, power-switch offset); pinned so layout
 # tweaks don't move it.
@@ -37,11 +37,14 @@ PCB_T = 1.6
 XIAO_SPOT = ((-10.0, 34.0), -140, 16.4)
 GEM_FACETS = 10                    # sides of the joined outline (both halves)
 XIAO_CHANNEL = 1.6                 # routing room between the Xiao's pads and any socket
+USB_NOTCH_W = 13.0                 # board-edge notch in front of the USB-C: overmolds are up to 12.35 wide
 JLC_MAX = 100.0                    # JLCPCB's cheapest tier: up to 100 x 100 mm
 AIR = 0.4                          # vertical clearance under every part
 
 # --- case ---------------------------------------------------------------------
 WALL = 1.6                         # case wall thickness
+FIT = 0.5                          # PCB and plate to the outer walls: JLCPCB's outline is +-0.2 mm, and
+                                   # printed walls come in a little (0.3 mm at the seam)
 CAP_CLEAR = 0.75                   # keycap to wall
 FLOOR = 2.6                        # floor; 6x2 magnets sit in pockets in it
 # Case screws: M3 x 8 flat head (90-degree countersunk, ISO 10642 / DIN 7991), through the plate
@@ -289,11 +292,18 @@ def main():
     tent = math.degrees(math.atan(slope))
     z_in = z_out + slope * (wall_in - x_out)
 
-    # --- the cavity is the gem; the case wall and the PCB follow it.
-    cav = gem
+    # --- the PCB is the gem, 0.3 mm in; the cavity is FIT - 0.3 mm out from the gem (the seam
+    # stays at wall_in), and the case wall follows the cavity.
+    cav = largest(gem.buffer(FIT - 0.3, join_style=2).intersection(box(-1e3, -1e3, wall_in, 1e3)))
     case = largest(cav.buffer(WALL, join_style=2, mitre_limit=1.5)
                    .intersection(box(-1e3, -1e3, wall_in + WALL, 1e3)))
-    pcb = largest(cav.buffer(-0.3, join_style=2))
+    plate_outline = largest(gem.buffer(-0.3, join_style=2))
+    # The receptacle hangs under the PCB, so a cable's overmold (up to 6.5 mm tall) reaches
+    # above the PCB's underside: notch the edge in front of it, back to the module's USB end.
+    # Rounded inner corners: the fab's router bit leaves them anyway.
+    usb_notch = place(box(-USB_NOTCH_W / 2, -XIAO_L / 2 - 20, USB_NOTCH_W / 2, -XIAO_L / 2),
+                      xiao_c, xiao_ang).buffer(-0.5, join_style=2).buffer(0.5)
+    pcb = largest(plate_outline.difference(usb_notch))
 
     busy = unary_union([under, xiao, power, jst, plug, batt.buffer(1.5)])
 
@@ -332,7 +342,7 @@ def main():
     boss_r = SCREW["boss_d"] / 2
     need = SCREW["length"] - PLATE["gap"] - PLATE["thick"] - PCB_T + 0.8   # pilot depth + margin
     deep_enough = box(x_out + (need - FLOOR - z_out) / slope, -1e3, 1e3, 1e3)
-    room = (pcb.buffer(-(boss_r + 0.3)).intersection(deep_enough)
+    room = (plate_outline.buffer(-(boss_r + 0.3)).intersection(deep_enough)
             .difference(flanges.buffer(SCREW["head_d"] / 2 + 0.4))
             .difference(blob_zone.buffer(boss_r + 0.3))
             .difference(pockets.buffer(SCREW["pilot_d"] / 2 + 1.5)))
@@ -340,7 +350,7 @@ def main():
             if room.contains(Point(gx / 2, gy / 2))]
     holes = []
     if grid:
-        cx0, cy0 = pcb.centroid.x, pcb.centroid.y
+        cx0, cy0 = plate_outline.centroid.x, plate_outline.centroid.y
         holes.append(max(grid, key=lambda p: (p[0] - cx0) ** 2 + (p[1] - cy0) ** 2))
         while len(holes) < 4:
             nxt = max(grid, key=lambda p: min(math.dist(p, q) for q in holes))
@@ -382,6 +392,7 @@ def main():
         "wall_in": wall_in, "wall_out": wall_in + WALL, "wall": WALL, "x_out": x_out,
         "tent_deg": tent, "slope": slope, "z_out": z_out, "z_in": z_in, "floor": FLOOR, "pcb_t": PCB_T,
         "pcb_outline": list(pcb.exterior.coords),
+        "plate_outline": list(plate_outline.exterior.coords),
         "pcb_inner_ring": list(pcb.buffer(-0.45, join_style=2).exterior.coords),
         "case_outline": list(case.exterior.coords),
         "cavity_outline": list(cav.exterior.coords),

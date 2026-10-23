@@ -1,6 +1,6 @@
 # Slim Diamond: soldering and assembly
 
-The Xiao, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall. The Xiao's LED and reset button face the case floor, so flash and test it before closing the case.
+The Xiao, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall: a recess the size of a cable's plug in front of the port, and a slot open to the top for the lever. Push the lever with a fingernail. The Xiao's LED and reset button face the case floor, so flash and test it before closing the case.
 
 Everything is soldered with an iron: no paste, no hot air. Build one half at a
 time. Both halves use the same PCB, turned over for the right half.
@@ -106,12 +106,12 @@ The base is solid up to the PCB's underside, with a pocket for every part. The P
 
 1. Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.
 2. Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.
-3. Lower the PCB, parts face down, into the base. Each part drops into its pocket, and the USB-C port and the switch lever line up with their openings in the wall. Nothing should need force: every pocket has 0.6 mm of clearance.
+3. Lower the PCB, parts face down, into the base. Each part drops into its pocket, the switch lever slides down its slot, and the USB-C port lines up with its recess. Nothing should need force: every pocket has 0.6 mm of clearance, and the PCB 0.5 mm to the outer walls.
 4. Lay the plate on top, its pillars and screw bosses resting on the PCB, and fit the four **M3 × 8 flat-head** screws through the plate and PCB. They cut their own thread in the Nylon: turn them in slowly, and stop when the heads sit flush in their countersinks.
 5. Clip the switches through the plate into the sockets, then fit the keycaps.
 
 ## Printing
 
-- **Base:** floor-down, no supports (the USB and lever openings bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.
+- **Base:** floor-down, no supports (the wall over the USB recess bridges it). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.
 - **Plate:** **top face down**: the STL is already oriented that way, with the pillars and screw bosses pointing up. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change `cut_tol` in `design.py` and regenerate.
 - **Nylon:** dry the filament before printing. It's tough enough to take the self-tapping threads without cracking, and its softness damps key noise.
