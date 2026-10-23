@@ -1,13 +1,15 @@
 # Slim Diamond: soldering and assembly
 
-The Xiao, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall: a recess the size of a cable's plug in front of the port, and a slot open to the top for the lever. Push the lever with a fingernail. The Xiao's LED and its own reset button face the case floor, so flash and test it before closing the case. A second reset button on the switch face, wired to the Xiao's reset pad, works with the case closed: it sits in a cone in the plate, above the thumbs.
+The module, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall: a recess the size of a cable's plug in front of the port, and a slot open to the top for the lever. Push the lever with a fingernail. The module's LED and its own reset button face the case floor, so flash and test it before closing the case. A second reset button on the switch face, wired to the module's reset pad, works with the case closed: it sits in a cone in the plate, above the thumbs.
 
 Everything is soldered with an iron: no paste, no hot air. Build one half at a
 time. Both halves use the same PCB, turned over for the right half.
 
+**The module** is a Seeed XIAO nRF52840 or a NologoTech Super52840. Each has its own board (see the README): build with the board made for your module. The steps are the same for both; where they differ, the step says so.
+
 ## Tools
 
-- Temperature-controlled iron with a **small chisel tip** (1.6–2 mm) for the Xiao, sockets and JST tabs, and a **fine conical tip** for the power switch.
+- Temperature-controlled iron with a **small chisel tip** (1.6–2 mm) for the module, sockets and JST tabs, and a **fine conical tip** for the power switch.
   - Leaded solder: about 330 °C.
   - Lead-free: about 360 °C.
 - Thin solder (0.5–0.6 mm), a **flux pen**, fine tweezers, kapton tape, isopropyl alcohol and a brush.
@@ -23,14 +25,14 @@ Each board has a **parts face** and a **switch face**. The silkscreen tells you 
 | Left | `LEFT: parts on this face` | the other one |
 | Right | `RIGHT: parts on this face` | the other one |
 
-- **Parts face:** Xiao, power switch, JST socket and the 12 hot-swap sockets. It faces the case floor.
-- **Switch face:** the key switches clip in here, the reset button is soldered here, and you bridge the jumpers and fill the Xiao's holes from this side.
+- **Parts face:** the module, power switch, JST socket and the 12 hot-swap sockets. It faces the case floor.
+- **Switch face:** the key switches clip in here, the reset button is soldered here, and you bridge the jumpers and fill the module's holes from this side.
 
-The Xiao always lies flat on the parts face, with its pad side against the PCB and its components (USB-C, shield, reset button) pointing away from it, towards the case floor.
+The module always lies flat on the parts face, with its pad side against the PCB and its components (USB-C, shield, reset button) pointing away from it, towards the case floor.
 
 ## Before you start
 
-- **Flash and test the Xiao first.** Plug it into USB and double-tap reset: a USB drive appears. Copy the firmware onto it:
+- **Flash and test the module first.** Plug it into USB and double-tap reset: a USB drive appears. Copy the firmware onto it:
 
   | Half | With a dongle | Without a dongle |
   |---|---|---|
@@ -43,23 +45,23 @@ The Xiao always lies flat on the parts face, with its pad side against the PCB a
 
 ## 1. Bridge the D0–D2 jumpers (switch face)
 
-On the switch face, inside the Xiao's outline, there are three small pad pairs labelled **D0, D1, D2**, next to `XIAO on B: bridge D0-D2` (left half) or `XIAO on F: bridge D0-D2` (right half). Flux them and bridge each pair with a small blob of solder.
+On the switch face, inside the module's outline, there are three small pad pairs labelled **D0, D1, D2**, next to `XIAO on B: bridge D0-D2` (left half) or `XIAO on F: bridge D0-D2` (right half); on the Super52840 board, `S52840 on B:` / `S52840 on F:`. Flux them and bridge each pair with a small blob of solder.
 
 ![Left half, switch face](renders/xiao_left_half.png)
 ![Right half, switch face (mirrored, as you see it)](renders/xiao_right_half.png)
 
 *Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs, and later fill the three boxed hole groups (step 2).*
 
-Leave the other three jumpers open. They're on the parts face, under where the Xiao will sit.
+Leave the other three jumpers open. They're on the parts face, under where the module will sit.
 
 **Check:** each bridged pair beeps on the multimeter.
 
-## 2. Solder the Xiao (parts face)
+## 2. Solder the module (parts face)
 
-1. Flux the 14 edge pads. Lay the Xiao flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
+1. Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
 2. **Tack two opposite corners:** put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.
 3. Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.
-4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery: VBAT and GND), the hole in the second box (NFC1 on the XIAO, P0.09 on the Super52840), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the Xiao's pad underneath.
+4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery: VBAT and GND), the hole in the second box (NFC1 on the XIAO, P0.09 on the Super52840), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pad underneath.
    **Fill only the boxed holes.** The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.
 5. Clean off the flux.
 
@@ -71,12 +73,12 @@ Leave the other three jumpers open. They're on the parts face, under where the X
 **Check:**
 - The VBAT hole beeps to the middle pin of the power switch footprint.
 - The GND hole beeps to the module's GND castellation. If the VBAT hole beeps to GND instead, the module is on the wrong board: unsolder it before you plug in a battery.
-- The RST hole does **not** beep to GND (the Xiao's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
+- The RST hole does **not** beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
 - No two adjacent castellations beep to each other.
 
 ## 3. Power switch, MSK-12C02 (parts face)
 
-It goes next to the Xiao's USB-C, with the lever pointing out over the board edge and its two locating pegs in the small holes.
+It goes next to the module's USB-C, with the lever pointing out over the board edge and its two locating pegs in the small holes.
 
 1. Tin one of the four corner (shield) pads. Place the switch with tweezers and reheat that pad to tack it.
 2. Solder the other three shield pads.
@@ -106,21 +108,21 @@ It goes on the **switch face**, in the gap above the thumb keys, inside its outl
 
 1. Plug in USB. With the firmware flashed and your computer paired or connected, short each socket's two contacts with tweezers. Every key should register.
 2. Plug in the battery, unplug USB and toggle the power switch: the half should stay connected.
-3. Press the reset button once: the half reboots (it disconnects and reconnects). Press it twice quickly: a USB drive appears (the bootloader), as with the Xiao's own button.
+3. Press the reset button once: the half reboots (it disconnects and reconnects). Press it twice quickly: a USB drive appears (the bootloader), as with the module's own button.
 
 | Symptom | Look at |
 |---|---|
 | One key dead | That socket's two joints |
 | Pinky, ring-bottom or middle-home dead | Its D0–D2 jumper (step 1) |
-| Index-top dead (both halves) | The NFC1 hole (step 2.4) |
+| Index-top dead (both halves) | The NFC1 / P0.09 hole (step 2.4) |
 | Works on USB, not on battery | The VBAT/GND holes, the power-switch joints, battery polarity |
 | Reset button does nothing | The RST hole (step 2.4) and the button's legs (step 6) |
 | Half never starts, or keeps rebooting | RST bridged to GND: the RST hole or the button's legs |
-| Nothing works | The Xiao's castellations, or the firmware file |
+| Nothing works | The module's castellations, or the firmware file |
 
 ## 8. Case and plate
 
-The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the Xiao.
+The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the module.
 
 1. Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.
 2. Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.

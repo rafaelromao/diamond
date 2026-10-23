@@ -86,6 +86,17 @@ figcaption { font-size: 0.85rem; color: var(--muted); }
 .find::before { content: ""; background: var(--copper); border-radius: 2px; }
 .find div { display: grid; gap: 4px; }
 .note { font-size: 0.92rem; color: var(--muted); border-left: 2px solid var(--rule); padding-left: 14px; }
+.doc { display: grid; gap: 14px; max-width: 760px; }
+.doc > * { margin: 0; min-width: 0; }
+.doc h3 { font-family: var(--display); font-size: 1.3rem; font-weight: 700; margin-top: 18px; }
+.doc ul, .doc ol { padding-left: 1.3em; display: grid; gap: 6px; }
+.doc code { font-family: var(--mono); font-size: 0.88em; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; }
+.doc .table { overflow-x: auto; }
+.doc table { border-collapse: collapse; font-size: 0.9rem; min-width: 100%; }
+.doc th, .doc td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-top: 1px solid var(--rule); }
+.doc th { font-family: var(--mono); font-weight: 500; font-size: 0.8rem; color: var(--muted); border-top: 0; }
+.doc img { max-width: 340px; width: 100%; display: inline-block; border-radius: 6px; margin-right: 8px; }
+.doc em { color: var(--muted); }
 footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 20px; }
 </style>
 </head>
@@ -109,7 +120,7 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
     <table class="spec">
       <tr><th>Keys</th><td>24 Choc v1 hot-swap, all 1u: 3×3, a pinky key and two thumbs per half</td></tr>
       <tr><th>Wiring</th><td>Diodeless, one pin per key: 11 Xiao edge pins plus the NFC1 pad</td></tr>
-      <tr><th>Controller</th><td>Seeed XIAO nRF52840 per half, ZMK firmware</td></tr>
+      <tr><th>Controller</th><td>A XIAO-sized nRF52840 per half: the Seeed XIAO nRF52840 or the NologoTech Super52840, each with its own board. ZMK firmware, the same for both</td></tr>
       <tr><th>Power</th><td>752025 LiPo (250 mAh) on a JST PH socket, MSK-12C02 slide switch beside the USB-C port</td></tr>
       <tr><th>PCB</th><td><span class="num">87.6 × 92.3 mm</span>, 2 layers, one reversible design for both halves</td></tr>
       <tr><th>Case</th><td>Solid printed base tented <span class="num">6.6°</span>, <span class="num">18.6 mm</span> at the seam and <span class="num">8.7 mm</span> at the outer edge, with a <span class="num">1.2 mm</span> top plate</td></tr>
@@ -123,10 +134,14 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
     <figure><img src="renders/parts_top.png" alt="The left half's PCB with switches and keycaps, seen from above at an angle" width="1200" height="900" loading="lazy"><figcaption>Switch side of the left half, with keycaps.</figcaption></figure>
   </div>
 
-  <div class="grid2">
+  <div class="grid3">
     <figure>
       <img src="renders/parts_bottom.png" alt="Underside of the left half's PCB with the Xiao, power switch, JST socket and hot-swap sockets" width="1200" height="900" loading="lazy">
       <figcaption>Parts face of the left half. The right half is the same board turned over.</figcaption>
+    </figure>
+    <figure>
+      <img src="renders/board_top.png" alt="The bare PCB's front face, with the right half's part footprints" width="1200" height="900" loading="lazy">
+      <figcaption>Bare board, front face: the right half's parts go here.</figcaption>
     </figure>
     <figure>
       <img src="renders/board_bottom.png" alt="The bare PCB's back face, with the left half's part footprints" width="1200" height="900" loading="lazy">
@@ -137,14 +152,29 @@ footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--ru
   <section class="stack col">
     <span class="eyebrow">One PCB, two halves</span>
     <h2>The reversible trick</h2>
-    <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the Xiao's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
-    <p>The Xiao's underside pads (VBAT, GND, NFC1, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
+    <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the module's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
+    <p>The module's underside pads (battery, the 12th key's pin, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
   </section>
 
-  <div class="grid3">
-    <figure><img src="renders/board_top.png" alt="The bare PCB's front face, with the right half's part footprints" width="1200" height="900" loading="lazy"><figcaption>Front face: the right half's parts go here.</figcaption></figure>
-    <figure><img src="renders/xiao_left_half.png" alt="Close-up of the left half's switch face around the Xiao, with the D0 to D2 jumpers and boxed fill holes" width="700" height="700" loading="lazy"><figcaption>Left half, switch face: bridge D0–D2, fill the boxed holes.</figcaption></figure>
-    <figure><img src="renders/xiao_right_half.png" alt="Close-up of the right half's switch face around the Xiao, mirrored as seen when turned over" width="700" height="700" loading="lazy"><figcaption>Right half, switch face, as you see it turned over.</figcaption></figure>
+  <section class="stack">
+    <span class="eyebrow">Two modules, two boards</span>
+    <h2>XIAO or Super52840</h2>
+    <p class="col">Both modules have the same 14 edge pins on the same nRF52840 pins, so the layout, case, plate and firmware are shared. They differ underneath, where the board reaches the battery, the 12th key and reset, so each gets its own board. The Super52840's pads were measured from photos against the 2.54 mm pin pitch.</p>
+    <table class="spec">
+      <tr><th></th><td><strong>Seeed XIAO nRF52840</strong></td><td><strong>NologoTech Super52840</strong></td></tr>
+      <tr><th>Battery</th><td>VBAT and GND pads</td><td>B+ and B− in the same two spots, swapped: never fit a module on the other one's board</td></tr>
+      <tr><th>12th key</th><td>NFC1 pad (P0.09)</td><td>P0.09 in a row of nine extra GPIO pads, 1.3 mm away</td></tr>
+      <tr><th>Reset</th><td>Test pad</td><td>Same place</td></tr>
+      <tr><th>USB-C</th><td>Surface-mount</td><td>Legs through its board, cleared by holes; sticks out 0.8 mm further, inside the case's recess</td></tr>
+      <tr><th>Fab files</th><td><code class="num">slim_diamond_jlcpcb.zip</code></td><td><code class="num">slim_diamond_super52840_jlcpcb.zip</code></td></tr>
+    </table>
+  </section>
+
+  <div class="grid2">
+    <figure><img src="renders/xiao_left_half.png" alt="XIAO board, left half's switch face around the module: D0 to D2 jumpers and boxed fill holes" width="700" height="700" loading="lazy"><figcaption>XIAO board, left half: bridge D0–D2, fill the boxed holes.</figcaption></figure>
+    <figure><img src="renders/xiao_right_half.png" alt="XIAO board, right half's switch face, mirrored as seen when turned over" width="700" height="700" loading="lazy"><figcaption>XIAO board, right half, as you see it turned over.</figcaption></figure>
+    <figure><img src="renders/super52840_left_half.png" alt="Super52840 board, left half's switch face: the battery, P0.09 and reset holes boxed" width="700" height="700" loading="lazy"><figcaption>Super52840 board, left half: smaller battery holes, P0.09 by the far end.</figcaption></figure>
+    <figure><img src="renders/super52840_right_half.png" alt="Super52840 board, right half's switch face, mirrored as seen when turned over" width="700" height="700" loading="lazy"><figcaption>Super52840 board, right half, as you see it turned over.</figcaption></figure>
   </div>
 
   <section class="stack">
@@ -216,6 +246,319 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <figure><img src="renders/stacked.png" alt="Both halves stacked floor to floor, seen at an angle" width="1200" height="900" loading="lazy"><figcaption>Stacked back to back, keys facing out.</figcaption></figure>
     <figure><img src="renders/stacked_side.png" alt="Both halves stacked floor to floor, seen from the side" width="1200" height="900" loading="lazy"><figcaption>Stacked floor to floor for travel.</figcaption></figure>
   </div>
+
+  <section class="stack">
+    <span class="eyebrow">Parts</span>
+    <h2>Bill of materials</h2>
+    <div class="doc">
+<!-- BOM.md -->
+<p>Quantities are for <strong>one keyboard (both halves)</strong>. The PCB is reversible, so
+both halves use the same board. "Spares" are worth ordering because AliExpress
+packs come in round numbers anyway.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Part</th>
+<th>Qty</th>
+<th>Search AliExpress for</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>PCB, <code>fab/slim_diamond_jlcpcb.zip</code></td>
+<td>2 (order 5)</td>
+<td>(JLCPCB, not AliExpress)</td>
+<td>2 layers, 1.6 mm, 87.6 × 92.3 mm, HASL, any colour. The cheapest tier: 5 boards is 2 keyboards plus a spare.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Seeed Studio XIAO nRF52840, <strong>or</strong> NologoTech Super52840</td>
+<td>2</td>
+<td><code>Seeed XIAO nRF52840</code> / <code>Super52840</code> or <code>MINI NRF52840 18x21</code></td>
+<td>Each has its own board (see README): order the matching fab zip. XIAO: the plain one (not "Sense", not "Plus"), genuine Seeed, since the board relies on its bottom pads (BAT, GND, NFC1). Super52840: the one with B+/B- pads and a row of nine GPIO pads underneath.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Kailh Choc v1 switches</td>
+<td>24 (+2)</td>
+<td><code>Kailh choc low profile switch</code></td>
+<td>Any v1 (PG1350) switch. Not v2 (MX stem) and not Choc mini.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Kailh Choc hot-swap sockets</td>
+<td>24 (+4)</td>
+<td><code>Kailh choc hotswap socket PG1350</code></td>
+<td>CPG135001S30, the low-profile socket.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Choc keycaps, 1u</td>
+<td>24</td>
+<td><code>MBK keycaps choc</code> / <code>CFX choc keycaps</code></td>
+<td>All 24 are 1u (17.5 × 16.5). Thumbs and pinky too.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>LiPo battery 752025, 250 mAh, 3.7 V</td>
+<td>2</td>
+<td><code>752025 lipo 250mah JST PH 2.0</code></td>
+<td>7.5 × 20 × 25 mm. Ask for the <strong>JST PH 2.0</strong> plug. Check polarity before plugging in (see below).</td>
+</tr>
+<tr>
+<td>7</td>
+<td>JST PH 2.0, 2-pin, SMD horizontal socket</td>
+<td>2 (+2)</td>
+<td><code>JST PH 2.0 2P SMD horizontal</code></td>
+<td>S2B-PH-SM4-TB footprint: side entry, two signal pads and two big mounting tabs.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Slide switch MSK-12C02</td>
+<td>2 (+3)</td>
+<td><code>MSK-12C02 SMD slide switch</code></td>
+<td>The 7-pad SMD one with two locating pins.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Reset button: SMD tact switch 5.1 × 5.1 mm, <strong>2.0 mm tall</strong>, 4 gull-wing legs (XKB TS-1187A-B-D-B or equivalent)</td>
+<td>2 (+3)</td>
+<td><code>5.1x5.1x2.0 SMD tactile switch 4 pin</code></td>
+<td>On the switch face, in the nook above the thumbs: reset, or double-tap for the bootloader, with the case closed. The height matters: 2.0 mm puts the plunger 0.2 mm under the plate's top. The common 1.5 mm one (LCSC C318884) fits too, but then sits 0.7 mm down and needs a fingernail or a pen tip.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Disc magnets 8 × 3 mm, N52</td>
+<td>20 (+4)</td>
+<td><code>8x3mm N52 neodymium magnet</code></td>
+<td>Ten per half, all the same part: four in the floor (the halves stack back to back) and six in the inner wall (the halves join as a unibody).</td>
+</tr>
+<tr>
+<td>11</td>
+<td>M3 × 8 flat-head screws, 90° countersunk (ISO 10642 / DIN 7991)</td>
+<td>8</td>
+<td><code>M3x8 countersunk flat head screw</code></td>
+<td>Four per half: through the plate (the head sits flush in its countersink) and the PCB, threading into the solid base (2.5 mm pilot holes).</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Silicone bump-ons 8 × 2 mm, self-adhesive</td>
+<td>10 (+6)</td>
+<td><code>8x2mm silicone bumpon self adhesive</code></td>
+<td>Five per half, in the slots under the floor (see BUILD.md). Clear or black, round, 8 mm diameter, 2 mm tall; up to 2.2 mm still lets the floors meet.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Filament</td>
+<td>~170 g</td>
+<td>Nylon (PA)</td>
+<td>Case left + right (solid base, 57.3 cm³ each) and the two top plates (4.3 cm³ each).</td>
+</tr>
+</tbody>
+</table></div>
+<p>Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
+or epoxy for the magnets.</p>
+<p>Soldering, assembly and printing: see <a href="BUILD.md">BUILD.md</a>.</p>
+<!-- /BOM.md -->
+    </div>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">Build guide</span>
+    <h2>Soldering and assembly</h2>
+    <div class="doc">
+<!-- BUILD.md -->
+<p>The module, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall: a recess the size of a cable's plug in front of the port, and a slot open to the top for the lever. Push the lever with a fingernail. The module's LED and its own reset button face the case floor, so flash and test it before closing the case. A second reset button on the switch face, wired to the module's reset pad, works with the case closed: it sits in a cone in the plate, above the thumbs.</p>
+<p>Everything is soldered with an iron: no paste, no hot air. Build one half at a
+time. Both halves use the same PCB, turned over for the right half.</p>
+<p><strong>The module</strong> is a Seeed XIAO nRF52840 or a NologoTech Super52840. Each has its own board (see the README): build with the board made for your module. The steps are the same for both; where they differ, the step says so.</p>
+<h3>Tools</h3>
+<ul>
+<li>Temperature-controlled iron with a <strong>small chisel tip</strong> (1.6–2 mm) for the module, sockets and JST tabs, and a <strong>fine conical tip</strong> for the power switch.</li>
+<li>Leaded solder: about 330 °C.</li>
+<li>Lead-free: about 360 °C.</li>
+<li>Thin solder (0.5–0.6 mm), a <strong>flux pen</strong>, fine tweezers, kapton tape, isopropyl alcohol and a brush.</li>
+<li>A multimeter with a continuity beep.</li>
+<li>Optional: a magnifier or phone camera to inspect the small pads.</li>
+</ul>
+<h3>The two faces</h3>
+<p>Each board has a <strong>parts face</strong> and a <strong>switch face</strong>. The silkscreen tells you which is which:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Half</th>
+<th>Parts face (silkscreen)</th>
+<th>Switch face</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Left</td>
+<td><code>LEFT: parts on this face</code></td>
+<td>the other one</td>
+</tr>
+<tr>
+<td>Right</td>
+<td><code>RIGHT: parts on this face</code></td>
+<td>the other one</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Parts face:</strong> the module, power switch, JST socket and the 12 hot-swap sockets. It faces the case floor.</li>
+<li><strong>Switch face:</strong> the key switches clip in here, the reset button is soldered here, and you bridge the jumpers and fill the module's holes from this side.</li>
+</ul>
+<p>The module always lies flat on the parts face, with its pad side against the PCB and its components (USB-C, shield, reset button) pointing away from it, towards the case floor.</p>
+<h3>Before you start</h3>
+<ul>
+<li><strong>Flash and test the module first.</strong> Plug it into USB and double-tap reset: a USB drive appears. Copy the firmware onto it:</li>
+</ul>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Half</th>
+<th>With a dongle</th>
+<th>Without a dongle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Left</td>
+<td><code>slim_diamond_peripheral_left-zmk.uf2</code></td>
+<td><code>slim_diamond_central_left-zmk.uf2</code></td>
+</tr>
+<tr>
+<td>Right</td>
+<td><code>slim_diamond_peripheral_right-zmk.uf2</code></td>
+<td><code>slim_diamond_peripheral_right-zmk.uf2</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A dead module is much easier to swap now than after soldering.
+- <strong>Battery polarity.</strong> Silkscreen <code>+</code> marks pin 1 of the JST socket. Cheap 752025 cells ship with either polarity: check the plug with the multimeter. If it's reversed, swap the two crimps in the plug housing (lift each tab with a needle).
+- <strong>Magnet polarity.</strong> Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.</p>
+<h3>1. Bridge the D0–D2 jumpers (switch face)</h3>
+<p>On the switch face, inside the module's outline, there are three small pad pairs labelled <strong>D0, D1, D2</strong>, next to <code>XIAO on B: bridge D0-D2</code> (left half) or <code>XIAO on F: bridge D0-D2</code> (right half); on the Super52840 board, <code>S52840 on B:</code> / <code>S52840 on F:</code>. Flux them and bridge each pair with a small blob of solder.</p>
+<p><img alt="Left half, switch face" src="renders/xiao_left_half.png" />
+<img alt="Right half, switch face (mirrored, as you see it)" src="renders/xiao_right_half.png" /></p>
+<p><em>Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs, and later fill the three boxed hole groups (step 2).</em></p>
+<p>Leave the other three jumpers open. They're on the parts face, under where the module will sit.</p>
+<p><strong>Check:</strong> each bridged pair beeps on the multimeter.</p>
+<h3>2. Solder the module (parts face)</h3>
+<ol>
+<li>Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.</li>
+<li><strong>Tack two opposite corners:</strong> put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.</li>
+<li>Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.</li>
+<li><strong>Turn the board over (switch face up). Fill the boxed holes:</strong> the pair inside one box (the battery: VBAT and GND), the hole in the second box (NFC1 on the XIAO, P0.09 on the Super52840), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pad underneath.
+   <strong>Fill only the boxed holes.</strong> The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.</li>
+<li>Clean off the flux.</li>
+</ol>
+<p><strong>Super52840:</strong> the steps are the same, on its own board (<code>fab/slim_diamond_super52840_jlcpcb.zip</code>, silkscreen <code>S52840 on B:</code> / <code>S52840 on F:</code>). Its holes are small (0.5 mm), so use thin solder and give each one time to fill. <strong>Before laying the module down, check the board matches it:</strong> the hole in the battery box nearer the module's middle must line up with the module's B- pad, and the one nearer the USB end with B+.</p>
+<p><img alt="Super52840, left half, switch face" src="renders/super52840_left_half.png" />
+<img alt="Super52840, right half, switch face (mirrored, as you see it)" src="renders/super52840_right_half.png" /></p>
+<p><strong>Check:</strong>
+- The VBAT hole beeps to the middle pin of the power switch footprint.
+- The GND hole beeps to the module's GND castellation. If the VBAT hole beeps to GND instead, the module is on the wrong board: unsolder it before you plug in a battery.
+- The RST hole does <strong>not</strong> beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
+- No two adjacent castellations beep to each other.</p>
+<h3>3. Power switch, MSK-12C02 (parts face)</h3>
+<p>It goes next to the module's USB-C, with the lever pointing out over the board edge and its two locating pegs in the small holes.</p>
+<ol>
+<li>Tin one of the four corner (shield) pads. Place the switch with tweezers and reheat that pad to tack it.</li>
+<li>Solder the other three shield pads.</li>
+<li>Solder the three signal pads with the fine tip and very little solder. A bridge between the middle pin and its near neighbour does no harm (both are VBAT). A bridge from the middle pin to the far one bypasses the switch: wick it away.</li>
+</ol>
+<h3>4. JST battery socket (parts face)</h3>
+<p>Its opening faces the battery's spot under the inner keys. Tack one signal pin, check it sits flat, and solder the other pin. Then solder the two large mounting tabs: they need more heat and more solder, because they take the force of plugging the battery in.</p>
+<h3>5. Hot-swap sockets (parts face)</h3>
+<p>Twelve, one per key. Each socket fits its outline only one way round.</p>
+<ol>
+<li>Tin one pad lightly, place the socket, and hold it flat with tweezers while you reheat the pad until the socket's metal tab sinks into the solder.</li>
+<li>Solder the second tab. Use enough solder to make a fillet, but keep it out of the socket's opening.</li>
+</ol>
+<h3>6. Reset button, TS-1187A (switch face)</h3>
+<p>It goes on the <strong>switch face</strong>, in the gap above the thumb keys, inside its outline labelled <code>RST</code>. The part is square and symmetric: any of the four ways round works.</p>
+<ol>
+<li>Tin one corner pad, hold the button flat and centred with tweezers, and reheat the pad to tack it.</li>
+<li>Solder the other three legs: a small fillet on each, iron on the pad and against the leg. Keep the solder off the body: the button is 2.0 mm tall and the plate's pocket over it leaves only 0.3 mm above the collar.</li>
+</ol>
+<p><strong>Check:</strong> the RST hole (step 2.4) beeps to the two legs on the <code>RST</code> side of the button (the side with the label), and beeps to GND only while you press the button.</p>
+<h3>7. Test (before the case)</h3>
+<ol>
+<li>Plug in USB. With the firmware flashed and your computer paired or connected, short each socket's two contacts with tweezers. Every key should register.</li>
+<li>Plug in the battery, unplug USB and toggle the power switch: the half should stay connected.</li>
+<li>Press the reset button once: the half reboots (it disconnects and reconnects). Press it twice quickly: a USB drive appears (the bootloader), as with the module's own button.</li>
+</ol>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Look at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One key dead</td>
+<td>That socket's two joints</td>
+</tr>
+<tr>
+<td>Pinky, ring-bottom or middle-home dead</td>
+<td>Its D0–D2 jumper (step 1)</td>
+</tr>
+<tr>
+<td>Index-top dead (both halves)</td>
+<td>The NFC1 / P0.09 hole (step 2.4)</td>
+</tr>
+<tr>
+<td>Works on USB, not on battery</td>
+<td>The VBAT/GND holes, the power-switch joints, battery polarity</td>
+</tr>
+<tr>
+<td>Reset button does nothing</td>
+<td>The RST hole (step 2.4) and the button's legs (step 6)</td>
+</tr>
+<tr>
+<td>Half never starts, or keeps rebooting</td>
+<td>RST bridged to GND: the RST hole or the button's legs</td>
+</tr>
+<tr>
+<td>Nothing works</td>
+<td>The module's castellations, or the firmware file</td>
+</tr>
+</tbody>
+</table></div>
+<h3>8. Case and plate</h3>
+<p>The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the module.</p>
+<ol>
+<li>Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.</li>
+<li>Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.</li>
+<li>Lower the PCB, parts face down, into the base. Each part drops into its pocket, the switch lever slides down its slot, and the USB-C port lines up with its recess. Nothing should need force: every pocket has 0.6 mm of clearance, and the PCB 0.5 mm to the outer walls.</li>
+<li>Lay the plate on top, its pillars and screw bosses resting on the PCB, and fit the four <strong>M3 × 8 flat-head</strong> screws through the plate and PCB. They cut their own thread in the Nylon: turn them in slowly, and stop when the heads sit flush in their countersinks.</li>
+<li>Clip the switches through the plate into the sockets, then fit the keycaps.
+   The reset button now sits under a cone in the plate, between the index finger's bottom key and the thumbs. Its plunger is 0.2 mm under the plate's top, so keycaps and palms don't reach it.</li>
+<li><strong>Anti-slip pads.</strong> Each floor has five slots, each long enough for two pads. Stick one 8 × 2 mm bump-on into <strong>one end</strong> of every slot and leave the other end empty: when the halves are stacked back to back, the other half's pad drops into that empty end, so the floors and magnets still meet.</li>
+</ol>
+<p>The rule is the same on both halves: turn the half over and go <strong>clockwise round the floor</strong>. In every slot, the pad goes in the end you reach <strong>second</strong>. Then each half's five pads sit in the ends the other half leaves empty.</p>
+<p><img alt="Both floors from below: the pads in black" src="renders/pads.png" /></p>
+<p>Clean the slots with isopropyl alcohol first and press each pad down firmly against the slot's roof, centred in its round end. Stack the halves to check: they should close flat, with no rocking.</p>
+<h3>Resetting a closed half</h3>
+<p>Press straight down into the cone above the thumbs with a fingertip (the pad, not the nail, is enough: the cone is 4.2 mm across at the top and the plunger 2.0 mm wide).</p>
+<ul>
+<li><strong>Once:</strong> the half reboots.</li>
+<li><strong>Twice quickly:</strong> the bootloader. With USB plugged in, a USB drive appears: copy a <code>.uf2</code> onto it to flash new firmware, as in "Before you start".</li>
+</ul>
+<h3>Printing</h3>
+<ul>
+<li><strong>Base:</strong> floor-down, no supports (the wall over the USB recess and the roofs of the pad slots, 8.6 mm wide, bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.</li>
+<li><strong>Plate:</strong> <strong>top face down</strong>: the STL is already oriented that way, with the pillars and screw bosses pointing up. The reset button's cone narrows upwards at 45° from the bed (4.2 mm to 2.8 mm over the first 0.7 mm) and needs no support. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change <code>cut_tol</code> in <code>design.py</code> and regenerate.</li>
+<li><strong>Nylon:</strong> dry the filament before printing. It's tough enough to take the self-tapping threads without cracking, and its softness damps key noise.</li>
+</ul>
+<!-- /BUILD.md -->
+    </div>
+  </section>
 
   <section class="stack col">
     <span class="eyebrow">Status</span>
