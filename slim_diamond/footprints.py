@@ -141,7 +141,8 @@ def xiao_pin_xy(pin, mount):
 # pins, on the same nRF52840 pins (D0..D10); they differ underneath. Positions are F-mount,
 # relative to the pin rows' centre, USB at -y.
 #  - Xiao (Seeed's OPL footprint): VBAT (-4.455, -0.315) and GND (-4.455, -2.215), 2.5 x 1.1
-#    pads; NFC1 (P0.09) at (3.8, 9.31) and NFC2 at (5.705, 9.31), 1.1 x 2.5.
+#    pads; NFC1 (P0.09) at (3.8, 9.31) and NFC2 at (5.705, 9.31), 1.1 x 2.5. Flat underneath: its
+#    USB-C has no legs through the board (checked on a real one).
 #  - Super52840, measured from two photos against the 2.54 mm pin pitch (its RST, GND and SWD
 #    pads land within 0.2 mm of the Xiao's): B- (-4.46, -0.36) and B+ (-4.44, -2.27), about
 #    2.0 x 1.0, so the battery's polarity is the Xiao's swapped; a row of nine GPIO pads 1.1 mm
