@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slim Diamond</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+img { max-width: 100%; }
+/* Layout: a build log. One narrow reading column, figures that break wider, a spec sheet and a terminal-style check readout. */
+:root {
+  --bg: #eef0ec;          /* fibreglass, pale */
+  --surface: #f8f9f6;
+  --fg: #1c2420;
+  --muted: #56615a;
+  --rule: #cfd5cd;
+  --mask: #1f5a43;        /* solder mask green */
+  --copper: #a8741f;      /* ENIG / copper */
+  --term-bg: #17201b;
+  --term-fg: #d5e4d8;
+  --ok: #3f9a62;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121815; --surface: #19211d; --fg: #e3e9e4; --muted: #9aa69e; --rule: #2c3631;
+    --mask: #6cc49a; --copper: #d9a956; --term-bg: #0b100d; --term-fg: #cfe0d3; --ok: #6cc49a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #19211d; --fg: #e3e9e4; --muted: #9aa69e; --rule: #2c3631;
+  --mask: #6cc49a; --copper: #d9a956; --term-bg: #0b100d; --term-fg: #cfe0d3; --ok: #6cc49a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+main { max-width: 980px; margin: 0 auto; display: grid; gap: 56px; }
+.col { max-width: 680px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+h3 { font-size: 1.15rem; font-weight: 500; }
+p { margin: 0; }
+a { color: var(--mask); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--copper); outline-offset: 3px; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--copper); }
+.stack { display: grid; gap: 16px; }
+.lede { font-size: 1.2rem; color: var(--muted); }
+header { display: grid; gap: 20px; }
+figure { margin: 0; display: grid; gap: 8px; }
+figure img { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--surface); }
+figcaption { font-size: 0.85rem; color: var(--muted); }
+.hero img { border: 1px solid var(--rule); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 720px) { .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); } }
+.spec { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.spec th { text-align: left; font-family: var(--mono); font-weight: 500; font-size: 0.8rem; color: var(--muted); padding: 10px 16px 10px 0; vertical-align: top; white-space: nowrap; }
+.spec td { padding: 10px 0; border-top: 1px solid var(--rule); }
+.spec tr:first-child td { border-top: 0; }
+.spec tr + tr th { border-top: 1px solid var(--rule); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.92em; }
+.tools { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.tool { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.tool b { font-family: var(--mono); font-weight: 500; font-size: 0.9rem; color: var(--mask); }
+@media (max-width: 560px) { .tool { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.loop { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
+.loop li { counter-increment: s; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; font-size: 0.92rem; display: grid; gap: 6px; align-content: start; }
+.loop li::before { content: counter(s); font-family: var(--mono); color: var(--copper); font-size: 0.8rem; }
+@media (max-width: 820px) { .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .loop { grid-template-columns: minmax(0, 1fr); } }
+.term { background: var(--term-bg); color: var(--term-fg); font-family: var(--mono); font-size: 0.82rem; line-height: 1.55; border-radius: 6px; padding: 18px 20px; overflow-x: auto; margin: 0; white-space: pre; }
+.term .ok { color: var(--ok); }
+.finds { display: grid; gap: 14px; }
+.find { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 16px; }
+.find::before { content: ""; background: var(--copper); border-radius: 2px; }
+.find div { display: grid; gap: 4px; }
+.note { font-size: 0.92rem; color: var(--muted); border-left: 2px solid var(--rule); padding-left: 14px; }
+.post { display: grid; gap: 12px; }
+.post-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.post textarea { width: 100%; min-height: 320px; resize: vertical; font-family: var(--mono); font-size: 0.82rem; line-height: 1.5; background: var(--surface); color: var(--fg); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; }
+button { font: 500 0.9rem var(--body); background: var(--mask); color: var(--bg); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
+button:hover { filter: brightness(1.08); }
+.count { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 20px; }
+@media (prefers-reduced-motion: no-preference) { button { transition: filter .15s; } }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="col">
+    <span class="eyebrow">Build log · 24 keys · Choc v1 · ZMK</span>
+    <h1>Slim Diamond</h1>
+    <p class="lede">A wireless, low-profile remake of the handwired Diamond (1333+2 per half). The layout and goals are mine; the PCB, the printed case and every check were generated as code by Claude, Anthropic's model, working in Claude Code.</p>
+  </header>
+
+  <figure class="hero">
+    <img src="renders/full.png" alt="Left half assembled: printed base, top plate, Choc switches and keycaps" width="1200" height="900">
+    <figcaption>The left half as built: solid printed base, top plate, Choc v1 switches. KiCad ray-traced render.</figcaption>
+  </figure>
+
+  <section class="stack">
+    <span class="eyebrow">Spec sheet</span>
+    <h2>The board</h2>
+    <table class="spec">
+      <tr><th>Keys</th><td>24 Choc v1 hot-swap, all 1u: 3×3, a pinky key and two thumbs per half</td></tr>
+      <tr><th>Wiring</th><td>Diodeless, one pin per key: 11 Xiao edge pins plus the NFC1 pad</td></tr>
+      <tr><th>Controller</th><td>Seeed XIAO nRF52840 per half, ZMK firmware</td></tr>
+      <tr><th>Power</th><td>752025 LiPo (250 mAh) on a JST PH socket, MSK-12C02 slide switch beside the USB-C port</td></tr>
+      <tr><th>PCB</th><td><span class="num">87.6 × 92.3 mm</span>, 2 layers, one reversible design for both halves</td></tr>
+      <tr><th>Case</th><td>Solid printed base tented <span class="num">6.6°</span>, <span class="num">18.6 mm</span> at the seam and <span class="num">8.7 mm</span> at the outer edge, with a <span class="num">1.2 mm</span> top plate</td></tr>
+      <tr><th>Extras</th><td>Magnets to join the halves or stack them for travel, anti-slip pads that interleave when stacked, a reset button under a cone hole in the plate</td></tr>
+      <tr><th>Assembly</th><td>Soldering iron only: no paste, no hot air</td></tr>
+    </table>
+  </section>
+
+  <div class="grid2">
+    <figure>
+      <img src="renders/parts_bottom.png" alt="Underside of the left half's PCB with the Xiao, power switch, JST socket and hot-swap sockets" width="1200" height="900" loading="lazy">
+      <figcaption>Parts face of the left half. The right half is the same board turned over.</figcaption>
+    </figure>
+    <figure>
+      <img src="renders/xiao_left_half.png" alt="Close-up of the switch face around the Xiao, showing D0 to D2 jumpers and boxed fill holes" width="700" height="700" loading="lazy">
+      <figcaption>Switch face around the Xiao: bridge D0–D2, fill the boxed holes from this side.</figcaption>
+    </figure>
+  </div>
+
+  <section class="stack col">
+    <span class="eyebrow">One PCB, two halves</span>
+    <h2>The reversible trick</h2>
+    <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the Xiao's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
+    <p>The Xiao's underside pads (VBAT, GND, NFC1, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">Toolchain</span>
+    <h2>Everything is a script</h2>
+    <div class="tools">
+      <div class="tool"><b>Python + shapely</b><p>One <code class="num">design.json</code> places everything from the key layout: the Xiao, battery, connector, screws and magnets. The tent angle is the smallest one the parts under the PCB fit beneath.</p></div>
+      <div class="tool"><b>KiCad 9 Python API</b><p>Runs headless in the official container. Footprints are written as text, checked against KiCad's library, Seeed's OPL library and kiswitch, then the board is built by script.</p></div>
+      <div class="tool"><b>Freerouting 2.2</b><p>Autoroutes the board; pours and stitching vias go on afterwards.</p></div>
+      <div class="tool"><b>kicad-cli</b><p>Design-rule check, Gerbers and drill files for JLCPCB, and every render on this page.</p></div>
+      <div class="tool"><b>manifold3d</b><p>Builds the base and plate as solids, then intersects every part with them. Anything that isn't <span class="num">0 mm³</span> fails.</p></div>
+    </div>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">How a language model does it</span>
+    <h2>No CAD window, just a loop</h2>
+    <p class="col">A model can't drag parts around in a GUI, so the design lives in code and every judgement is a number or a picture it can inspect.</p>
+    <ol class="loop">
+      <li><strong>Generate</strong>Placement, footprints, board, solids, all from scripts.</li>
+      <li><strong>Check</strong>DRC with zero errors, and the fit check at <span class="num">0 mm³</span>.</li>
+      <li><strong>Look</strong>Render the board and case, then read the images.</li>
+      <li><strong>Fix upstream</strong>Change the generator, never the output by hand.</li>
+      <li><strong>Regenerate</strong>Rerun the whole chain from <code>design.py</code>.</li>
+    </ol>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">Review</span>
+    <h2>What the checks missed</h2>
+    <p class="col">Passing checks only prove what they test. A dedicated review pass, with a model asked to imagine the printed object in hand, caught problems the first checks didn't cover. Each one became a new check:</p>
+    <div class="finds col">
+      <div class="find"><div><h3>The USB-C cable couldn't seat</h3><p>The port sat <span class="num">3.6 mm</span> behind the wall in a <span class="num">10 × 4.4 mm</span> hole, smaller than any cable's overmold. Now there's a recess the size of the largest Type-C overmold, and a notch in the PCB edge in front of the port.</p></div></div>
+      <div class="find"><div><h3>The switch lever blocked assembly</h3><p>The lever reached <span class="num">0.45 mm</span> into the wall, so the PCB couldn't drop straight in, and its tip sat <span class="num">2.3 mm</span> deep. Now a slot open to the top lets it slide down and a fingernail reach it.</p></div></div>
+      <div class="find"><div><h3>Too tight for the tolerances</h3><p><span class="num">0.3 mm</span> around the PCB is less than JLCPCB's ±<span class="num">0.2 mm</span> outline tolerance plus print shrinkage. Now it's <span class="num">0.5 mm</span>.</p></div></div>
+    </div>
+<pre class="term">$ python check_fit.py
+sockets vs base                       0.000 mm3
+xiao vs base                          0.000 mm3
+battery vs sockets                    0.000 mm3
+plate vs base                         0.000 mm3
+usb plug vs base                      0.000 mm3
+usb plug vs pcb                       0.000 mm3
+switch lever (dropping in) vs base    0.000 mm3
+reset button body vs plate            0.000 mm3
+stacked: left pads vs right pads      0.000 mm3
+balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
+<span class="ok">ALL CLEAR</span></pre>
+    <p class="note col">Excerpt. Against the original design, the three new checks read 120, 1.9 and 4.4 mm³.</p>
+  </section>
+
+  <div class="grid3">
+    <figure><img src="renders/case.png" alt="Printed base with pockets for each part, the USB-C recess and the switch slot" width="1200" height="900" loading="lazy"><figcaption>Solid base: a pocket per part.</figcaption></figure>
+    <figure><img src="renders/plate_under.png" alt="Underside of the top plate with support pillars and screw bosses" width="1200" height="900" loading="lazy"><figcaption>Plate underside: pillars, bosses, solder pocket.</figcaption></figure>
+    <figure><img src="renders/pads.png" alt="Both floors from below, showing where each half's anti-slip pads go" width="1000" height="750" loading="lazy"><figcaption>Pads sit in different ends of each slot, so they interleave when stacked.</figcaption></figure>
+  </div>
+
+  <div class="grid2">
+    <figure><img src="renders/unibody.png" alt="Both halves joined at the seam as a unibody" width="1200" height="900" loading="lazy"><figcaption>Joined at the seam by magnets.</figcaption></figure>
+    <figure><img src="renders/stacked_side.png" alt="Both halves stacked floor to floor, seen from the side" width="1200" height="900" loading="lazy"><figcaption>Stacked floor to floor for travel.</figcaption></figure>
+  </div>
+
+  <section class="stack col">
+    <span class="eyebrow">Status</span>
+    <h2>Not built yet</h2>
+    <p>Nothing has been fabbed or printed. Every check is numeric, so the first print is the real test of the tolerances. Sources, Gerbers, STLs, a BOM and a hand-soldering guide are in the repo: <a href="https://github.com/rafaelromao/diamond/tree/slim-diamond/slim_diamond">rafaelromao/diamond, branch slim-diamond</a>.</p>
+  </section>
+
+  <section class="post">
+    <div class="post-bar">
+      <div class="stack" style="gap:4px"><span class="eyebrow">For the Ergogen Discord</span><h2>The post</h2></div>
+      <div style="display:flex;gap:12px;align-items:center"><span class="count" id="count"></span><button type="button" id="copy">Copy post</button></div>
+    </div>
+    <textarea id="post" readonly aria-label="Discord post text">**Slim Diamond: a 24-key wireless Choc split, PCB and case generated by an LLM**
+
+A bit off the usual Ergogen path: a wireless remake of my handwired Diamond (1333+2 per half). I set the layout and the goals. Claude (Anthropic's model, in Claude Code) wrote the generators and did the design and the reviews, with me steering.
+
+**The board**
+• 24 Choc v1 hot-swap, diodeless (one pin per key), XIAO nRF52840 + 250 mAh LiPo per half, ZMK
+• One reversible PCB for both halves. Solder jumpers swap the Xiao pins that land on power when it's flipped, and the 12th key uses the NFC1 pad
+• Iron-only. The Xiao's bottom pads (BAT, NFC1, RST) are reached through plated holes filled from the other face
+• Printed solid base tented 6.6°, top plate, magnets to join as a unibody or stack for travel, anti-slip pads that interleave when stacked, a reset button under a cone hole in the plate
+
+**Tools**
+• Python + shapely: one design.json places everything. The tent is the smallest angle the parts fit under
+• KiCad 9 Python API, headless in the official container: footprints written as text, board built by script
+• Freerouting 2.2 to route, kicad-cli for DRC, gerbers and ray-traced renders
+• manifold3d for the case and plate, plus an interference check: parts, screws, magnets, a USB-C plug and the switch lever must all read 0 mm³
+
+**How an LLM does it**
+It can't click around a CAD GUI, so the design is code: generate, check numerically, look at renders, fix the generator, regenerate. Footprints were checked against KiCad's library, Seeed's OPL and kiswitch. DRC and the fit check decide pass or fail. A review pass caught what they missed: the USB-C plug couldn't seat, and the switch lever blocked the PCB from going in. Both became new checks.
+
+Not fabbed or printed yet, so it's unproven. Repo: https://github.com/rafaelromao/diamond/tree/slim-diamond/slim_diamond</textarea>
+  </section>
+
+  <footer>Renders: KiCad 9 ray tracer from the generated board and case. Layout after the handwired Diamond.</footer>
+</main>
+
+<script>
+(function () {
+  var ta = document.getElementById("post");
+  var btn = document.getElementById("copy");
+  document.getElementById("count").textContent = ta.value.length + " / 2000 chars";
+  btn.addEventListener("click", function () {
+    var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy post"; }, 1600); };
+    var fallback = function () { ta.focus(); ta.select(); btn.textContent = "Selected: press Ctrl+C"; };
+    try {
+      navigator.clipboard.writeText(ta.value).then(done, fallback);
+    } catch (e) { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
