@@ -131,10 +131,10 @@ def build():
     board.SetCopperLayerCount(2)
     ds = board.GetDesignSettings()
     nc = ds.m_NetSettings.GetDefaultNetclass()
-    # JLCPCB allows 0.127 mm; the margin covers Freerouting's rounding. Freerouting's result
+    # JLCPCB allows 0.10 mm (see the .kicad_dru); the margin covers Freerouting's rounding. Freerouting's result
     # depends on these, so route.sh can try a few pairs (TRACK_W, CLEARANCE).
-    nc.SetTrackWidth(mm(float(os.environ.get("TRACK_W", 0.2))))
-    nc.SetClearance(mm(float(os.environ.get("CLEARANCE", 0.14))))   # 0.15 leaves 4 unrouted round the leg holes
+    nc.SetTrackWidth(mm(float(os.environ.get("TRACK_W", 0.15))))
+    nc.SetClearance(mm(float(os.environ.get("CLEARANCE", 0.14))))   # 0.15 / 0.14: the pair that routes fully
     nc.SetViaDiameter(mm(0.6))
     nc.SetViaDrill(mm(0.3))
     ds.m_CopperEdgeClearance = mm(0.3)     # JLCPCB: 0.3 mm copper to routed edge
@@ -244,6 +244,11 @@ def build():
     ring_in = [tuple(p) for p in D["pcb_inner_ring"][:-1]]
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, pcb_pts, layer, rule={"tracks", "vias"}, hole=ring_in)
+    # No tracks or vias under the module's chip antenna (the far end; the Super52840's sits at
+    # x -3.4..0.7, y 9.4..10.3), on both mounts: a strip clear of the P0.09 holes on either side.
+    ant = [local(xc, xa, p) for p in ((-3.0, 8.0), (3.0, 8.0), (3.0, 12.5), (-3.0, 12.5))]
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        zone(board, ant, layer, rule={"tracks", "vias"})
     # The module's non-plated holes (clearance for what pokes out of its underside) carry no net,
     # so Freerouting would route through them: fence each off, 0.25 mm round (KiCad's hole clearance).
     for pad in xiao.Pads():
@@ -263,16 +268,16 @@ def build():
     ty = (D["battery"]["bounds"][3] + D["keys"]["thumb_inner"]["y"]) / 2 - 4
     text(board, "SLIM DIAMOND", (tx, ty), pcbnew.F_SilkS, 1.4, -90)
     text(board, "SLIM DIAMOND", (tx, ty), pcbnew.B_SilkS, 1.4, -90, mirror=True)
-    text(board, "RIGHT: parts on this face", (tx + 2.2, ty), pcbnew.F_SilkS, 0.8, -90)
-    text(board, "LEFT: parts on this face", (tx + 2.2, ty), pcbnew.B_SilkS, 0.8, -90, mirror=True)
+    text(board, "RIGHT: parts on this face", (tx + 2.4, ty), pcbnew.F_SilkS, 1.0, -90)
+    text(board, "LEFT: parts on this face", (tx + 2.4, ty), pcbnew.B_SilkS, 1.0, -90, mirror=True)
     for j, (lb, lf) in pairs.items():
         text(board, f"D{lb - 1}", local(xc, xa, (jl["F"][0] - 2.3, jl["F"][1] + jrows[j])),
-             pcbnew.F_SilkS, 0.8, xa)
+             pcbnew.F_SilkS, 1.0, xa)
         text(board, f"D{lb - 1}", local(xc, xa, (jl["B"][0] + 2.3, jl["B"][1] + jrows[j])),
-             pcbnew.B_SilkS, 0.8, xa, mirror=True)
+             pcbnew.B_SilkS, 1.0, xa, mirror=True)
     for row, (y, _) in SELECTOR.items():
-        text(board, row, local(xc, xa, (-4.6, y)), pcbnew.F_SilkS, 0.8, xa)
-        text(board, row, local(xc, xa, (4.6, y)), pcbnew.B_SilkS, 0.8, xa, mirror=True)
+        text(board, row, local(xc, xa, (-4.9, y)), pcbnew.F_SilkS, 1.0, xa)
+        text(board, row, local(xc, xa, (4.9, y)), pcbnew.B_SilkS, 1.0, xa, mirror=True)
 
     pcbnew.SaveBoard(BOARD, board)
     # GND is routed too (the pours and stitching vias come on top, after routing).

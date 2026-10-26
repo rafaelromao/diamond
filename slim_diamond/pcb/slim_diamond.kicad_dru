@@ -3,3 +3,21 @@
 (rule "one spoke is enough"
   (condition "A.Type == 'Zone'")
   (constraint min_resolved_spokes 1))
+
+# JLCPCB's limits for a standard 2-layer, 1.6 mm, 1 oz board (jlcpcb.com/capabilities), so the
+# DRC holds the board to what the fab makes, not KiCad's defaults.
+(rule "JLCPCB: plated hole annular ring"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint annular_width (min 0.18mm)))
+(rule "JLCPCB: pad hole to pad hole"
+  (condition "A.Type == 'Pad' && B.Type == 'Pad'")
+  (constraint hole_to_hole (min 0.45mm)))
+(rule "JLCPCB: trace width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.1mm)))
+(rule "JLCPCB: copper clearance"
+  (constraint clearance (min 0.1mm)))
+(rule "JLCPCB: silkscreen text"
+  (layer "?.Silkscreen")
+  (constraint text_height (min 1.0mm))
+  (constraint text_thickness (min 0.15mm)))

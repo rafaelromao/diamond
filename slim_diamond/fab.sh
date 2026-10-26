@@ -12,3 +12,10 @@ rm -rf .render/fab && mkdir -p .render/fab fab
 rm -f fab/slim_diamond_jlcpcb.zip
 zip -jq fab/slim_diamond_jlcpcb.zip .render/fab/*
 unzip -l fab/slim_diamond_jlcpcb.zip | tail -n +4 | head -n -2 | awk '{print $4}'
+# 1:1 prints of both faces (pads outlined, silkscreen, part outlines, holes) to lay the real parts
+# on before ordering: print at 100 % ("Actual size"), the board outline measures 87.55 mm across.
+for face in F B; do
+    ./kicad.sh kicad-cli pcb export pdf --mode-single --black-and-white --drill-shape-opt 2 --sp --ibt \
+        $( [ $face = B ] && echo --mirror ) --layers $face.Silkscreen,$face.Fab,Edge.Cuts \
+        -o fab/print_1to1_${face}_face.pdf pcb/slim_diamond.kicad_pcb >/dev/null
+done

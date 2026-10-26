@@ -35,20 +35,20 @@ def header(name, descr, attr="smd"):
             f'  (attr {attr})']
 
 
-def line(x1, y1, x2, y2, layer, w=0.12):
+def line(x1, y1, x2, y2, layer, w=0.15):     # 0.15: JLCPCB's thinnest silkscreen line
     return (f'  (fp_line (start {fmt(x1)} {fmt(y1)}) (end {fmt(x2)} {fmt(y2)})'
             f' (stroke (width {w}) (type solid)) (layer "{layer}"))')
 
 
-def rect_lines(x1, y1, x2, y2, layer, w=0.12):
+def rect_lines(x1, y1, x2, y2, layer, w=0.15):
     return [line(x1, y1, x2, y1, layer, w), line(x2, y1, x2, y2, layer, w),
             line(x2, y2, x1, y2, layer, w), line(x1, y2, x1, y1, layer, w)]
 
 
-def text(s, x, y, layer, size=0.8, mirror=False):
+def text(s, x, y, layer, size=1.0, mirror=False):    # JLCPCB: text 1.0 high, 0.15 stroke
     j = " (justify mirror)" if mirror else ""
     return (f'  (fp_text user "{s}" (at {fmt(x)} {fmt(y)} 0) (layer "{layer}")'
-            f' (effects (font (size {size} {size}) (thickness 0.12)){j}))')
+            f' (effects (font (size {size} {size}) (thickness 0.15)){j}))')
 
 
 def smd(num, x, y, w, h, layers, shape="roundrect", rot=0):
@@ -151,16 +151,15 @@ def xiao_pin_xy(pin, mount):
 #    0.3 to 0.6 off centre, towards the D0..D6 side: legs at x about -4.65 and +4.05. Mirrored on
 #    the other half, so the clearance covers 3.55 to 5.15 on both sides.
 # Battery: one hole per pad spot, as large as the pads allow so solder flows through: a 0.6 drill
-# inside both modules' pads (x -3.6..-4.2 of the pads' -3.46..-5.49), 0.14 annular (JLCPCB: 0.13);
-# a taller ring would close the one track channel to L1/L13 past the USB-C leg holes. Its mirror, under the other half's
-# module, stays 0.17 mm clear of the Super52840's GPIO row at the nearest of the photos' readings
-# (0.31 at the middle one). Which is
-# + is the selector's choice (build_pcb.py): BATM is the hole nearer the middle, BATU the one
-# nearer the USB end.
+# inside both modules' pads (x -3.58..-4.18 of the pads' -3.46..-5.49), 0.18 annular (JLCPCB's
+# minimum); a taller ring would close the one track channel to L1/L13 past the USB-C leg holes.
+# Its mirror, under the other half's module, stays 0.15 mm clear of the Super52840's GPIO row at
+# the nearest of the photos' readings (0.29 at the middle one). Which is + is the selector's
+# choice (build_pcb.py): BATM is the hole nearer the middle, BATU the one nearer the USB end.
 # P0.09: a hole at each module's pad, on one net. Under a Xiao, the Super52840's hole touches its
 # NFC2 pad: P0.10, unused and idle, so the contact is harmless.
-BOTTOM = {"BATM": ((-3.9, -0.33), (0.88, 0.88), (0.6, 0.6)),
-          "BATU": ((-3.9, -2.25), (0.88, 0.88), (0.6, 0.6)),
+BOTTOM = {"BATM": ((-3.88, -0.33), (0.96, 0.96), (0.6, 0.6)),
+          "BATU": ((-3.88, -2.25), (0.96, 0.96), (0.6, 0.6)),
           "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))}
 P009 = ((5.2, 9.76), (1.0, 1.0), (0.6, 0.6))         # the Super52840's P0.09, also NFC1's net:
                                                      # the drill stays in the pad at x 5.06..5.39
@@ -270,7 +269,7 @@ def jst():
                       pads, [], (-3.95, -1.35, 3.95, 6.25), "${KIPRJMOD}/3d/jst_ph_s2b.wrl")
     for side, sx in (("F", 1), ("B", -1)):
         L.append(text("+", -2.4 * sx, -3.2, f"{side}.SilkS", 1.0, mirror=(side == "B")))
-        L.append(text("BAT", 0, 7.4, f"{side}.SilkS", 0.8, mirror=(side == "B")))
+        L.append(text("BAT", 0, 7.5, f"{side}.SilkS", 1.0, mirror=(side == "B")))
     write("JST_PH_S2B_Reversible", L)
 
 
@@ -294,7 +293,7 @@ def reset_button():
         # silkscreen: the body's top and bottom edges (the sides run into the pads)
         L.append(line(-1.9, -2.75, 1.9, -2.75, f"{side}.SilkS"))
         L.append(line(-1.9, 2.75, 1.9, 2.75, f"{side}.SilkS"))
-        L.append(text("RST", 0, -3.75, f"{side}.SilkS", 0.8, mirror=(side == "B")))
+        L.append(text("RST", 0, -3.85, f"{side}.SilkS", 1.0, mirror=(side == "B")))
     L.append(model("${KIPRJMOD}/3d/ts1187a.wrl"))
     write("SW_TS1187A_Reversible", L)
 

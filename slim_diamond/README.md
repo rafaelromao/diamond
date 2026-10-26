@@ -53,11 +53,37 @@ The tent isn't a setting. It is the smallest angle that leaves room under the
 inner side of the PCB for the battery (which sits under the index keys' sockets)
 and keeps the outer edge as low as the hot-swap sockets allow.
 
+## Before ordering
+
+The board is made in one batch, so check what software can't:
+
+1. **Print** `fab/print_1to1_F_face.pdf` and `fab/print_1to1_B_face.pdf` at 100 % ("Actual
+   size", no fit to page). The board outline must measure 87.55 mm across.
+2. **Lay the real parts on the prints**, each on the face it's soldered to. The module's
+   castellations go over the edge pads, with its USB-C at the board edge. A Choc switch's pins and
+   pegs go over one key's holes, and its hot-swap socket over the socket pads on the other face.
+   Then the JST socket, the MSK-12C02 (its two pegs in the small holes) and the reset button.
+3. **Super52840:** on the print, its B+ and B- pads must cover the two holes in the battery box,
+   its `009` pad the round hole in the P0.09 box, and its USB-C legs land inside the two pairs of
+   slots. Measure its height from its underside to the top of its USB-C shell: the case allows
+   4.3 mm (the XIAO's).
+4. **Firmware:** rebuild it before flashing (`b slim_diamond -c` in rafaelromao/keyboards, branch
+   `slim-diamond`). `check_pcb.py` confirms that branch lists the board's pins, given the shield's
+   `slim_diamond_peripheral_left.overlay` and `_right.overlay` copied to `.render/fw_left.overlay`
+   and `.render/fw_right.overlay`.
+
+Checked by the scripts: JLCPCB's limits in the DRC (`pcb/slim_diamond.kicad_dru`: annular ring
+0.18, pad holes 0.45 apart, tracks and clearance 0.10, silkscreen 1.0 mm text with a 0.15 stroke),
+no tracks under the module's antenna, every net against its intent and the firmware's pin lists
+(`check_pcb.py`), both modules' underside pads against the board's copper, and every part, plug,
+screw, magnet and pad against the case (`check_fit.py`).
+
 ## Files
 
 | Path | What |
 |---|---|
 | `fab/slim_diamond_jlcpcb.zip` | Gerbers + drill files: upload to JLCPCB as they are |
+| `fab/print_1to1_F_face.pdf`, `fab/print_1to1_B_face.pdf` | Both faces at full size, to lay the real parts on before ordering |
 | `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
 | `case/case_left.stl`, `case/case_right.stl` | The printed base |
 | `case/plate_left.stl`, `case/plate_right.stl` | The printed top plate, oriented top face down for printing |
@@ -143,6 +169,7 @@ python3 magnets.py       # only after a layout change: measures the base for the
 python3 case.py          # base and plate STLs (and their 3D models for renders)
 python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
+./kicad.sh python3 check_pcb.py   # every net against its intent, and the firmware's pin lists: ALL CLEAR
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh
 python3 page.py          # build-log.html's BOM and build-guide sections, from BOM.md and BUILD.md
 ```

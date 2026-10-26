@@ -479,10 +479,11 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p><strong>Check:</strong> each bridged pair beeps on the multimeter, and the unbridged selector row doesn't.</p>
 <h3>2. Solder the module (parts face)</h3>
 <ol>
+<li><strong>Pre-tin the module's underside pads</strong> that the boxed holes reach: the two battery pads (VBAT and GND on the XIAO, B+ and B- on the Super52840), the P0.09 pad (NFC1 on the XIAO, <code>009</code> on the Super52840) and RST. Flux each one and touch it with a lightly tinned iron, leaving a thin, flat coat. Wick off any bump: a blob lifts the module off its edge pads. In step 4 the solder fed into each hole then only has to melt into the coat that's already there.</li>
 <li>Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.</li>
 <li><strong>Tack two opposite corners:</strong> put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.</li>
 <li>Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.</li>
-<li><strong>Turn the board over (switch face up). Fill the boxed holes:</strong> the pair inside one box (the battery), both holes in the second box (P0.09: one under each module's pad, so fill both), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pad underneath.
+<li><strong>Turn the board over (switch face up). Fill the boxed holes:</strong> the pair inside one box (the battery), both holes in the second box (P0.09: one under each module's pad, so fill both), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pre-tinned pad underneath.
    <strong>Fill only the boxed holes.</strong> The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.</li>
 <li>Clean off the flux.</li>
 </ol>
