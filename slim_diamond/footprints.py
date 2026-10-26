@@ -150,15 +150,20 @@ def xiao_pin_xy(pin, mount):
 #    at -2.56; four plated USB-C leg slots, about 0.7 x 2.0, at y -4.76 and -8.94. Its USB-C sits
 #    0.3 to 0.6 off centre, towards the D0..D6 side: legs at x about -4.65 and +4.05. Mirrored on
 #    the other half, so the clearance covers 3.55 to 5.15 on both sides.
-# Battery: one small hole per pad spot, inside both modules' pads and 0.25 mm clear of the
-# Super52840's GPIO row under the other half's module. Which is + is the selector's choice
-# (build_pcb.py): BATM is the hole nearer the middle, BATU the one nearer the USB end.
+# Battery: one hole per pad spot, as large as the pads allow so solder flows through: a 0.6 drill
+# inside both modules' pads (x -3.6..-4.2 of the pads' -3.46..-5.49), 0.14 annular (JLCPCB: 0.13);
+# a taller ring would close the one track channel to L1/L13 past the USB-C leg holes. Its mirror, under the other half's
+# module, stays 0.17 mm clear of the Super52840's GPIO row at the nearest of the photos' readings
+# (0.31 at the middle one). Which is
+# + is the selector's choice (build_pcb.py): BATM is the hole nearer the middle, BATU the one
+# nearer the USB end.
 # P0.09: a hole at each module's pad, on one net. Under a Xiao, the Super52840's hole touches its
 # NFC2 pad: P0.10, unused and idle, so the contact is harmless.
-BOTTOM = {"BATM": ((-3.9, -0.33), (0.75, 0.75), (0.5, 0.5)),
-          "BATU": ((-3.9, -2.25), (0.75, 0.75), (0.5, 0.5)),
+BOTTOM = {"BATM": ((-3.9, -0.33), (0.88, 0.88), (0.6, 0.6)),
+          "BATU": ((-3.9, -2.25), (0.88, 0.88), (0.6, 0.6)),
           "NFC1": ((3.78, 9.24), (1.2, 2.2), (0.6, 1.4))}
-P009 = ((5.2, 9.76), (0.9, 0.9), (0.5, 0.5))         # the Super52840's P0.09, also NFC1's net
+P009 = ((5.2, 9.76), (1.0, 1.0), (0.6, 0.6))         # the Super52840's P0.09, also NFC1's net:
+                                                     # the drill stays in the pad at x 5.06..5.39
 # non-plated clearance under the Super52840's USB-C legs
 KEEPOUT = [((sx * 4.35, y), (1.6, 2.6)) for sx in (1, -1) for y in (-4.76, -8.94)]
 # The battery selector (build_pcb.py's SELECTOR) sits inside the outline too, between the D0-D2
@@ -202,7 +207,7 @@ def xiao():
             if (w, dw) == (h, dh):
                 L.append(tht(name, px, y, w, dw))
             else:
-                L.append(tht(name, px, y, w, dw, shape="oval", size_y=h, drill_y=dh))
+                L.append(tht(name, px, y, w, dw, shape="oval", size_y=h, drill_y=None if dw == dh else dh))
     for (x, y), (w, h) in KEEPOUT:
         L.append(f'  (pad "" np_thru_hole oval (at {fmt(x)} {fmt(y)}) (size {fmt(w)} {fmt(h)})'
                  f' (drill oval {fmt(w)} {fmt(h)}) (layers "*.Cu" "*.Mask"))')

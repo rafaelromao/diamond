@@ -74,7 +74,7 @@ Leave the jumpers on the other face open: they're on the parts face, under where
    **Fill only the boxed holes.** The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.
 5. Clean off the flux.
 
-The battery holes and one P0.09 hole are small (0.5 mm): use thin solder and give each one time to fill.
+The battery holes and one P0.09 hole are smaller than the rest (0.6 mm, as large as the pads above them allow): flux them well, use thin solder (0.5 mm), and hold the iron on the ring until the solder sinks into the hole before you feed more.
 
 **Check:**
 - **Before any battery goes in:** the power switch's middle pin (VBAT) must **not** beep to the module's GND castellation. A beep means the wrong selector row, or both: fix it first.

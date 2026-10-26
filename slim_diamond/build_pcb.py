@@ -245,12 +245,12 @@ def build():
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, pcb_pts, layer, rule={"tracks", "vias"}, hole=ring_in)
     # The module's non-plated holes (clearance for what pokes out of its underside) carry no net,
-    # so Freerouting would route through them: fence each off, 0.4 mm round.
+    # so Freerouting would route through them: fence each off, 0.25 mm round (KiCad's hole clearance).
     for pad in xiao.Pads():
         if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
             bb = pad.GetBoundingBox()
-            x0, y0 = pcbnew.ToMM(bb.GetLeft()) - OFF[0] - 0.4, pcbnew.ToMM(bb.GetTop()) - OFF[1] - 0.4
-            x1, y1 = pcbnew.ToMM(bb.GetRight()) - OFF[0] + 0.4, pcbnew.ToMM(bb.GetBottom()) - OFF[1] + 0.4
+            x0, y0 = pcbnew.ToMM(bb.GetLeft()) - OFF[0] - 0.25, pcbnew.ToMM(bb.GetTop()) - OFF[1] - 0.25
+            x1, y1 = pcbnew.ToMM(bb.GetRight()) - OFF[0] + 0.25, pcbnew.ToMM(bb.GetBottom()) - OFF[1] + 0.25
             for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
                 zone(board, [(x0, y0), (x1, y0), (x1, y1), (x0, y1)], layer, rule={"tracks", "vias"})
 
