@@ -87,6 +87,7 @@ screw, magnet and pad against the case (`check_fit.py`).
 | `pcb/` | The KiCad 9 project, its footprint library, 3D stand-ins, and DRC rules |
 | `case/case_left.stl`, `case/case_right.stl` | The printed base |
 | `case/plate_left.stl`, `case/plate_right.stl` | The printed top plate, oriented top face down for printing |
+| `case/dock.stl` | The cyberdeck dock (below) |
 | `renders/` | Board, board with parts, case, full build; `all.png` has every view on one sheet |
 | `BOM.md` | Parts list (AliExpress search terms) |
 | `BUILD.md` | Hand-soldering and assembly guide, testing, printing |
@@ -110,6 +111,49 @@ screw, magnet and pad against the case (`check_fit.py`).
 | ![](renders/unibody.png) | ![](renders/unibody_top.png) |
 | **Stacked back to back** | **Stacked, side** |
 | ![](renders/stacked.png) | ![](renders/stacked_side.png) |
+
+## Cyberdeck dock
+
+A phone on a Ugreen folding stand (base 85 × 105 × 4 mm) is the computer and the screen;
+`dock.py` makes one printed part, `case/dock.stl`, that holds both halves around it. Without the
+stand it is a tented, splayed unibody, sturdier than the magnets at the seam alone.
+
+- **Over the stand's base**, in a pocket in its underside: the base keeps its own feet on the
+  desk and carries the phone. Behind the spine the base is left bare, its hinge (`HINGE`,
+  30 × 28 mm, estimated from photos: measure yours) 0.5 mm (`HINGE_CLR`) off the halves, the
+  wings and the spine, as far forward as their back corners let it. Five magnets in the pocket's
+  roof (`BASE_MAGS`: the widest triangle, then each next as far from the rest as the spine allows)
+  snap onto five glued on top of the base.
+- **The board's lower half:** under each half's girdle, its widest line, every wall of the dock
+  carries on the case's own 45° bottom chamfer down to the desk, one flat plane with it, front,
+  back and sides, wings and spine alike. Each wall is built as a plane through its girdle edge, so
+  none can fold. Below the girdle the spine and the wings are one piece; above it the spine stops
+  0.2 mm short of the seam walls. The wing ends just short of the outer pad, which stands on the
+  desk, and each pad recess is shaped to its bump-on's dome so none breaks out of a wall.
+- **The halves on wings** the shape of their floors, inner side up, outer pad on the desk, splayed
+  12° (`SPLAY`). The extra tent is the least that keeps 1.6 mm of plastic over the base and room
+  under the magnets: 5.75°, 12.3° in all. Every pad slot has a recess, both ends.
+- **A spine** between the halves, level with their seam walls' top edges, its front and back
+  carrying on both halves' walls, its point cut to a flat as wide as the joined board's front
+  flat (about 20 mm). Six magnets down each side face the inner walls' (the front one keeps
+  0.5 mm of plastic ahead of it, as the case's pockets do), and the joined board's diamond is cut
+  0.6 mm into its top.
+- **Magnets in the wings** under three of each half's floor magnets (one over the base, on a 1 mm
+  roof, `MAG_ROOF`): the fourth, 9 mm from the outer pad, would need 18° of tent (`MAG_COST`
+  sets what one may cost). Where a pocket would come within 0.5 mm of a 45° wall it moves the
+  least it takes off it: two by 0.8 and 1.1 mm, still well within reach of the case's magnet.
+- **Feet:** the underside is cut 0.5 mm (`FOOT_LIFT`) off the desk, and three 8 × 2 mm bump-ons
+  under each wing, spread to the largest triangle, make that up.
+- 194 × 114 × 28 mm, 137 cm³. `python3 dock.py` prints the fit check: each half, its pads, the
+  base and the hinge against the dock, all 0 mm³, and the plastic round every magnet and foot.
+
+| **With the phone** | **From the front** |
+|---|---|
+| ![](renders/cyberdeck.png) | ![](renders/cyberdeck_front.png) |
+| **Without the stand: a unibody** | **From the side** |
+| ![](renders/dock_unibody.png) | ![](renders/cyberdeck_side.png) |
+| **The dock** | **Underneath** |
+| ![](renders/dock.png) | ![](renders/dock_under.png) |
 
 ## How a reversible board makes two halves
 
@@ -170,6 +214,7 @@ python3 case.py          # base and plate STLs (and their 3D models for renders)
 python3 check_fit.py     # parts, plate, solder blobs, the reset button and its cone, screws, magnets, pad slots, a USB-C plug and the lever against
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
 ./kicad.sh python3 check_pcb.py   # every net against its intent, and the firmware's pin lists: ALL CLEAR
+python3 dock.py          # the cyberdeck dock's STL, and its fit check: all 0 mm³
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh
 python3 page.py          # build-log.html's BOM and build-guide sections, from BOM.md and BUILD.md
 ```

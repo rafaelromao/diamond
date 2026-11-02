@@ -17,6 +17,17 @@ r --rotate '-40,0,25'     --zoom 0.001 -o renders/unibody.png       .render/unib
 r --rotate '-60,0,25'     --zoom 0.0016 -o renders/stacked.png       .render/stacked.kicad_pcb
 r --side front            --zoom 0.0016 -o renders/stacked_side.png  .render/stacked.kicad_pcb
 
+# the cyberdeck dock (scene.py): with both halves and the phone on its stand, and the dock alone
+r --rotate '-58,0,-25'    --zoom 0.00055 -o renders/cyberdeck.png      .render/cyberdeck.kicad_pcb
+r --side front            --zoom 0.0007 -o renders/cyberdeck_front.png .render/cyberdeck.kicad_pcb
+r --side top              --zoom 0.0007 -o renders/cyberdeck_top.png   .render/cyberdeck.kicad_pcb
+r --side right            --zoom 0.0006 -o renders/cyberdeck_side.png  .render/cyberdeck.kicad_pcb
+r --rotate '-50,0,-25'    --zoom 0.0009 -o renders/dock_unibody.png    .render/dock_unibody.kicad_pcb
+r --side left             --zoom 0.0009 -o renders/dock_unibody_side.png .render/dock_unibody.kicad_pcb
+r --rotate '-40,0,25'     --zoom 0.001  -o renders/dock.png            .render/dock.kicad_pcb
+r --rotate '140,0,-25'    --zoom 0.001  -o renders/dock_under.png      .render/dock.kicad_pcb
+r --rotate '-50,0,-150'   --zoom 0.001  -o renders/dock_base.png       .render/dock_base.kicad_pcb
+
 # BUILD.md's close-ups of the Xiao area on each half's switch face (mask and silkscreen; the right
 # half mirrored, as you see it turned over).
 for side in F B; do

@@ -20,6 +20,14 @@ packs come in round numbers anyway.
 | 12 | Silicone bump-ons 8 × 2 mm, self-adhesive | 10 (+6) | `8x2mm silicone bumpon self adhesive` | Five per half, in the slots under the floor (see BUILD.md). Clear or black, round, 8 mm diameter, 2 mm tall; up to 2.2 mm still lets the floors meet. |
 | 13 | Filament | ~170 g | Nylon (PA) | Case left + right (solid base, 57.3 cm³ each) and the two top plates (4.3 cm³ each). |
 
+**Cyberdeck dock (optional):** `case/dock.stl` (137 cm³, about 155 g of Nylon), for a Ugreen folding phone
+stand with an 85 × 105 × 4 mm base, or on its own as a tented unibody. Print it flat side down, with
+supports inside the pocket (its roof spans 85 mm). It takes **28 more 8 × 3 mm magnets**: three under
+each half's floor, six down each side of the spine, five in the pocket's roof, and five glued on top
+of the stand's base under those (the base is aluminium; leave those out for the unibody alone). Seat
+each one by letting it snap onto the magnet it will face, then glue it. And **6 more 8 × 2 mm
+bump-ons**, three under each wing: the underside is cut 0.5 mm off the desk for them.
+
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
 or epoxy for the magnets.
 

@@ -51,6 +51,7 @@ Both halves are provided, already oriented for printing: the bases floor-down, t
 - [Case Right](stls/slim_diamond/case_right.stl)
 - [Plate Left](stls/slim_diamond/plate_left.stl)
 - [Plate Right](stls/slim_diamond/plate_right.stl)
+- [Cyberdeck Dock](stls/slim_diamond/dock.stl)
 
 # Firmware
 
