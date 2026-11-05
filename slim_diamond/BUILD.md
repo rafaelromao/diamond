@@ -147,15 +147,88 @@ The base is solid up to the PCB's underside, with a pocket for every part. The P
 
 ## Optional stands and drawer retention
 
-- Use the same **8 × 1.5 mm N52 discs everywhere**. The dock takes six wing magnets and six side magnets per half and five base pairs (including five glued to the Ugreen base): 34 discs total. No rear magnet is fitted; leave USB and cable clearance unobstructed.
-- Each insert takes three evenly spaced side magnets per side (mating seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position, at 35.6 mm pitch. Check the full half → dock → insert polarity chain before gluing.
-- Trackball: secure the wired nice!nano face down on the shell ledges, not on the floor. Leave slack to lower the battery/sensor floor independently after removing its three screws. The trackpad controller still moves with its floor. Disconnect wiring before full separation; the renders labelled “Cutaway” do not illustrate disassembly.
-- Trackball printing: the supplied top-down MX/Choc shells need build-plate supports beneath the projecting rear hood (4.0/1.2 mm bed gap). Paint supports across its underside, keep ball/switch apertures clear, inspect the first hood layers and removal access in the slicer, and test-print the hood first. Support settings and removal remain physically unvalidated. Print floors flat; their foot recesses retain a modeled 0.7 mm roof.
-- Test front pull-out removal with the dock held down. The insert slides horizontally, without lifting, front notches or protruding handles. Verify retention with real parts before carrying or lap use.
-- For USB use while docked, remove the module, feed the USB-C plug through the dock's **12.8 mm upper rear passage** in its normal orientation, connect it to the module and slide the module in while feeding the cable. The modeled 12.35 × 6.5 mm overmold fits; actual plugs and bend radii vary. If yours does not fit, charge with the module removed. Unplug before pulling out a module with a restrained cable.
-- The rear top hood and dock support meet at a 45° slope with 0.25 mm modeled normal clearance. Check printed fit and horizontal removal before loading the magnets; do not force the pieces together.
-- For independent tenting, print `case/stand_magnet_template_left.svg` and `case/stand_magnet_template_right.svg` at 100%. Check the 54 mm boundary with a ruler. Glue three mates to each stand's **tilting phone platform**, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.
-- Measure the platform first: it needs a clear flat 54 mm contact patch. Use **2.0 mm bump-ons**; the modeled platform clearance is 0.6 mm. Actual platform fit, adhesive strength and retention remain unverified. Start flat, support the half while increasing tilt, then test typing forces before relying on it. The COG model is an estimate, not a holding-force certification.
+- Use the same **8 × 1.5 mm N52 discs everywhere**. The dock takes six wing magnets and six side magnets per half, five base pairs (five of those discs are glued to the Ugreen base) and one upward-facing disc in the drawer floor: 35 discs total. Leave the rear free for USB and the cable.
+- Each drawer insert takes three evenly spaced side magnets per side (seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position. Check the full half → dock → insert polarity chain before gluing.
+- Each pointing module also takes **one disc in its floor**, on the centreline, directly above the drawer's. Glue both flush or slightly recessed, opposite poles facing. They grip the module from below, whatever the side magnets manage through the walls.
+- All Ø8.2 pockets are glue-clearance: never force a magnet in.
+- Bond an **8 mm woven ribbon, at most 0.25 mm thick**, into the 8.6 mm wide, 0.35 mm deep recess under the module's front: 20 mm or more bonded, about 6 mm left sticking out at the front. Hold the dock down and pull the ribbon straight towards you. Never pull the ball, the keycaps or the cable. The ribbon is optional if your fingers can grip the module's front.
+- For USB use while docked, take the module out, feed the USB-C plug through the dock's **12.8 mm rear passage**, connect it to the module and slide the module in while feeding the cable. A plug overmold up to 12.35 × 6.5 mm fits. If yours doesn't, charge with the module out. Unplug before pulling out a module.
+- The rear hood and the dock meet at a 45° slope with 0.25 mm clearance. Check the printed fit before loading the magnets.
+- For independent tenting, print `case/stand_magnet_template_left.svg` and `case/stand_magnet_template_right.svg` at 100% and check the 54 mm boundary with a ruler. Glue three discs to each stand's **tilting phone platform**, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.
+- The platform needs a clear flat 54 mm patch. Use **2.0 mm bump-ons**. Start flat, support the half while increasing the tilt, then test typing on it before relying on it.
+
+## Pointing modules
+
+Both modules are built the same way as a half: a **tray**, a **lid**, and the same **M3 × 8 flat-head screws** going in from the top. The tray is one print, shared by all of them. Only the lid changes: `trackball/case/lid.stl` (MX), `trackball/case/lid_choc.stl` (Choc v1) or `trackpad/case/lid.stl`.
+
+| The parts, lid raised | Closed |
+|---|---|
+| ![](renders/trackball_structure.png) | ![](renders/trackball_seam.png) |
+| ![](renders/trackball_choc_structure.png) | ![](renders/trackball_choc_seam.png) |
+| ![](renders/trackpad_structure.png) | ![](renders/trackpad_seam.png) |
+
+The electronics are the same parts in the same places on both modules. The same main board holds the two keys and the power switch. The same battery and nice!nano sit under it. The same sensor board holds the reset button at the front; on the trackpad it carries nothing else.
+
+### Boards
+
+1. **Snap the panel.** The main board and sensor board are joined by one long bridge with a row of holes at each end. Hold a board in one hand and the bridge in the other (pliers help) and bend at the row of holes until it snaps, then do the other end. File off the stubs. Do this before soldering anything.
+2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side with `SD TRACKBALL`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
+3. **Sensor board, trackball.** Solder the regulator, capacitors, resistor and TS-1187A reset button on the back face, the PMW3610 in its cut-out, and clip on the lens.
+4. **Sensor board, trackpad.** Solder only the TS-1187A reset button, on the back face.
+
+### Wiring
+
+Use flexible 30 AWG stranded wire, about 80 mm per wire, so the main board can lift out of the tray with its wires attached. The main board's pads have short labels: `3V` is VCC, `G` is GND, `CK` SCLK, `IO` SDIO, `CS` NCS and `MO` MOTION.
+
+| From | To |
+|---|---|
+| Battery + / − | Main board `+` / `-` pads (the switch is on the board) |
+| nice!nano B+ | Main board `VBAT` |
+| nice!nano GND, VCC, RST | Main board `GND`, `VCC`, `RST` |
+| nice!nano key pins | Main board `K1`, `K2` |
+| Sensor board `VCC`, `GND`, `RST` | Main board `VCC`, `GND`, `RST` |
+
+On the **trackball**, also wire `SCLK`, `SDIO`, `NCS` and `MOTION` from the sensor board to the main board's matching pads and on to the nice!nano (pins in the README).
+
+On the **trackpad**, leave the sensor board's other pads empty and wire the pad's cable adapter straight to the nice!nano (table in the README).
+
+### Into the tray
+
+Work in this order, power off, with the magnets already glued in. The picture shows the first three steps done.
+
+![Battery, sensor board and nice!nano in the tray](renders/trackball_stack.png)
+
+1. **Battery.** Lower it straight into its cradle. Its 7.5 mm thickness has room to spare, but measure a protected pack first, including tape, tabs and leads. Never force it.
+2. **Sensor board.** Parts face down, on its two posts, with **two M3 × 8** screws through the board into the posts. Stop when the heads touch: they cut their own thread, and the floor below is thin.
+3. **nice!nano.** Face down, its USB-C towards the back wall, resting on the two rear piers. Run a strip of kapton from one main-board post to the other under its front edge to hold it up. Keep the tape off the antenna end's top if you can, and clear of the USB-C port.
+4. **Main board.** Lower it flat onto the two side posts and the ledge on the back wall, with the power lever going down its slot in the back wall.
+
+![Main board in the tray](renders/trackball_tray.png)
+
+5. **Trackpad only.** Tape the FFC adapter onto the sensor board, between its two screw heads, connector towards the pad. Fit the pad into the lid from above, on three small dots of removable adhesive on its ledge. Connect the FFC, adapter end last, and leave it one gentle fold in the space in front of the main board.
+6. **Trackball only.** Glue the three ceramic balls into the lid's cup.
+7. **Lid.** Rear first: tilt the lid, push its two rear hooks into the slots in the back wall, then lower the front. It locates on the tray's rim.
+8. **Four M3 × 8 screws** through the lid: two at the front into the tray's posts, two through the main board into the side posts. Turn them in slowly, and stop when the heads seat. On the MX lid the heads sit at the bottom of short wells. Use a driver with a shaft no wider than 3 mm.
+9. Clip the switches through the lid into the sockets, fit the keycaps, and drop the ball in.
+
+Stick three 8 × 2 mm bump-ons into the floor's recesses.
+
+### Power and reset
+
+Same switch and same button in the same place on both modules.
+
+| The power slider, above the USB-C port | Reset, from below |
+|---|---|
+| ![](renders/trackball_rear.png) | ![](renders/trackball_reset.png) |
+| ![](renders/trackpad_rear.png) | ![](renders/trackpad_reset.png) |
+
+The power switch disconnects the battery only: USB still powers the controller. To reset, take the module out of the dock and press a blunt pin, at most 2 mm across, straight into the hole in the floor: once to reset, twice quickly for the bootloader.
+
+### Opening a module
+
+Take it out of the dock, switch it off and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. On the trackpad, lift it only as far as the FFC allows and unplug the FFC at the adapter, supporting its stiffened end. The main board then lifts out on its wires.
+
+The Cirque's end of the FFC is a non-ZIF connector (Molex 78127-1128): pull it straight out, with the cable supported. Before buying, check the cable's length and contact side against both connectors.
 
 ## Resetting a closed half
 
@@ -168,4 +241,6 @@ Press straight down into the cone above the thumbs with a fingertip (the pad, no
 
 - **Base:** floor-down, no supports (the wall over the USB recess and the roofs of the pad slots, 8.6 mm wide, bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.
 - **Plate:** **top face down**: the STL is already oriented that way, with the pillars and screw bosses pointing up. The reset button's cone narrows upwards at 45° from the bed (4.2 mm to 2.8 mm over the first 0.7 mm) and needs no support. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change `cut_tol` in `design.py` and regenerate.
+- **Module tray:** floor down, no supports: the rear hood's underside is 45° and prints by itself. Use 4 or more walls: the screw posts and the 1 mm magnet backings carry the load.
+- **Module lids:** top face down, no supports. The trackball's cup grows out of the lid as it prints. Print a small test of a magnet pocket and a screw pilot in your filament first.
 - **Nylon:** dry the filament before printing. It's tough enough to take the self-tapping threads without cracking, and its softness damps key noise.

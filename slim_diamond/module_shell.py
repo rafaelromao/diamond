@@ -1,19 +1,21 @@
-"""A module for the dock's drawer: the shell every module shares.
+"""A module for the dock's drawer: the tray and lid every module shares.
 
 Frame: the dock's plan (x right, y away from you, mm); z up from the plane the module stands on,
 the desk or the drawer's floor. Its bump-on feet are FEET tall, so its body starts at z = FEET.
 
 The outline is the drawer's, DRAWER_CLR in (dock.module_plan), so any module fits. The walls are
 vertical at the sides, with the halves' exact facets at the front: in the dock they meet its
-wedge-shaped walls (vertical inside, leaning with the
-halves outside), and on the desk a half's own vertical inner wall, so a module sits flat against
-either. Three magnets per side (dock.DRAWER_MAGS) sit where the halves' inner-wall magnets do, at
-the same height over the plane both stand on: the module on its feet, a half on its pads. Pressed
-in from outside, flush, like the case's, each backed by a boss. In the dock they meet its thin
-magnets through the inner retaining skin; independently they meet the halves directly.
+wedge-shaped walls (vertical inside, leaning with the halves outside), and on the desk a half's own
+vertical inner wall, so a module sits flat against either. Three magnets per side (dock.DRAWER_MAGS)
+sit where the halves' inner-wall magnets do, at the same height over the plane both stand on: the
+module on its feet, a half on its pads. Pressed in from outside, flush, like the case's, each backed
+by a boss. In the dock they meet its thin magnets through the inner retaining skin; independently
+they meet the halves directly.
 
-A module is two printed parts: the shell (walls and top, printed top down) and a bottom plate
-(the floor, the feet and whatever stands on it), held by countersunk M2 screws into posts.
+A module is built like a half: a tray (floor, walls, posts) printed floor down, and a lid printed
+top down. The tray ends at the halves' top edges (FLUSH) and is the same print for every module; the
+lids differ. Four of the halves' M3 x 8 flat-head screws go in from the top: two through the lid
+into the tray's front posts, two through the lid and the main board into its side posts.
 """
 import math
 from functools import lru_cache
@@ -29,18 +31,30 @@ P = K.placement()
 OUTLINE = K.module_plan(P)
 FEET = K.MODULE_FEET
 WALL = 1.6
-BOTTOM_T = 2.2                     # retains a 0.7 mm skin over the foot recesses
+BOTTOM_T = 2.2                     # foot roofs are reinforced locally to 1.1 mm
+PCB_T = 1.6
 BEVEL_WALL = 1.0                   # the wall under the bevel, square to it (2.5 perimeters at 0.4 mm)
 UPPER_BEVEL = 1.5                  # maximum 45-degree rim width; retain material round rear switch holes
-PLATE_CLR = 0.15                   # round the bottom plate, inside the walls
+LID_CLR = 0.15                     # round the lid's locating lip, inside the walls
 MAG_D, MAG_H = K.D["magnet_side_size"]          # common disc pocket, with fit clearance
 MAG_Z = K.D["magnet_side_z"] + K.PAD_DROP       # over the standing plane: a half's, on its pads
-BOSS = (MAG_D + 1.0, MAG_H + 0.1 + 0.5)         # behind each magnet: length along the wall, depth
-SCREW = dict(pilot=1.6, post=4.6, head=3.9, hole=2.3)   # M2 x 6 flat head (90-degree countersunk)
+BOSS = (MAG_D + 1.0, MAG_H + 0.1 + 0.9)         # 0.9 mm backing, glue-clearance installation
+_S = K.D["screw"]                  # the halves' M3 x 8 flat head (90-degree countersunk)
+SCREW = dict(pilot=_S["pilot_d"], post=5.8, head=_S["head_d"], hole=_S["pcb_hole"],
+             boss=_S["boss_d"], length=_S["length"], cone=1.5, head_h=1.65)
+FRONT_SCREW = (19.5, -91.5)        # into the tray's front posts, clear of the ball and the pad
+PCB_SCREW = (12.3, -56.5)          # through the main board, beside the first key
 BUMPON = (8.0, 2.0)                # the case's 8 x 2 mm bump-ons, recessed to stand FEET proud
 SPINE_TOP = K.spine_height(P)
 FLOOR_Z = K.drawer_floor(P)        # the drawer's floor over the desk
-FLUSH = SPINE_TOP - FLOOR_Z        # a module this tall is flush with the halves' top edges
+FLUSH = SPINE_TOP - FLOOR_Z        # the tray's top: level with the halves' top edges
+PCB_TOP = FLUSH - 1.0              # main board's top: 1.0 mm under the lid, as a half's plate gap
+HEAD_Z = PCB_TOP + 2.2             # where every screw's head sits, on every lid
+
+
+def lid_screws():
+    (fx, fy), (px, py) = FRONT_SCREW, PCB_SCREW
+    return [(-fx, fy), (fx, fy), (-px, py), (px, py)]
 
 
 def extrude(poly, z0, z1):
@@ -103,42 +117,20 @@ def room():
 
 @lru_cache(maxsize=1)
 def service_plan():
-    """Vertical extraction envelope inside the narrowest, lowest front facet.
-    A plate following the expanding facet higher up cannot pass its lower lip.
-    """
-    column = K.module_front(extrude(inner().buffer(-PLATE_CLR, join_style=2), FEET - 0.1, FEET + 0.1),
-                            P, WALL + PLATE_CLR)
+    """The floor's plan inside the narrowest, lowest front facet: where the feet can go."""
+    column = K.module_front(extrude(inner().buffer(-LID_CLR, join_style=2), FEET - 0.1, FEET + 0.1),
+                            P, WALL + LID_CLR)
     plan = Polygon()
     for ring in column.slice(FEET).to_polygons():
         plan = plan.symmetric_difference(Polygon(ring))
     return plan
 
 
-def screw_spots(n=3, keep_out=None):
-    """Posts for the bottom plate's screws: in the corners of what's inside (front two, back
-    one), each merging 1 mm into the walls (or a boss), and clear of `keep_out` (a plan polygon)."""
-    ok = inner().buffer(1.0 - SCREW["post"] / 2, join_style=2)
-    ok = ok.intersection(service_plan().buffer(-SCREW["head"] / 2 - 0.6))
-    if keep_out is not None:
-        ok = ok.difference(keep_out.buffer(SCREW["post"] / 2 + 0.3))
-    x0, y0, x1, y1 = ok.bounds
-    pts = [(x, y) for x in np.arange(math.ceil(x0 * 2) / 2, x1 + 0.01, 0.5)
-           for y in np.arange(math.ceil(y0 * 2) / 2, y1 + 0.01, 0.5)
-            if ok.contains(Point(x, y))]
-    front_l = min(pts, key=lambda q: q[1] + 0.5 * q[0])
-    front_r = (-front_l[0], front_l[1])
-    back = max(pts, key=lambda q: q[1] - 0.2 * abs(q[0]))
-    back = (0.0, back[1]) if ok.contains(Point(0, back[1])) else back
-    return [front_l, front_r, back][:n]
-
-
 def feet_spots():
-    """Bump-ons under the bottom plate: the front corners and the back, inset to stay on it."""
+    """Bump-ons under the floor: the front corners and the back, inset to stay on it."""
     ok = service_plan().buffer(-BUMPON[0] / 2 - 1.0)
     # Keep the rear recess in front of the USB overmold passage, retaining its full roof.
     ok = ok.intersection(box(-200, -200, 200, -31.0))
-    for x, y in screw_spots()[:2]:
-        ok = ok.difference(Point(x, y).buffer(BUMPON[0] / 2 + SCREW["head"] / 2 + 0.6))
     x0, y0, x1, y1 = ok.bounds
     pts = [(x, y) for x in np.arange(x0, x1 + 0.01, 0.5) for y in np.arange(y0, y1 + 0.01, 0.5)
            if ok.contains(Point(x, y))]
@@ -147,27 +139,80 @@ def feet_spots():
     return [front_l, (-front_l[0], front_l[1]), (0.0, back[1])]
 
 
-def shell(height, top_t, posts, post_tops=None):
-    """The walls and the top, with the magnets' bosses and pockets, and the bottom plate's posts
-    (screw pilot holes from below). The module's own openings are cut by its script."""
-    body = K.module_front(extrude(OUTLINE, FEET, height) ^ bevel_hull(OUTLINE, height), P)
-    # the inside follows the bevel, its wall BEVEL_WALL thick square to it
-    bevel_start = max(FLUSH, height - UPPER_BEVEL)
-    cavity = extrude(inner(), FEET - 1, height - top_t) ^ bevel_hull(inner(), height - top_t,
-                                                                 bevel_start + WALL - BEVEL_WALL * math.sqrt(2))
-    body -= K.module_front(cavity, P, WALL)
+def tray():
+    """The shared tray: floor, walls and magnet bosses, up to FLUSH, with the rear hood.
+    Printed floor down, so the hood's 45-degree underside needs no support."""
+    body = K.module_front(extrude(OUTLINE, FEET, FLUSH), P)
+    body -= K.module_front(extrude(inner(), FEET + BOTTOM_T, FLUSH + 1), P, WALL)
     for b in magnet_bosses():
-        body += extrude(b, FEET + BOTTOM_T + PLATE_CLR, MAG_Z + MAG_D / 2 + 1.5) ^ extrude(OUTLINE, 0, height)
-    for x, y in posts:
-        top = (post_tops or {}).get((x, y), height - top_t)
-        post = Manifold.cylinder(top - (FEET + BOTTOM_T) + 0.01, SCREW["post"] / 2, circular_segments=32)
-        body += post.translate((x, y, FEET + BOTTOM_T))
-        body -= Manifold.cylinder(8.0, SCREW["pilot"] / 2, circular_segments=20).translate((x, y, FEET + BOTTOM_T - 0.01))
-    return (bevel(body, height) + rear_hood()) - magnet_pockets()
+        body += extrude(b, FEET + BOTTOM_T - 0.01, MAG_Z + MAG_D / 2 + 1.5) ^ extrude(OUTLINE, 0, FLUSH)
+    body = K.module_front(body, P) + rear_hood()
+    d, h = BUMPON
+    for x, y in feet_spots():
+        body += Manifold.cylinder(.41, d / 2 + .6, circular_segments=40).translate(
+            (x, y, FEET + BOTTOM_T - .01))
+        body -= Manifold.cylinder(h - FEET + 0.01, d / 2 + 0.2, circular_segments=40).translate((x, y, FEET - 0.01))
+    x, y = K.DRAWER_FLOOR_MAG
+    body += Manifold.cylinder(2.5, 4.8, circular_segments=48).translate((x, y, FEET))
+    body -= Manifold.cylinder(1.61, 4.1, circular_segments=48).translate((x, y, FEET - .01))
+    return body - pull_recess() - magnet_pockets() - finger_pockets()
+
+
+FINGERS = (-5.0, 5.0)              # the lid's rear hooks: no screw head fits behind the keys
+
+
+def finger_pockets():
+    """Open-top channels in the rear wall, undercut for the lid's hooks. The lid goes on rear
+    first, tilted; closing it swings the hooks' toes under the wall."""
+    back = OUTLINE.bounds[3] - WALL
+    out = Manifold()
+    for x in FINGERS:
+        out += Manifold.cube((2.8, 1.0, 3)).translate((x - 1.4, back - .05, FLUSH - 2.3))
+        out += Manifold.cube((2.8, 2.15, 1.2)).translate((x - 1.4, back - .05, FLUSH - 2.3))
+    return out
+
+
+def lid_blank(height, top_t):
+    """The lid's top and, on a tall lid, its short walls, a locating lip inside the tray's rim, the
+    rear hooks, and a boss down to the main board's top at every screw. The module's own openings
+    are cut by its script; finish with `lid_holes`."""
+    body = K.module_front(extrude(OUTLINE, FLUSH, height) ^ bevel_hull(OUTLINE, height), P)
+    if height - top_t > FLUSH + .01:
+        # the inside follows the bevel, its wall BEVEL_WALL thick square to it
+        bevel_start = max(FLUSH, height - UPPER_BEVEL)
+        cavity = extrude(inner(), FLUSH - 1, height - top_t) ^ bevel_hull(
+            inner(), height - top_t, bevel_start + WALL - BEVEL_WALL * math.sqrt(2),
+            rear_start=FLUSH + WALL - BEVEL_WALL * math.sqrt(2))
+        body -= K.module_front(cavity, P, WALL)
+    lip = inner().buffer(-LID_CLR, join_style=2).difference(inner().buffer(-1.0, join_style=2))
+    lip = lip.intersection(box(-99, -200, 99, -22))
+    body += K.module_front(extrude(lip, PCB_TOP + .2, FLUSH + .01), P, WALL + LID_CLR)
+    back = OUTLINE.bounds[3] - WALL
+    for x in FINGERS:
+        body += Manifold.cube((2.4, .75, 2.1)).translate((x - 1.2, back + .05, FLUSH - 2.08))
+        body += Manifold.cube((2.4, 1.85, .8)).translate((x - 1.2, back + .05, FLUSH - 2.08))
+    plate = height - top_t
+    for x, y in lid_screws():
+        boss = Point(x, y).buffer(SCREW["boss"] / 2, 32).intersection(inner().buffer(-LID_CLR, join_style=2))
+        body += K.module_front(extrude(boss, PCB_TOP, plate + .01), P, WALL + LID_CLR)
+    return body
+
+
+def lid_holes(m, height):
+    """Clearance holes and countersinks: every head sits at HEAD_Z, so a screw bites the same
+    length on every lid. On a taller lid that is down a well, flush with nothing to catch."""
+    for x, y in lid_screws():
+        r = SCREW["head"] / 2
+        m -= Manifold.cylinder(height + 1, SCREW["hole"] / 2, circular_segments=32).translate((x, y, PCB_TOP - .5))
+        cone = Manifold.cylinder(SCREW["cone"] + .01, SCREW["hole"] / 2, r + .01, circular_segments=48)
+        m -= cone.translate((x, y, HEAD_Z - SCREW["cone"]))
+        if height > HEAD_Z + .01:
+            m -= Manifold.cylinder(height - HEAD_Z + 1, r + .1, circular_segments=48).translate((x, y, HEAD_Z))
+    return m
 
 
 def rear_hood():
-    """Top-only rear extension, common to both trackball shells and the trackpad.
+    """Top-only rear extension, part of the shared tray.
     Its underside rises one millimetre per millimetre rearwards; the dock keeps the
     matching support underneath. Forward removal increases the gap rather than hooking.
     """
@@ -176,15 +221,18 @@ def rear_hood():
     return blank.trim_by_plane(normal, K.rear_hood_datum(P) / math.sqrt(2))
 
 
-def bevel_hull(poly, top, start=None):
+def bevel_hull(poly, top, start=None, rear_start=None):
     """Over `start` (the halves' top edges, FLUSH), the outline drawn in at 45 degrees up to `top`:
     a module taller than the halves meets them with a bevel, not a step. Below it, the outline."""
     start = max(FLUSH, top - UPPER_BEVEL) if start is None else start
     b = top - start
     ring = lambda p, z: [(x, y, z) for x, y in p.exterior.coords[:-1]]
-    if b <= 0:
-        return extrude(poly, -1, top + 1)
-    return Manifold.hull_points(ring(poly, -1) + ring(poly, start) + ring(poly.buffer(-b, join_style=2), top))
+    solid = (extrude(poly, -1, top + 1) if b <= 0 else
+             Manifold.hull_points(ring(poly, -1) + ring(poly, start) + ring(poly.buffer(-b, join_style=2), top)))
+    # The raised rear shoulder meets the common hood at 45 degrees too. Unlike
+    # the narrow side bevel, this slope spans the full height difference.
+    datum = poly.bounds[3] + (FLUSH if rear_start is None else rear_start)
+    return solid.trim_by_plane((0, -1 / math.sqrt(2), -1 / math.sqrt(2)), -datum / math.sqrt(2))
 
 
 def bevel(m, height):
@@ -192,18 +240,24 @@ def bevel(m, height):
     return K.module_front(m ^ (bevel_hull(OUTLINE, height) + rear_hood()), P)
 
 
-def bottom_plate(posts):
-    """The floor: inside the walls, with the bump-ons' recesses and the screws' countersinks."""
-    plate = extrude(service_plan(), FEET, FEET + BOTTOM_T)
-    d, h = BUMPON
-    for x, y in feet_spots():
-        plate -= Manifold.cylinder(h - FEET + 0.01, d / 2 + 0.2, circular_segments=40).translate((x, y, FEET - 0.01))
-    for x, y in posts:
-        plate -= Manifold.cylinder(BOTTOM_T + 0.02, SCREW["hole"] / 2, circular_segments=20).translate((x, y, FEET - 0.01))
-        # 90-degree countersink from below, as deep as the head is wide over two
-        plate -= Manifold.cylinder(SCREW["head"] / 2 + 0.11, SCREW["head"] / 2 + 0.1, 0.0, circular_segments=48).translate(
-            (x, y, FEET - 0.01))
-    return plate
+def pull_recess():
+    return Manifold.cube((8.6, 27, .35)).translate((-4.3, OUTLINE.bounds[1] - 1, FEET - .01))
+
+
+def floor_magnet():
+    x, y = K.DRAWER_FLOOR_MAG
+    return Manifold.cylinder(1.5, 4, circular_segments=48).translate((x, y, FEET + .05))
+
+
+def pull_ribbon():
+    """Illustrative removable 0.25 mm woven ribbon, not an extra rigid print."""
+    y = OUTLINE.bounds[1]
+    nodes = [(y - 6, .14), (y + 6, .14), (y + 8, FEET + .04), (y + 26, FEET + .04)]
+    ribbon = Manifold()
+    for a, b in zip(nodes, nodes[1:]):
+        ribbon += Manifold.hull_points([(x, yy, zz + dz) for x in (-4, 4)
+                                        for yy, zz in (a, b) for dz in (0, .25)])
+    return ribbon
 
 
 def bumpons():
@@ -211,6 +265,24 @@ def bumpons():
     out = Manifold()
     for x, y in feet_spots():
         out += Manifold.cylinder(h, d / 2 - 0.8, d / 2, circular_segments=40).translate((x, y, 0))
+    return out
+
+
+def flat_screw(x, y, head_z):
+    """The halves' M3 x 8, 90-degree flat head, driven from above; head_z is its top face.
+    Its thread forms in the pilot, so the modelled shank overlaps the plastic on purpose."""
+    head = Manifold.cylinder(SCREW["head_h"], 1.5, 3.0, circular_segments=40).translate((0, 0, -SCREW["head_h"]))
+    shank = Manifold.cylinder(SCREW["length"] - SCREW["head_h"], 1.5, circular_segments=32).translate(
+        (0, 0, -SCREW["length"]))
+    cross = Manifold.cube((3.4, .6, .5)).translate((-1.7, -.3, -.49))
+    cross += Manifold.cube((.6, 3.4, .5)).translate((-.3, -1.7, -.49))
+    return ((head + shank) - cross).translate((x, y, head_z))
+
+
+def lid_fasteners(lift=0.0):
+    out = Manifold()
+    for x, y in lid_screws():
+        out += flat_screw(x, y, HEAD_Z + lift)
     return out
 
 
@@ -232,17 +304,17 @@ def usb_clearance(front, z):
         (-6.4, front + 0.8, z - 3.6))
 
 
-def check_common(name, shell_m, plate_m, parts):
-    """The checks every module needs: every part against the shell, the plate and the others; the
+def check_common(name, lid_m, tray_m, parts):
+    """The checks every module needs: every part against the lid, the tray and the others; the
     module in the dock's drawer, against the dock and the halves; on the desk against a half."""
     def vol(a, b):
         return (a ^ b).volume()
     print(name)
-    print("  shell x plate              %.3f mm3" % vol(shell_m, plate_m))
-    assert abs(vol(shell_m, plate_m)) < 1e-3, "shell interferes with the bottom plate"
+    print("  lid x tray                 %.3f mm3" % vol(lid_m, tray_m))
+    assert abs(vol(lid_m, tray_m)) < 1e-3, "lid interferes with the tray"
     for pname, pm in parts:
-        print("  %-26s %.3f mm3 x shell, %.3f x plate" % (pname, vol(pm, shell_m), vol(pm, plate_m)))
-        assert abs(vol(pm, shell_m)) < 1e-3 and abs(vol(pm, plate_m)) < 1e-3, pname
+        print("  %-26s %.3f mm3 x lid, %.3f x tray" % (pname, vol(pm, lid_m), vol(pm, tray_m)))
+        assert abs(vol(pm, lid_m)) < 1e-3 and abs(vol(pm, tray_m)) < 1e-3, pname
     body = extrude(OUTLINE, 0, 99)
     for w, n in magnets():
         c = Manifold.cylinder(MAG_H + 0.1, MAG_D / 2 + 0.5, circular_segments=40)

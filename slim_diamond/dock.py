@@ -64,6 +64,7 @@ DRAWER_WALL = 2.4             # continuous walls house the common magnets and th
 DRAWER_SKIN = 0.6             # dock wall between the drawer and the dock's own side magnets' pockets
 DRAWER_BACK = -14.0           # the drawer's back (y): both modules end there
 DRAWER_CLR = 0.2              # round a module in the drawer
+DRAWER_FLOOR_MAG = (0.0, -48.3)   # on the centreline, midway between the stand magnets under the spine
 MODULE_FEET = 0.5             # a module's bump-ons stand this far below it
 BASE_MAG_SLOP = 0.3           # round the base's magnets, which are glued on by hand
 MAG_COST = 1.0                # most extra tent (degrees) a floor magnet may add to get its pocket
@@ -685,6 +686,10 @@ def build(tent, magnets):
     spots = base_magnet_spots(dock, pocket)
     for x, y in spots:
         dock -= base_magnet_pocket(x, y)[0]
+    if DRAWER:
+        x, y = DRAWER_FLOOR_MAG
+        dock -= Manifold.cylinder(1.61, 4.1, circular_segments=48).translate(
+            (x, y, drawer_floor(p) - 1.6))
 
     # the underside cut FOOT_LIFT up, and a recess for each bump-on foot in the wings
     dock = dock.trim_by_plane((0, 0, 1), FOOT_LIFT)
@@ -734,6 +739,10 @@ def magnet_solids(k):
     bdisc = lambda: Manifold.cylinder(bh - 0.1, bd / 2 - 0.1, circular_segments=32)
     for x, y in k.base_spots:
         out += bdisc().translate((x, y, low_top + 0.05)) + bdisc().translate((x, y, UG[2]))
+    if DRAWER:
+        x, y = DRAWER_FLOOR_MAG
+        out += Manifold.cylinder(1.5, 4, circular_segments=48).translate(
+            (x, y, drawer_floor(k.p) - 1.5))
     return out
 
 

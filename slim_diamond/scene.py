@@ -127,20 +127,56 @@ PART_RGB = {"ball": BALL_RGB, "pad": PAD_RGB, "pad's back parts": vrml.CHIP, "ba
             "reset": vrml.BUTTON, "power switch": vrml.METAL}
 
 
-def _module(kind, switch="mx"):
-    """A module's solids (dock frame) as (solid, rgb): shell, plate, bump-ons, magnets, parts."""
+def _built(kind, switch="mx"):
+    """(module, its layout, lid, tray, its parts): the trackpad shares the trackball's tray."""
     import importlib
-    import module_shell as M
+    import trackball.trackball as B
     mod = importlib.import_module(kind + "." + kind)
     L = mod.place()
-    built = mod.shell_and_plate(L, switch) if kind == "trackball" else mod.shell_and_plate(L)
-    sh, plate = built[0], built[1]
+    main_plan, sensor_plan = B.main_board_plan(L), B.sensor_board_plan(L)
     if kind == "trackball":
-        ps = mod.parts(L, built[4], built[5], switch)
-    else:
-        ps = mod.parts(L)
-    out = [(sh, vrml.CASE), (plate, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL)]
+        return mod, L, B.lid(L, switch), B.tray(L), B.parts(L, main_plan, sensor_plan, switch)
+    return mod, L, mod.lid(L), B.tray(L), mod.parts(L, main_plan, sensor_plan)
+
+
+def _height(mod, kind, switch):
+    return mod.PCB_TOP + mod.CHOC["below_plate"] if kind == "trackball" and switch == "choc" else mod.H
+
+
+def _shown(mod, kind, name, m, L):
+    """A part as rendered: collision checks use the full lever travel, a picture one position."""
+    import trackball.trackball as B
+    if name == "power switch":
+        return B.power_switch(B.main_board_plan(L), full_travel=False)
+    return m
+
+
+def _colour(name):
+    rgb = PART_RGB.get(name)
+    if rgb is None:
+        rgb = vrml.KEYCAP if name.startswith("keycap") else vrml.SWITCH if name[:2] in ("MX", "ch", "CH") else vrml.SOCKET
+    return rgb
+
+
+def _sensor_screws(L):
+    import module_shell as M
+    import trackball.trackball as B
+    top = B.PLATE_TOP + B.SENSOR_BELOW + B.PCB_T + M.SCREW["head_h"]
+    out = Manifold()
+    for x, y in B.sensor_holes(L):
+        out += M.flat_screw(x, y, top)
+    return out
+
+
+def _module(kind, switch="mx"):
+    """A module's solids (dock frame) as (solid, rgb): lid, tray, bump-ons, magnets, screws, parts."""
+    import module_shell as M
+    mod, L, lid, tray, ps = _built(kind, switch)
+    out = [(lid, vrml.CASE), (tray, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL),
+           (M.lid_fasteners(), vrml.METAL), (_sensor_screws(L), vrml.METAL),
+           (M.floor_magnet(), vrml.METAL), (M.pull_ribbon(), (0.18, .2, .22))]
     for name, m in ps:
+        m = _shown(mod, kind, name, m, L)
         if name == "nice!nano":
             front = L["nano"][1] + mod.NANO[1] + 0.6
             z = mod.usb_z(L)
@@ -148,12 +184,50 @@ def _module(kind, switch="mx"):
             opening = Manifold.cube((8.4, 7.6, 2.6)).translate((-4.2, front - 7.5, z - 1.3))
             out.append((receptacle - opening, vrml.METAL))
             m -= receptacle
-        rgb = PART_RGB.get(name)
-        if rgb is None:
-            rgb = vrml.KEYCAP if name.startswith("keycap") else vrml.SWITCH if name[:2] in ("MX", "ch", "CH") else vrml.SOCKET
-        out.append((m, rgb))
-    height = mod.PCB_TOP + mod.CHOC["below_plate"] if kind == "trackball" and switch == "choc" else mod.H
-    return out, height
+        out.append((m, _colour(name)))
+    return out, _height(mod, kind, switch)
+
+
+LID_RGB, TRAY_RGB, SCREW_RGB = (.72, .76, .8), (.08, .48, .68), (.9, .47, .08)
+UP = {"ball", "bearing", "keycap", "MX", "CHOC", "pad"}
+
+
+def _on_lid(name):
+    return name.split(" ")[0] in UP or name.startswith("pad")
+
+
+def module_assembly(kind):
+    """Lid lifted 30 mm off the populated tray with its keys, screws 12 mm over it. No wires drawn."""
+    import module_shell as M
+    mod, L, lid, tray, ps = _built(kind)
+    up = (0, 0, 30)
+    out = [(lid.translate(up), vrml.CASE), (tray, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL),
+           (M.floor_magnet(), vrml.METAL), (M.lid_fasteners(42), vrml.METAL), (_sensor_screws(L), vrml.METAL)]
+    for name, solid in ps:
+        solid = _shown(mod, kind, name, solid, L)
+        out.append((solid.translate(up) if _on_lid(name) else solid, _colour(name)))
+    return out
+
+
+def module_instruction_scenes(kind, switch="mx"):
+    """Engineering views in contrast colours: the real printed parts, nothing sectioned."""
+    import module_shell as M
+    mod, L, lid, tray, ps = _built(kind, switch)
+    structure = [(lid.translate((0, 0, 24)), LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(38), SCREW_RGB)]
+    seam = [(lid, LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(), SCREW_RGB)]
+    populated = [(tray, TRAY_RGB), (M.floor_magnet(), vrml.METAL), (_sensor_screws(L), SCREW_RGB)]
+    for label, solid in ps:
+        if not _on_lid(label):
+            populated.append((_shown(mod, kind, label, solid, L), _colour(label)))
+    empty = [(tray, TRAY_RGB), (_sensor_screws(L), SCREW_RGB)]
+    for label, solid in ps:
+        if label in ("battery", "nice!nano", "reset", "sensor board", "lens", "sensor's parts", "FFC adapter"):
+            empty.append((solid, _colour(label)))
+    rx, ry = L["reset"] if kind == "trackpad" else mod.sensor_reset(L)
+    reset = dict(ps)["reset"]
+    tool = Manifold.cylinder(12, .55, circular_segments=32).translate((rx, ry, reset.bounding_box()[2] - 14))
+    reset_scene = [(tray, TRAY_RGB), (reset, (.88, .23, .08)), (tool, SCREW_RGB), (dict(ps)["sensor board"], PCB_GREEN)]
+    return {"structure": structure, "seam": seam, "tray": populated, "stack": empty, "reset": reset_scene}
 
 
 def _module_magnets(M):
@@ -212,6 +286,10 @@ def module_scenes(k):
     for kind in ("trackball", "trackpad"):
         parts, height = _module(kind)
         scenes[kind] = [(plan(m), rgb) for m, rgb in parts]
+        scenes[kind + "_rear"] = scenes[kind]
+        scenes[kind + "_assembly"] = [(plan(m), rgb) for m, rgb in module_assembly(kind)]
+        for label, solids in module_instruction_scenes(kind).items():
+            scenes[kind + "_" + label] = [(plan(m), rgb) for m, rgb in solids]
         cut = [(m.trim_by_plane((-1, 0, 0), 0.0), rgb) for m, rgb in parts]
         scenes[kind + "_open"] = [(plan(m), rgb) for m, rgb in cut if not m.trim_by_plane((-1, 0, 0), 0.0).is_empty()]
         scenes[kind + "_docked"] = [(plan(m.translate((0, 0, M.FLOOR_Z))), rgb) for m, rgb in parts]
@@ -226,6 +304,8 @@ def module_scenes(k):
         if kind == "trackball":
             choc_parts, _ = _module(kind, "choc")
             scenes["trackball_choc"] = [(plan(m), rgb) for m, rgb in choc_parts]
+            for label, solids in module_instruction_scenes(kind, "choc").items():
+                scenes["trackball_choc_" + label] = [(plan(m), rgb) for m, rgb in solids]
         connected = parts + _usb_parts(kind)
         scenes[kind + "_usb"] = [(plan(m), rgb) for m, rgb in connected]
         cut = [(m.trim_by_plane((-1, 0, 0), 0.0), rgb) for m, rgb in parts]
@@ -269,7 +349,9 @@ def main():
     for name in mods:
         bat_y = -(json.load(open("%s/design.json" % name.split("_")[0]))["battery"][1]
                  if name.startswith("trackball") else json.load(open("trackpad/design.json"))["layout"]["battery"][1])
-        scenes[name] = {"speck": [-5.0, bat_y - 5.0], "z": -(M.FEET + M.BOTTOM_T + 4.0), "size": 100.0}
+        scenes[name] = {"speck": [0.0, 55.0], "z": -(M.FEET + M.BOTTOM_T + 4.0), "size": 100.0}
+        if name.endswith("_rear"):
+            scenes[name] = {"speck": [0.0, 20.0], "z": -14.0, "size": 80.0}
         if "_usb" in name:
             scenes[name]["speck"] = [0.0, 40.0]
             if name.endswith("_dock"):

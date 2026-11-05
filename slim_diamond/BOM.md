@@ -20,63 +20,60 @@ packs come in round numbers anyway.
 | 12 | Silicone bump-ons 8 × 2 mm, self-adhesive | 10 (+6) | `8x2mm silicone bumpon self adhesive` | Five per half, in the slots under the floor (see BUILD.md). Use the specified 2.0 mm height to retain the checked stand-platform clearance. |
 | 13 | Filament | ~170 g | Nylon (PA) | Case left + right (solid base, 65.9 cm³ each) and the two top plates (4.3 cm³ each); approximately 160 g solid nylon before print overhead. |
 
-**Cyberdeck dock (optional):** `case/dock.stl` (84.4 cm³, about 96 g of Nylon), for a Ugreen folding phone
+**Cyberdeck dock (optional):** `case/dock.stl` (about 83 cm³, 95 g of Nylon), for a Ugreen folding phone
 stand with an 85 × 105 × 4 mm base, or on its own as a tented unibody. Print it flat side down, with
-supports inside the pocket (its roof spans 85 mm). It takes **34 additional common 8 × 1.5 mm discs**:
-12 under the halves (six per half), 12 in the uninterrupted 2.4 mm drawer walls (six per side),
-10 for the five base-magnet pairs. There is no rear retention magnet: that area is reserved for USB. The side magnets
-face all six seam magnets outside; positions 2, 4 and 6 also face the insert through a 0.6 mm inner skin. Load them from
-outside, flush, then glue in place. Seat each dock magnet by letting it snap onto the half it faces;
-orient the insert's magnets to attract its other pole through the inner wall. A magnet chain must
-attract throughout: half → dock → insert. Five base discs go in the dock and five are glued on the
-aluminium Ugreen base, paired with opposite poles facing. Add **6 more 8 × 2 mm bump-ons**, three under each
-wing: the underside is cut 0.5 mm off the desk for them.
+supports inside the pocket (its roof spans 85 mm). It takes **35 common 8 × 1.5 mm discs**:
+12 under the halves (six per half), 12 in the drawer walls (six per side), 10 for the five base-magnet
+pairs and one in the drawer floor. The side magnets face all six seam magnets outside; positions 2, 4
+and 6 also face the insert through a 0.6 mm inner skin. Load them from outside, flush, then glue in
+place. A magnet chain must attract throughout: half → dock → insert. Five base discs go in the dock
+and five are glued on the aluminium Ugreen base, paired with opposite poles facing. Add **6 more
+8 × 2 mm bump-ons**, three under each wing.
 
 **Independent tenting (optional):** two Ugreen stands and **6 common discs**, three glued to each
-tilting phone platform. Use the mirrored 1:1 SVG templates in `case/`; the magnet centres form a
-44 mm circle and require a **54 mm clear flat contact patch**. Measure the real platform and test
-the adhesive, magnetic retention and stand stability before use; platform compatibility is unconfirmed.
+tilting phone platform, using the mirrored 1:1 SVG templates in `case/`. The platform needs a
+**54 mm clear flat contact patch**.
 
-**Drawer placeholder:** `case/insert.stl` (64.5 cm³, solid), for when neither module is in the drawer:
+**Drawer placeholder:** `case/insert.stl` (64.4 cm³, solid), for when neither module is in the drawer:
 **6 common discs**, three a side.
 
-**Drawer modules (optional):** either slides into the dock's drawer from the front, or snaps onto either
-half's inner wall on the desk. Each needs **6 common discs** (three a side;
-test every mating polarity before gluing), **3 × 8 × 2 mm
-bump-ons** and **3 × M2 × 6 flat-head screws** for its bottom plate, a **752025, 250 mAh battery**
-(7.5 × 20 × 25 mm, unchanged; not the halves' larger cell),
-and its printed shell and bottom plate. Trackball shells print top down **with rear-hood
-supports**; inspect the slicer and test-print that region first (see BUILD.md).
+**Magnet total:** both halves 26 + dock and base 35 + stands 6 + placeholder 6 + both pointing modules 14
+= **87 discs**, before spares.
 
-**Magnet total:** both halves 26 + dock/base 34 + independent stands 6 + all three inserts 18
-= **84 discs**, before spares. One insert rather than all three gives 72 discs with both stand options.
+**Drawer modules (optional).** Either slides into the dock's drawer from the front, or snaps onto either
+half's inner wall on the desk. Everything below is per module, and most of it is the same part you already
+buy for the halves.
 
-| Slim Diamond Trackball | Qty | Search for | Notes |
+| Every module | Qty | Search for | Notes |
 |---|---|---|---|
-| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | One board: snap the sensor board off its tab. 2 layers, 1.6 mm |
-| nice!nano v2 | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down on shell-mounted ledges, secured with insulating tape; wired to labelled PCB pads, not pinned through the switch footprints. USB-C at the back; leave floor-service slack |
+| Printed tray, `case/module_tray.stl` | 1 | | The same print for every module |
+| Printed lid | 1 | | `trackball/case/lid.stl` (MX), `trackball/case/lid_choc.stl` (Choc v1) or `trackpad/case/lid.stl` |
+| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm. One panel: main board and sensor board. The same board for trackball and trackpad |
+| M3 × 8 flat-head screws | 6 | same as item 11 | Four through the lid, two through the sensor board |
+| Disc magnets 8 × 1.5 mm, N52 | 7 | same as item 10 | Three a side, one in the floor |
+| Silicone bump-ons 8 × 2 mm | 3 | same as item 12 | |
+| Slide switch MSK-12C02 | 1 | same as item 8 | On the main board, lever out of the back wall |
+| Reset button TS-1187A | 1 | same as item 9 | On the sensor board, facing down |
+| nice!nano v2 | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, wired to its labelled pads |
+| LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell |
+| 30 AWG stranded wire | about 80 mm per wire | `30 AWG silicone wire` | |
+
+| Trackball | Qty | Search for | Notes |
+|---|---|---|---|
 | PixArt PMW3610DM-SUDU + LM18-LSI lens | 1 + 1 | `PMW3610` (eBay, Tindie: Randware) / `LM18-LSI` | Through-hole sensor in the sensor board's cut-out, on its back face; the lens clips on from the front, looking up |
 | TLV74318PDBVR, SOT-23-5 | 1 | `TLV74318PDBVR` | The sensor's 1.8 V |
 | 0805 capacitors: 10 µF, 3.3 µF, 1 µF ×2, 100 nF ×3, 10 nF ×2; 0805 resistor 10 kΩ | 9 + 1 | `0805 capacitor kit` | Values as siderakb's PMW3610 board (CERN-OHL-P), which this circuit follows |
-| TS-1187A reset button (5.1 × 5.1 × 2.0 mm) | 1 | `5.1x5.1x2.0 SMD tactile switch 4 pin` | On the sensor board, facing down: press it with a pin through the bottom plate |
-| MSK-12C02 power switch | 1 | `MSK-12C02 SMD slide switch` | Lever out of the back wall |
-| MX switches + Kailh MX sockets + 1u DSA caps, **or** Choc v1 switches + Choc sockets + caps | 2 each | `Kailh MX hotswap socket` / `Kailh choc hotswap socket PG1350` | One shared PCB; populate only one socket family. MX uses `shell.stl`, Choc v1 uses `shell_choc.stl`; bottom plate is shared. Choc v2 is not supported. |
+| MX switches + Kailh MX sockets + 1u DSA caps, **or** Choc v1 switches + Choc sockets + caps | 2 each | `Kailh MX hotswap socket` / item 4 | Populate only one socket family. Choc v2 is not supported |
 | 34 mm trackball, 3 mm Si3N4 balls | 1 + 3 | `34mm trackball` / `3mm ceramic ball Si3N4` | The ceramic balls glue into the cup's three pockets |
-| M2 × 5 pan-head screws | 2 | | Sensor board to its posts, either case |
-| M2 × 5 (MX) **or M2 × 3 (Choc)** pan-head screws | 2 | | Main board to the top-shell posts. The Choc shell needs the shorter screws; 5 mm screws would protrude through its lower top. |
-| Hookup wire | 17 × ~50 mm | | Seven sensor-to-main wires plus ten controller wires: GND, VCC, RST, VBAT (to B+), SCLK, SDIO, NCS, MOTION, K1, K2. Leave slack for opening the bottom plate. |
 
-| Slim Diamond Trackpad | Qty | Search for | Notes |
+| Trackpad | Qty | Search for | Notes |
 |---|---|---|---|
 | Cirque TM040040, SPI | 1 | `TM040040` (Mouser) | The SPI version (the label's interface digit 4, R1 fitted): no change needed |
-| 12-pin 0.5 mm FFC cable and FFC-to-2.54 mm adapter | 1 + 1 | `12P 0.5mm FFC adapter board` | The adapter sits on a shelf over the battery; the case allows 20 × 14 mm |
-| nice!nano v2 | 1 | `nice!nano v2` | In a cradle on the bottom plate, USB-C at the back |
-| Choc v1 switches and keycaps | 2 + 2 | `Kailh choc low profile switch` | Clip into the top; wired by hand |
-| SS12D00G3 slide switch | 1 | `SS12D00G3 mini slide switch` | In its pocket on the back wall, lever out of it |
-| 6 × 6 mm tact switch (through-hole) | 1 | `6x6x4.3 tactile switch` | In its cradle on the plate: press it with a pin from below |
-| Hookup wire | ~15 × 60 mm | | See the wiring table in the README |
+| 12-pin 0.5 mm FFC cable and FFC-to-2.54 mm adapter | 1 + 1 | `12P 0.5mm FFC adapter board` | The adapter tapes onto the sensor board; the case allows 20 × 14 mm |
+| Choc v1 switches, sockets and keycaps | 2 + 2 + 2 | same as items 3, 4, 5 | |
 
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
-or epoxy for the magnets.
+or epoxy for the magnets, removable adhesive dots for the trackpad, and an optional 8 mm woven
+ribbon, at most 0.25 mm thick, as a pull tab (one 32 mm piece per drawer insert).
 
 Soldering, assembly and printing: see [BUILD.md](BUILD.md).

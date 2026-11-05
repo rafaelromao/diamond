@@ -159,9 +159,9 @@ def wire_pad():
 
 
 def mount_hole():
-    L = F.header("MountingHole_M2", "M2 screw hole", attr="exclude_from_pos_files exclude_from_bom")
-    L.append(F.npth(0, 0, 2.2))
-    F.write("MountingHole_M2", L)
+    L = F.header("MountingHole_M3", "M3 screw hole", attr="exclude_from_pos_files exclude_from_bom")
+    L.append(F.npth(0, 0, 3.4))
+    F.write("MountingHole_M3", L)
 
 
 def bite():

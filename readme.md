@@ -52,12 +52,5 @@ Both halves are provided, already oriented for printing: the bases floor-down, t
 - [Plate Left](stls/slim_diamond/plate_left.stl)
 - [Plate Right](stls/slim_diamond/plate_right.stl)
 - [Cyberdeck Dock](stls/slim_diamond/dock.stl), [Drawer Placeholder](stls/slim_diamond/insert.stl)
-- Trackball: [MX Shell](stls/slim_diamond/trackball_shell.stl), [Choc v1 Shell](stls/slim_diamond/trackball_shell_choc.stl), [Shared Bottom Plate](stls/slim_diamond/trackball_bottom_plate.stl)
-- [Trackpad Module Shell](stls/slim_diamond/trackpad_shell.stl), [Bottom Plate](stls/slim_diamond/trackpad_bottom_plate.stl)
-
-Trackball shells require rear-hood supports in the supplied print orientation; see
-the [build guide](slim_diamond/BUILD.md). Printed fit and load capacity remain unverified.
-
-# Firmware
-
-Check my [keyboards](https://github.com/rafaelromao/keyboards) repo to find the ZMK firmware for these boards.
+- Pointing modules, one shared tray: [Module Tray](stls/slim_diamond/module_tray.stl)
+- Lids: [Trackball MX](stls/slim_diamond/trackball_lid.stl), [Trackball Choc v1](stls/slim_diamond/trackball_lid_choc.stl), [Trackpad](stls/slim_diamond/trackpad_lid.stl)

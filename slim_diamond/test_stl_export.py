@@ -19,13 +19,11 @@ class StlExportTest(unittest.TestCase):
         solids = {"left": half, "right": C.mirrored(half), "plate_left": plate,
                   "plate_right": plate.mirror((1, 0, 0)), "dock": dock.make().solid,
                   "cover": insert.build()[0]}
-        for name, mod, switch in (("mx", B, "mx"), ("choc", B, "choc"), ("trackpad", T, None)):
-            layout = mod.place()
-            built = mod.shell_and_plate(layout, switch) if switch else mod.shell_and_plate(layout)
-            height = B.PCB_TOP + (B.MX if switch == "mx" else B.CHOC)["below_plate"] if switch else T.H
-            solids[name] = built[0].mirror((0, 0, 1)).translate((0, 0, height))
-            if name != "choc":
-                solids[name + "_plate"] = built[1].translate((0, 0, -mod.M.FEET))
+        layout = B.place()
+        solids["tray"] = B.tray(layout).translate((0, 0, -B.M.FEET))
+        for name, lid, height in (("mx", B.lid(layout, "mx"), B.H), ("choc", B.lid(layout, "choc"), B.M.HEAD_Z),
+                                  ("trackpad", T.lid(T.place()), T.H)):
+            solids[name] = lid.mirror((0, 0, 1)).translate((0, 0, height))
         record = np.dtype([("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attribute", "<u2")])
         with tempfile.TemporaryDirectory(dir="/tmp/opencode", prefix="diamond-stl-test-") as folder:
             for name, solid in solids.items():

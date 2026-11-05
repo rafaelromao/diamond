@@ -3,8 +3,9 @@
     python3 trackball/build_pcb.py build   -> trackball/pcb/trackball.kicad_pcb + .dsn (unrouted)
     python3 trackball/build_pcb.py import  -> imports the Freerouting session, pours, stitches, saves
 
-One board to order: the main board and the sensor board, joined by a breakaway tab. Both sit at
-their places in the module's plan (trackball.py), in KiCad's frame (x the same, y towards you).
+One board to order: the main board and the sensor board, joined by a long breakaway bridge. The
+main board sits at its place in the module's plan (trackball.py), in KiCad's frame (x the same, y
+towards you); the sensor board is moved sensor_shift away along y for the panel.
 Seven wires join them once snapped apart: VCC, GND, RST, SCLK, SDIO, NCS, MOTION. The sensor
 board's nets carry an S_ prefix: the wires join them, not copper, so the router mustn't try.
 
@@ -32,6 +33,7 @@ PINS = {"MOTION": "P0.22", "NCS": "P0.24", "SDIO": "P1.00", "SCLK": "P0.11", "K1
 NANO_LEFT = ["B+", "GND", "RST", "VCC", "P0.31", "P0.29", "P0.02", "P1.15", "P1.13", "P1.11", "P0.10", "P0.09"]
 NANO_RIGHT = ["P0.06", "P0.08", "GND", "GND", "P0.17", "P0.20", "P0.22", "P0.24", "P1.00", "P0.11", "P1.04", "P1.06"]
 WIRES_MAIN = ["SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND"]     # right four, then left three
+PAD_LABELS = {"SCLK": "CK", "SDIO": "IO", "NCS": "CS", "MOTION": "MO", "VCC": "3V", "GND": "G"}
 WIRES_SENSOR = ["VCC", "GND", "RST", "SCLK", "SDIO", "NCS", "MOTION"]   # trackball.py SENSOR_PARTS J1 order
 SENSOR_NETS = {   # PMW3610 pins (siderakb's 3.3 V logic configuration)
     "1": "VCSEL", "10": "VCSEL", "15": "XYL", "16": "XYL", "12": "CP", "13": "CN", "9": "VCP",
@@ -171,27 +173,24 @@ def prerouted(board, nets, fps):
     p = max((p for p in fps["SW1"].Pads() if p.GetNumber() == "2"),
             key=lambda p: p.GetPosition().y)
     start = (pcbnew.ToMM(p.GetPosition().x) - OFF[0], pcbnew.ToMM(p.GetPosition().y) - OFF[1])
-    escape = (10.0, start[1])
-    track(board, nets, "K1", [start, escape], B)
+    # Between the right wire row and the main board's screw hole.
+    escape = (12.5, max(p[1] for p in D["wire_pads"] if p[0] > 0) + 1.75)
+    track(board, nets, "K1", [start, (start[0] + 3.4, start[1]), (start[0] + 5.2, escape[1]), escape], B)
     via(board, nets, "K1", escape)
+    # Back to its wire pad on the front face, inside the right wire row, between the keys.
+    k1 = pad_at(fps["K1"], "1")
+    track(board, nets, "K1", [escape, (8.3, escape[1]), (8.3, k1[1] + 2.2), (7.1, k1[1] + 1.6),
+                              (k1[0] + 1.5, k1[1] + 1.6), k1], F)
     ground = max((p for p in fps["SW1"].Pads() if p.GetNumber() == "1"),
                  key=lambda p: p.GetPosition().y)
     start = (pcbnew.ToMM(ground.GetPosition().x) - OFF[0], pcbnew.ToMM(ground.GetPosition().y) - OFF[1])
     escape = (-8.0, -D["nano"][1] - 6.6)
     track(board, nets, "GND", [start, (-8.0, start[1]), escape], B)
     via(board, nets, "GND", escape)
-    # Launch the battery trace outside the pad row before automatic routing;
-    # the narrow channel beside the antenna otherwise strands the THT pad.
+    # Front-face path round both socket families' drills at the 270-degree placement, from the
+    # left wire row to the power switch. The autorouter strands this power net.
     bat = pad_at(fps["BAT+"], "1")
-    escape = (bat[0] - 2.2, bat[1] - 2.16)
-    track(board, nets, "BAT+", [bat, (bat[0] - 1.3, bat[1]),
-          (escape[0], bat[1] - .9), escape], B)
-    via(board, nets, "BAT+", escape)
-    # Front-face path around both socket families' drills at the 270-degree
-    # placement. The autorouter repeatedly strands this power net; keep the
-    # clearance-checked escape fixed and require a clean final DRC on regeneration.
-    track(board, nets, "BAT+", [escape, (-11.55, 47.35), (-11.4, 47.2),
-          (-11.25, 47.05), (-10.8, 46.6), (-9.75, 46.3), (-4.2, 40.75),
+    track(board, nets, "BAT+", [bat, (-8.85, bat[1] - 1.15), (-8.85, 45.4), (-4.2, 40.75),
           (-2.55, 40.75), (-2.1, 40.45), (-.6, 36.1), (.9, 34.6),
           (2.1, 28.15), pad_at(fps["SW3"], "1")], F)
     sw = fps["SW3"]
@@ -252,7 +251,7 @@ def build():
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
         fps[name] = fp
-        text(board, name, (p[0] + (2.5 if p[0] < 0 else -2.5), p[1]), pcbnew.F_SilkS, 0.8)
+        text(board, name, (p[0] - 1.3, p[1] + 1.6) if p[0] < 0 else (p[0], p[1] - 1.6), pcbnew.F_SilkS, 0.8)
     back = min(y for _, y in D["main_board"])
     pw = add_fp(board, "SW_MSK12C02", "SW3", (0.0, back + 1.8), 180, "MSK-12C02 power")
     set_pads(pw, {"1": "BAT+", "2": "VBAT", "3": "VBAT", "SH": "GND"}, board, nets)
@@ -262,18 +261,23 @@ def build():
         set_pads(fp, {"1": name}, board, nets)
         fps["wires"][name] = fp
         side = 1 if p[0] > 0 else -1
-        text(board, name, (p[0] - side * 1.6 - side * len(name) * 0.5, p[1]), pcbnew.F_SilkS, 1.0)
+        label = PAD_LABELS.get(name, name)      # short: the keys' drills sit close to these rows
+        if abs(p[0]) < 8:
+            text(board, label, (p[0], p[1] - 1.6), pcbnew.F_SilkS, 0.8)
+        else:
+            text(board, label, (p[0] - side * 1.15 - side * len(label) * 0.42, p[1]), pcbnew.F_SilkS, 0.8)
     for i, (p, name) in enumerate(zip(D["battery_pads"], ["BAT+", "GND"]), 8):
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
         fps[name if name == "BAT+" else "BAT-"] = fp
         text(board, "+" if name == "BAT+" else "-", (p[0] + 1.8, p[1]), pcbnew.F_SilkS, 1.0)
     for i, h in enumerate(D["main_holes"], 1):
-        add_fp(board, "MountingHole_M2", f"H{i}", tuple(h), 0, "M2")
+        add_fp(board, "MountingHole_M3", f"H{i}", tuple(h), 0, "M3")
     text(board, "SD TRACKBALL", (0.0, back + 4.4), pcbnew.F_SilkS, 1.0)
 
     # --- the sensor board (its parts on the back face)
     bx, by = kicad(D["ball"])
+    by += D["sensor_shift"]           # apart from the main board on the panel
     sp = D["sensor_parts"]
     S = lambda m: {k: "S_" + v for k, v in m.items()}
     u = add_fp(board, "PMW3610_Back", "S1", (bx + sp["U1"][0], by + sp["U1"][1]), 0, "PMW3610DM-SUDU + LM18-LSI")
@@ -291,10 +295,12 @@ def build():
         set_pads(fp, {"1": "S_" + name}, board, nets)
         text(board, name, (bx + p[0], by + p[1] - 1.7 if i <= 4 else by + p[1] + 1.7), pcbnew.B_SilkS, 1.0, mirror=True)
     for i, h in enumerate(D["sensor_holes"], 1):
-        add_fp(board, "MountingHole_M2", f"SH{i}", tuple(h), 0, "M2")
+        add_fp(board, "MountingHole_M3", f"SH{i}", tuple(h), 0, "M3")
     for i, b in enumerate(D["bites"], 1):
         add_fp(board, "MouseBite", f"MB{i}", tuple(b), 0, "bite")
     text(board, "LENS UP", (bx - 9.0, by - 6.0), pcbnew.F_SilkS, 1.0)
+    ys = sorted({y for _, y in D["bites"]})
+    text(board, "SNAP", (0.0, sum(ys) / 2), pcbnew.F_SilkS, 0.8)
 
     prerouted(board, nets, fps)
 

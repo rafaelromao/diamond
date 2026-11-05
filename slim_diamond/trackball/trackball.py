@@ -1,16 +1,17 @@
 """Slim Diamond Trackball: a 34 mm ball and two MX or Choc v1 hot-swap keys, on shared boards.
 
-On the shared shell (module_shell.py), 4 mm taller than the halves' top edges (the 250 mAh battery
-and the nice!nano stack under the keys), bevelled at 45 degrees from their top edges up. The ball sits at the front in a cup in the shell, on three
-3 mm ceramic balls, and lifts out from above. Under it, on the bottom plate, the sensor board: a
-PMW3610 looking up through its LM18-LSI lens, and the reset button facing down, pressed with a pin
-through the plate. Behind the ball the main board hangs under the top
-(MX or Choc plate): two alternative hot-swap sockets per key, the nice!nano wired below the
-sockets (USB-C out of the back wall), the power switch (lever out of the back wall), pads for
-the battery's leads. The battery lies on the
-plate under the nano. Seven wires join the two boards.
+On the shared tray (module_shell.py), with a lid that carries the keys' plate and the ball's cup.
+The ball sits at the front in that cup on three 3 mm ceramic balls, and lifts out from above. Under
+it, on the tray's floor, the sensor board: a PMW3610 looking up through its LM18-LSI lens, and the
+reset button facing down, pressed with a pin through the floor. Behind the ball the main board rests
+on the tray's posts: two alternative hot-swap sockets per key, the power switch (lever out of the back
+wall), pads for the wires and the battery's leads. The nice!nano hangs under it, wired, USB-C out of the
+back wall; the battery lies on the floor under the nano. Seven wires join the two boards.
 
-Frames: the dock's plan (x right, y away from you), z up from the standing plane, as the shell.
+This file owns the tray's insides, because the trackpad (trackpad/trackpad.py) uses the same tray,
+main board and battery, and a sensor board for its reset button.
+
+Frames: the dock's plan (x right, y away from you), z up from the standing plane, as the tray.
 KiCad's frame for the boards: x the same, y = -y.
 
 Writes trackball/design.json (the boards' outlines and parts, for build_pcb.py), case/*.stl and the
@@ -46,13 +47,14 @@ KEYS_X = -0.45                 # common centres for both socket families and cas
 MX = dict(cap=18.0, below_plate=5.0, socket=1.85, cap_top=8.0 + 7.6)   # cap_top: over the plate (DSA)
 CHOC = dict(cap=18.0, below_plate=2.2, socket=1.8, cap_top=7.5)
 PLATE_TOP = M.FEET + M.BOTTOM_T
-PCB_T = 1.6
-PCB_TOP = H - MX["below_plate"]                     # MX: PCB top 5 mm under the plate's top
+BAT_Z = PLATE_TOP + .4          # insulating seat above reinforced floor roofs
+PCB_T = M.PCB_T
+PCB_TOP = M.PCB_TOP                                 # MX: 5 mm under the top; Choc: 2.2 mm
 SOCKET_BOT = PCB_TOP - PCB_T - MX["socket"]
 BALL = 34.0
 BEARING = 3.0                  # Si3N4 balls in the cup, three of them
 BEARING_ANGLE = 40.0           # contact angle below the ball's equator
-SENSOR_BELOW = 3.0             # the sensor board's parts face down: room under it
+SENSOR_BELOW = 3.4             # room under it, over the reinforced foot roofs
 LENS_ABOVE = 2.0               # UNCONFIRMED: lens reference plane over the sensor board's top
 WORK = 2.4                     # PMW3610: lens reference plane to the ball (2.2 to 2.6)
 SENSOR_BOARD = (28.0, 30.0)    # w, l, centred on the ball's axis: the sensor, its parts, wires, reset
@@ -78,6 +80,8 @@ NANO_Y_MAX = -58.4             # keep the controller forward of the rear USB/pow
 BAT = (20.0, 25.0, 7.5)        # 752025 lengthwise: w (x), l (y), thickness
 CRADLE = (1.2, 3.0, 0.3)
 CUP_WALL = 1.6
+PAD_KEEP = (-77.1, 18.9)       # the trackpad's back parts: centre y, radius
+PANEL_LENGTH = 99.5            # the ordered panel's longest side, within the 100 mm tier
 BALL_CLR = 0.6                 # the cup's inside off the ball
 BCZ = PLATE_TOP + SENSOR_BELOW + PCB_T + LENS_ABOVE + WORK + BALL / 2
 
@@ -97,7 +101,7 @@ def place():
     n_top = M.inner().bounds[3] - 0.3                      # its USB end
     n_y0 = max(y for y in np.arange(-90, n_top - NANO[1] + 0.01, 0.1)
                if y <= NANO_Y_MAX + 1e-6
-               and M.inner().buffer(-0.3).contains(box(-NANO[0] / 2, y, NANO[0] / 2, y + NANO[1])))
+               and M.inner().buffer(-0.15).contains(box(-NANO[0] / 2, y, NANO[0] / 2, y + NANO[1])))
     # the battery on the plate under the nano, as far forward as the cup lets it
     b_y0 = min(y for y in np.arange(bc, -10, 0.1)
                if room.buffer(-CRADLE[2]).contains(box(-BAT[0] / 2, y, BAT[0] / 2, y + BAT[1]))   # its cradle merges into the walls
@@ -137,33 +141,21 @@ def sensor_board_plan(L):
     return box(bx - w / 2, by - l / 2, bx + w / 2, by + l / 2)
 
 
-def main_board_plan(L, posts):
-    """The main board: inside the walls (0.5 mm off), behind the ball's cup, round the posts."""
+def main_board_plan(L):
+    """The main board: inside the walls (0.5 mm off), behind the ball's cup and the trackpad's back
+    parts. It drops into the tray from above, so nothing lower constrains it."""
     bx, by = L["ball"]
     outline = M.inner().buffer(-0.5, join_style=2)
     outline = outline.difference(Point(bx, by).buffer(cup_outer_r() + 0.5, 64))
-    outline = outline.intersection(box(-99, by, 99, 99))
-    for x, y in posts:
-        outline = outline.difference(Point(x, y).buffer(M.SCREW["post"] / 2 + 0.5, 32))
+    outline = outline.difference(Point(0, PAD_KEEP[0]).buffer(PAD_KEEP[1], 64))
+    outline = outline.intersection(box(-99, -68, 99, 99))
     outline = max(getattr(outline, "geoms", [outline]), key=lambda g: g.area)
-    return outline.buffer(-0.5).buffer(0.5)       # 0.5 mm round the corners
+    return outline.buffer(-0.5).buffer(0.5).simplify(.005, preserve_topology=True)  # round corners; no sub-micron routed edges
 
 
-def board_posts(L):
-    """Two posts under the top, holding the main board (M2 screws up through it), clear of the
-    keys' sockets and the nano, merging into the walls."""
-    keys = unary_union([box(kx - 9.5, ky - 9.5, kx + 9.5, ky + 9.5) for kx, ky in L["keys"]])
-    nano = box(-NANO[0] / 2 - 1, L["nano"][1] - 1, NANO[0] / 2 + 1, L["nano"][1] + NANO[1] + 1)
-    ok = M.inner().buffer(1.0 - M.SCREW["post"] / 2, join_style=2).difference(keys.union(nano)).difference(
-        Point(*L["ball"]).buffer(cup_outer_r() + M.SCREW["post"] / 2))        # merging 1 mm into the walls
-    ok = ok.intersection(main_board_plan(L, []).buffer(-1.4))   # the 2.2 mm hole stays inside the board
-    x0, y0, x1, y1 = ok.bounds
-    pts = [(x, y) for x in np.arange(0, x1 + 0.01, 0.5) for y in np.arange(y0, y1 + 0.01, 0.5)
-           if ok.contains(Point(x, y)) and ok.contains(Point(-x, y))]
-    y0k, y1k = L["keys"][0][1] - 9.0, L["keys"][1][1] + 9.0
-    pts = [q for q in pts if y0k <= q[1] <= y1k]               # beside the keys, under the main board
-    q = max(pts, key=lambda q: q[0] - 0.5 * abs(q[1] - (L["keys"][0][1] + L["keys"][1][1]) / 2))
-    return [(-q[0], q[1]), q]
+def board_holes():
+    """The main board's two screw holes: the lid's rear pair."""
+    return M.lid_screws()[2:]
 
 
 def parts(L, main_plan, sensor_plan, switch="mx"):
@@ -190,21 +182,37 @@ def parts(L, main_plan, sensor_plan, switch="mx"):
         out.append(("socket %d" % (i + 1), box3(kx + x0, ky - 7.75, socket_bot,
                                                    kx + x1, ky + 7.75, pcb_top - PCB_T)))
     out.append(("main board", M.extrude(main_plan, pcb_top - PCB_T, pcb_top)))
+    out.append(("power switch", power_switch(main_plan)))
     nx, ny = L["nano"]
     nb = SOCKET_BOT - NANO_GAP                         # its back, under the sockets
     nano = box3(nx - NANO[0] / 2, ny, nb - NANO[2], nx + NANO[0] / 2, ny + NANO[1], nb)
     nano += box3(nx - 4.5, ny + NANO[1] - 7.3, nb - NANO[2] - NANO[3], nx + 4.5, ny + NANO[1] + 0.6, nb - NANO[2])
     out.append(("nice!nano", nano))
     bx_, by_ = L["battery"]
-    out.append(("battery", box3(bx_ - BAT[0] / 2, by_, PLATE_TOP, bx_ + BAT[0] / 2, by_ + BAT[1], PLATE_TOP + BAT[2])))
+    out.append(("battery", box3(bx_ - BAT[0] / 2, by_, BAT_Z, bx_ + BAT[0] / 2, by_ + BAT[1], BAT_Z + BAT[2])))
     sz = PLATE_TOP + SENSOR_BELOW
     out.append(("sensor board", M.extrude(sensor_plan, sz, sz + PCB_T)))
     zone = sensor_plan.buffer(-0.5)
     for x, y in sensor_holes(L):
-        zone = zone.difference(Point(x, y).buffer(2.6))
-    out.append(("sensor's parts", M.extrude(zone, PLATE_TOP + 0.2, sz)))
+        zone = zone.difference(Point(x, y).buffer(3.0))
+    rx, ry = sensor_reset(L)
+    zone = zone.difference(box(rx - 2.8, ry - 2.8, rx + 2.8, ry + 2.8))
+    out.append(("sensor's parts", M.extrude(zone, PLATE_TOP + 0.6, sz)))
+    # TS-1187A, on B.Cu: the plunger points down towards the floor's pin hole.
+    reset = box3(rx - 2.55, ry - 2.55, sz - 1.1, rx + 2.55, ry + 2.55, sz)
+    reset += Manifold.cylinder(.9, 1, circular_segments=32).translate((rx, ry, sz - 2))
+    out.append(("reset", reset))
     out.append(("lens", Manifold.cylinder(LENS_ABOVE, 5.5, circular_segments=48).translate((bx, by, sz + PCB_T))))
     return out
+
+
+def power_switch(main_plan, full_travel=True):
+    """MSK-12C02 body and full lever-travel envelope on the main PCB's front face."""
+    sy = main_plan.bounds[3] - 1.8
+    body = box3(-3.35, sy - 1.35, PCB_TOP, 3.35, sy + 1.35, PCB_TOP + 1.4)
+    half = 2.25 if full_travel else .75
+    lever = box3(-half, sy + 1.35, PCB_TOP + .4, half, sy + 3.4, PCB_TOP + 1.0)
+    return body + lever
 
 
 def usb_z(L):
@@ -227,7 +235,8 @@ def cup(L):
         cupm -= Manifold.sphere(BEARING / 2 + 0.05, 32).translate((x, y, z))
     cupm = cupm.trim_by_plane((0, 0, 1), z0).trim_by_plane((0, 0, -1), -H)
     cupm -= Manifold.cylinder(H, 7.0, circular_segments=48).translate((bx, by, z0 - 1))        # the sensor's window
-    return cupm ^ M.extrude(M.inner().buffer(0.01), 0, H)          # merged into the walls where they meet
+    inside = M.K.module_front(M.extrude(M.inner().buffer(-M.LID_CLR, join_style=2), 0, H), M.P, M.WALL + M.LID_CLR)
+    return cupm ^ inside                                           # it drops into the tray with the lid
 
 
 def cup_outer_r():
@@ -235,85 +244,89 @@ def cup_outer_r():
     return math.sqrt((BALL / 2 + BALL_CLR + CUP_WALL) ** 2 - max(BCZ - H, 0) ** 2) + 0.4
 
 
-def shell_and_plate(L, switch="mx"):
-    spec = MX if switch == "mx" else CHOC
-    height = PCB_TOP + spec["below_plate"]
-    pcb_top = PCB_TOP
-    top_t = TOP_T if switch == "mx" else 1.2
-    bx, by = L["ball"]
-    # Reserve the wire rows before placing the bottom-plate posts. A post's board notch is
-    # 0.5 mm wider than the post; pad_row also needs 1.6 mm of board around its 0.8 mm envelope.
-    # screw_spots adds 0.3 mm itself, leaving 1.6 + 0.5 - 0.3 = 1.8 mm to reserve here.
-    pads = board_layout(L, main_board_plan(L, []))
-    wire_keep = unary_union([box(x - 0.8, y - 0.8, x + 0.8, y + 0.8)
-                             for x, y in pads["wires"] + pads["bat"] + pads["controller"]]).buffer(1.8)
-    keep = unary_union([Point(bx, by).buffer(cup_outer_r() + 0.5),
-                        sensor_board_plan(L).buffer(0.3),
-                        wire_keep,
-                        unary_union([Point(x, y).buffer(M.SCREW["post"] / 2 + 0.3)
-                                     for x, y in board_posts(L)]),
-                        box(-BAT[0] / 2 - 2, L["battery"][1] - 2, BAT[0] / 2 + 2, L["battery"][1] + BAT[1] + 2),
-                         box(-NANO[0] / 2 - 0.5, L["nano"][1] - 1, NANO[0] / 2 + 0.5, M.OUTLINE.bounds[3])])
-    posts = M.screw_spots(2, keep_out=keep) + [(0.0, -20.5)]
-    rear_post_top = 8.7             # below the USB overmold, not through the controller board
-    sh = M.shell(height, top_t, posts, post_tops={posts[2]: rear_post_top})
-    sh += box3(-M.SCREW["post"] / 2, posts[2][1], rear_post_top - 3,
-               M.SCREW["post"] / 2, L["back"], rear_post_top)
-    # the bottom plate's posts pass the main board: stop them short of it where they're under it
-    sh += cup(L)
-    sh -= Manifold.cylinder(top_t + 1, L["r_top"], circular_segments=120).translate((bx, by, height - top_t - 0.5))
-    for kx, ky in L["keys"]:
-        sh -= Manifold.cube((MX_CUT, MX_CUT, top_t + 1)).translate((kx - MX_CUT / 2, ky - MX_CUT / 2, height - top_t - 0.5))
-    bp = board_posts(L)
-    for x, y in bp:
-        post = Manifold.cylinder(height - top_t - pcb_top + 0.01, M.SCREW["post"] / 2, circular_segments=32)
-        sh += post.translate((x, y, pcb_top))
-        sh -= Manifold.cylinder(6.0, M.SCREW["pilot"] / 2, circular_segments=20).translate((x, y, pcb_top - 0.01))
-    main_plan = main_board_plan(L, posts[:2])  # the short rear post stops well below this board
-    sensor_plan = sensor_board_plan(L)
-    # the back wall: USB-C opening and the power switch's lever slot
-    nb = SOCKET_BOT - NANO_GAP
-    uz = nb - NANO[2] - NANO[3] / 2
-    back = L["back"]
-    sh -= Manifold.cube((12.8, M.WALL + 3, 7.2)).translate((-6.4, back - M.WALL - 1.5, uz - 3.6))
-    # Keep the power lever opening local to the rear wall; a long groove across the
-    # hood is unnecessary and visually interrupts the continuous rear surface.
-    sh -= Manifold.cube((5.0, M.WALL + 3, 2.4)).translate((-2.5, back - M.WALL - 1.5, pcb_top + 0.2))
-    sh = M.bevel(sh, height)          # the cup and the posts too
-    plate = M.bottom_plate(posts)
-    # the battery's cradle, the sensor board's posts
+def tray(L):
+    """The tray every module shares: M.tray() with the electronics' seats and the screw posts."""
+    sh = M.tray()
+    # the battery's cradle
     c = CRADLE[2]
     bx_, by_ = L["battery"]
     outer = box(bx_ - BAT[0] / 2 - c - CRADLE[0], by_ - c - CRADLE[0], bx_ + BAT[0] / 2 + c + CRADLE[0], by_ + BAT[1] + c + CRADLE[0])
     ring = outer.difference(box(bx_ - BAT[0] / 2 - c, by_ - c, bx_ + BAT[0] / 2 + c, by_ + BAT[1] + c))
-    plate += M.extrude(ring.intersection(M.room().buffer(-M.PLATE_CLR)), PLATE_TOP - 0.01, PLATE_TOP + CRADLE[1])
-    # The wired controller sits on shell-mounted ledges, not on the removable floor.
-    # This keeps its wider PCB above the seam-magnet bosses during bottom-plate servicing.
+    sh += M.extrude(ring.intersection(M.room()), PLATE_TOP - 0.01, PLATE_TOP + CRADLE[1])
+    sh += M.extrude(box(bx_ - BAT[0] / 2, by_, bx_ + BAT[0] / 2, by_ + BAT[1]), PLATE_TOP - .01, BAT_Z)
+    # The nano's rear rests on two piers and a low crossweb, clear of the USB receptacle
     nano_floor = SOCKET_BOT - NANO_GAP - NANO[2]
     ny = L["nano"][1]
     support_y = max(L["battery"][1] + BAT[1] + 1.5, ny + NANO[1] - 8.0)
     for sx in (-1, 1):
-        pad = box(7.2, support_y, M.OUTLINE.bounds[2], support_y + 4.0)
-        if sx < 0:
-            from shapely import affinity
-            pad = affinity.scale(pad, xfact=-1, yfact=1, origin=(0, 0))
-        sh += M.extrude(pad.intersection(M.OUTLINE), nano_floor - 1.6, nano_floor)
-        lip = box(sx * 9.8 - 0.5, support_y, sx * 9.8 + 0.5, support_y + 4.0)
-        sh += M.extrude(lip, nano_floor - 0.01, nano_floor + NANO[2])
-    sh = M.bevel(sh, height)
+        pad = box(sx * 7.4 - 1.5, support_y - 1, sx * 7.4 + 1.5, support_y + 4)
+        sh += M.extrude(pad, PLATE_TOP - .01, nano_floor)
+    sh += M.extrude(box(-8.9, support_y + 3, 8.9, support_y + 5), PLATE_TOP - .01, usb_z(L) - NANO[3] / 2 - .3)
+    # the sensor board's posts: M3 x 8 down through the board
     for x, y in sensor_holes(L):
-        plate += Manifold.cylinder(SENSOR_BELOW + 0.01, 2.2, circular_segments=32).translate((x, y, PLATE_TOP - 0.01))
-        plate -= Manifold.cylinder(SENSOR_BELOW + 1, M.SCREW["pilot"] / 2, circular_segments=20).translate((x, y, PLATE_TOP))
-    # reset: the button faces down from the sensor board; a pin hole through the plate under it
+        sh += Manifold.cylinder(SENSOR_BELOW + 0.01, 2.8, circular_segments=32).translate((x, y, PLATE_TOP - 0.01))
+    # the main board: two posts beside the battery, each widening over it, and a ledge at the back
+    pcb_under = PCB_TOP - PCB_T
+    for sx in (-1, 1):
+        x, y = sx * M.PCB_SCREW[0], M.PCB_SCREW[1]
+        r = M.SCREW["post"] / 2
+        foot = box(min(sx * 11.8, sx * 17), y - r, max(sx * 11.8, sx * 17), y + r).intersection(M.inner().buffer(.05))
+        sh += M.extrude(foot, PLATE_TOP - .01, 10.8)
+        neck = (M.extrude(foot, 10.79, 10.8) + Manifold.cylinder(.01, r, circular_segments=48).translate((x, y, 13.2))).hull()
+        post = Manifold.cylinder(pcb_under - 13.19, r, circular_segments=48).translate((x, y, 13.19)) + neck
+        # flat on the battery's side: the cell lowers straight in past both posts
+        side = box(min(sx * (BAT[0] / 2 + .2), sx * 20), y - 9, max(sx * (BAT[0] / 2 + .2), sx * 20), y + 9)
+        sh += post ^ M.extrude(side.intersection(M.inner().buffer(.05)), 0, 30)
+    # the rear of the board rests on a ledge across the back wall, a wedge for printing
+    w = M.inner().bounds[3]
+    wedge = Manifold.hull_points([(sx * 7.0, y, z) for sx in (-1, 1)
+                                  for y, z in ((w + .05, pcb_under - 1.15), (w + .05, pcb_under), (w - 1.5, pcb_under))])
+    sh += wedge ^ M.extrude(M.inner().buffer(.05), 0, 30)
+    # the front posts, up to the main board's top, under the lid's bosses
+    for sx in (-1, 1):
+        x, y = sx * M.FRONT_SCREW[0], M.FRONT_SCREW[1]
+        sh += Manifold.cylinder(PCB_TOP - PLATE_TOP + .01, M.SCREW["post"] / 2, circular_segments=48).translate(
+            (x, y, PLATE_TOP - .01))
+    # pilots: the depth of the halves' screws (8 mm less the 3.8 mm stack, and a margin), all the
+    # same end height; the sensor's reach into the floor
+    for x, y in M.lid_screws():
+        sh -= Manifold.cylinder(PCB_TOP - 13.9 + 1, M.SCREW["pilot"] / 2, circular_segments=24).translate((x, y, 13.9))
+    for x, y in sensor_holes(L):
+        sh -= Manifold.cylinder(PLATE_TOP + SENSOR_BELOW - 1.1 + 1, M.SCREW["pilot"] / 2, circular_segments=24).translate((x, y, 1.1))
+    # reset: the button faces down from the sensor board; a pin hole through the floor under it
     rx, ry = sensor_reset(L)
-    plate -= Manifold.cylinder(M.BOTTOM_T + 2, 1.25, circular_segments=24).translate((rx, ry, M.FEET - 1))
-    passage = M.usb_clearance(L["nano"][1] + NANO[1] + 0.6, usb_z(L))
-    sh -= passage
-    plate -= passage
-    plate -= M.extrude(unary_union([Point(x, y).buffer(M.SCREW["post"] / 2 + 0.3) for x, y in posts]),
-                       PLATE_TOP, height + 1)
-    plate ^= M.extrude(M.service_plan(), M.FEET - 1, height + 1)
-    return sh, plate, posts, bp, main_plan, sensor_plan
+    sh -= Manifold.cylinder(M.BOTTOM_T + 2, 1.25, circular_segments=24).translate((rx, ry, M.FEET - 1))
+    # the back wall: USB-C opening, and a slot open to the top for the power lever
+    back = L["back"]
+    uz = usb_z(L)
+    sh -= Manifold.cube((12.8, M.WALL + 3, 7.2)).translate((-6.4, back - M.WALL - 1.5, uz - 3.6))
+    sh -= box3(-2.5, back - M.WALL - 1.5, PCB_TOP - .3, 2.5, back + 1.5, M.FLUSH + 1)
+    sh -= M.usb_clearance(L["nano"][1] + NANO[1] + 0.6, uz)
+    return sh
+
+
+def lid(L, switch="mx", ball=True):
+    """The top: the key cutouts, the power switch's pocket and notch; the ball's cup and bore."""
+    spec = MX if switch == "mx" else CHOC
+    height = PCB_TOP + spec["below_plate"]
+    top_t = TOP_T if switch == "mx" else 1.2
+    sh = M.lid_blank(height, top_t)
+    if ball:
+        bx, by = L["ball"]
+        sh += cup(L)
+        sh -= Manifold.cylinder(top_t + 1, L["r_top"], circular_segments=120).translate((bx, by, height - top_t - 0.5))
+    for kx, ky in L["keys"]:
+        sh -= Manifold.cube((MX_CUT, MX_CUT, top_t + 1)).translate((kx - MX_CUT / 2, ky - MX_CUT / 2, height - top_t - 0.5))
+    main_plan = main_board_plan(L)
+    back = L["back"]
+    sh -= box3(-2.5, back - M.WALL - 1.5, PCB_TOP, 2.5, back + 1.5, PCB_TOP + 2.6)
+    sh -= box3(-3.55, main_plan.bounds[3] - 3.35, PCB_TOP - .01, 3.55, main_plan.bounds[3] - .25, PCB_TOP + 1.55)
+    return M.lid_holes(M.bevel(sh, height), height) if ball else sh
+
+
+def build(L, switch="mx"):
+    """lid, tray, the main board's plan, the sensor board's plan."""
+    return lid(L, switch), tray(L), main_board_plan(L), sensor_board_plan(L)
 
 
 def sensor_holes(L):
@@ -333,7 +346,7 @@ def pad_row(main_plan, L, n, side, avoid=(), preferred_y=None):
     (-1 left, +1 right): clear of the keys' switch and socket holes and the nano below.
     Prefer `preferred_y` for the row's front when aligning it with the nano's pins."""
     keys = unary_union([box(kx - 8.5, ky - 8.0, kx + 8.5, ky + 8.0) for kx, ky in L["keys"]])   # switch + socket
-    nano = box(-NANO[0] / 2 - 0.5, L["nano"][1] - 0.5, NANO[0] / 2 + 0.5, L["nano"][1] + NANO[1] + 0.5)
+    nano = box(-NANO[0] / 2 - 0.2, L["nano"][1] - 0.5, NANO[0] / 2 + 0.2, L["nano"][1] + NANO[1] + 0.5)
     ok = main_plan.buffer(-1.6).difference(keys).difference(nano)
     for a in avoid:
         ok = ok.difference(a)
@@ -356,76 +369,79 @@ def pad_row(main_plan, L, n, side, avoid=(), preferred_y=None):
 
 
 def panel(L, main_plan, sensor_plan):
-    """One board to order: the main board and the sensor board joined by a breakaway tab at x = 0,
-    with mouse bites at both ends of it. Returns the outline and the bite holes."""
-    sb = sensor_plan.bounds
+    """One board to order: the main board and the sensor board, as far apart as the 100 mm tier
+    allows, on one long bridge with mouse bites at both ends: hold both boards and snap each end.
+    Returns the outline, the bites and how far the sensor board moved (plan y)."""
+    shift = PANEL_LENGTH - (main_plan.bounds[3] - sensor_plan.bounds[1])
+    sb = (sensor_plan.bounds[0], sensor_plan.bounds[1] - shift, sensor_plan.bounds[2], sensor_plan.bounds[3] - shift)
+    moved = box(*sb)
     front = min(y for x, y in main_plan.exterior.coords if abs(x) < 3.0)
     tab = box(-2.8, sb[3] - 0.5, 2.8, front + 0.5)
-    outline = unary_union([main_plan, tab, sensor_plan]).buffer(0)
+    outline = unary_union([main_plan, tab, moved]).buffer(0)
     bites = [(x, y) for y in (sb[3] + 0.35, front - 0.35) for x in (-2.0, -1.0, 0.0, 1.0, 2.0)]   # 0.5 mm webs
-    return outline, bites
+    return outline, bites, shift
 
 
 def board_layout(L, main_plan):
-    """The main board's own pads: the sensor board's seven wires (four right of the keys, three
-    left) and the battery's two (left, in front of them), each level with its nano pin."""
-    avoid = [Point(x, y).buffer(2.6) for x, y in board_posts(L)]
-    left = pad_row(main_plan, L, 5, -1, avoid=avoid,
-                   preferred_y=L["keys"][0][1] - 6.0)  # battery -, +, GND, VCC, RST
-    # Keep the sensor wire pads near their corresponding controller pins for short wiring.
-    sclk_y = L["nano"][1] + NANO[1] - NANO_ROW1 - 9 * 2.54
-    right = pad_row(main_plan, L, 4, +1, avoid=avoid, preferred_y=sclk_y - 1.3)
-    wires = right[:4] + [left[4], left[3], left[2]]
+    """The main board's own pads: the sensor board's seven wires (four right of the keys, two left,
+    RST between the keys) and the battery's two (left, in front of them), each near its nano pin."""
+    avoid = [Point(x, y).buffer(M.SCREW["boss"] / 2 + .4) for x, y in board_holes()]
+    left = pad_row(main_plan, L, 4, -1, avoid=avoid, preferred_y=L["keys"][0][1] - 4.0)  # battery -, +, GND, VCC
+    right = pad_row(main_plan, L, 4, +1, avoid=avoid, preferred_y=L["keys"][0][1] - 4.0)
     mid_y = sum(y for _, y in L["keys"]) / 2
-    return dict(wires=wires, bat=[left[1], left[0]], controller=[(-3.0, mid_y - 1.7), (0.0, mid_y), (3.0, mid_y)])
+    wires = right[:4] + [(6.0, mid_y), left[3], left[2]]
+    return dict(wires=wires, bat=[left[1], left[0]], controller=[(-3.0, mid_y - .9), (0.0, mid_y), (3.0, mid_y)])
+
+
+def stl_lid(m, height, path):
+    C.stl(m.mirror((0, 0, 1)).translate((0, 0, height)), path)           # top down, for printing
 
 
 def main():
     L = place()
-    sh, plate, posts, bp, main_plan, sensor_plan = shell_and_plate(L)
+    lid_m, tray_m, main_plan, sensor_plan = build(L)
     ps = parts(L, main_plan, sensor_plan)
-    M.check_common("Slim Diamond Trackball", sh, plate, ps)
-    M.check_dock_and_desk(sh, plate, H, ps)
+    M.check_common("Slim Diamond Trackball", lid_m, tray_m, ps)
+    M.check_dock_and_desk(lid_m, tray_m, H, ps)
     nb = SOCKET_BOT - NANO_GAP
     print("  ball centre %.1f over the standing plane, top %.1f (%.1f over the module's top); keys at y %s"
           % (BCZ, BCZ + BALL / 2, BCZ + BALL / 2 - H, ["%.1f" % k[1] for k in L["keys"]]))
-    print("  nano %.1f..%.1f, battery %.1f..%.1f (%.1f mm apart)" % (nb - NANO[2] - NANO[3], nb, PLATE_TOP,
-          PLATE_TOP + BAT[2], nb - NANO[2] - NANO[3] - PLATE_TOP - BAT[2]))
+    print("  nano %.1f..%.1f, battery %.1f..%.1f (%.1f mm apart)" % (nb - NANO[2] - NANO[3], nb, BAT_Z,
+          BAT_Z + BAT[2], nb - NANO[2] - NANO[3] - BAT_Z - BAT[2]))
     print("  USB-C end %.1f mm in from the back wall's outside" % (L["back"] - (L["nano"][1] + NANO[1])))
-    print("  shell %.1f cm3, plate %.1f cm3, genus %d / %d; height %.2f" % (sh.volume() / 1000, plate.volume() / 1000,
-          sh.genus(), plate.genus(), H))
+    print("  lid %.1f cm3, tray %.1f cm3, genus %d / %d; height %.2f" % (lid_m.volume() / 1000, tray_m.volume() / 1000,
+          lid_m.genus(), tray_m.genus(), H))
     os.makedirs(os.path.join(HERE, "case"), exist_ok=True)
-    C.stl(sh.mirror((0, 0, 1)).translate((0, 0, H)), os.path.join(HERE, "case", "shell.stl"))
-    C.stl(plate.translate((0, 0, -M.FEET)), os.path.join(HERE, "case", "bottom_plate.stl"))
-    os.makedirs(os.path.join(HERE, "..", C.STLS), exist_ok=True)
-    for name in ("shell", "bottom_plate"):          # and the repo's STL folder
-        shutil.copyfile(os.path.join(HERE, "case", name + ".stl"),
-                         os.path.join(HERE, "..", C.STLS, "trackball_" + name + ".stl"))
-    choc_sh, choc_plate, choc_posts, choc_bp, choc_main, choc_sensor = shell_and_plate(L, "choc")
-    choc_parts = parts(L, choc_main, choc_sensor, "choc")
-    M.check_common("Slim Diamond Trackball / Choc v1", choc_sh, choc_plate, choc_parts)
+    stl_lid(lid_m, H, os.path.join(HERE, "case", "lid.stl"))
     choc_height = PCB_TOP + CHOC["below_plate"]
-    M.check_dock_and_desk(choc_sh, choc_plate, choc_height, choc_parts)
-    assert posts == choc_posts and bp == choc_bp
+    choc_lid, choc_tray, choc_main, choc_sensor = build(L, "choc")
+    choc_parts = parts(L, choc_main, choc_sensor, "choc")
+    M.check_common("Slim Diamond Trackball / Choc v1", choc_lid, choc_tray, choc_parts)
+    M.check_dock_and_desk(choc_lid, choc_tray, choc_height, choc_parts)
     assert main_plan.equals(choc_main) and sensor_plan.equals(choc_sensor)
-    assert abs((plate - choc_plate).volume()) < 1e-3 and abs((choc_plate - plate).volume()) < 1e-3
-    C.stl(choc_sh.mirror((0, 0, 1)).translate((0, 0, choc_height)), os.path.join(HERE, "case", "shell_choc.stl"))
-    shutil.copyfile(os.path.join(HERE, "case", "shell_choc.stl"),
-                    os.path.join(HERE, "..", C.STLS, "trackball_shell_choc.stl"))
+    stl_lid(choc_lid, choc_height, os.path.join(HERE, "case", "lid_choc.stl"))
+    os.makedirs(os.path.join(HERE, "..", C.STLS), exist_ok=True)
+    for name in ("lid", "lid_choc"):
+        shutil.copyfile(os.path.join(HERE, "case", name + ".stl"),
+                        os.path.join(HERE, "..", C.STLS, "trackball_" + name + ".stl"))
+    C.stl(tray_m.translate((0, 0, -M.FEET)), os.path.join(HERE, "..", "case", "module_tray.stl"))
+    shutil.copyfile(os.path.join(HERE, "..", "case", "module_tray.stl"), os.path.join(HERE, "..", C.STLS, "module_tray.stl"))
     kicad = lambda pts: [(round(float(x), 4), round(float(-y), 4)) for x, y in pts]
     bl = board_layout(L, main_plan)
     wires, bat = bl["wires"], bl["bat"]
-    outline, bites = panel(L, main_plan, sensor_plan)
+    outline, bites, shift = panel(L, main_plan, sensor_plan)
+    from shapely import affinity
+    held = lambda pts: kicad([(x, y - shift) for x, y in pts])
     json.dump(dict(
         panel=kicad(outline.exterior.coords), panel_inner=kicad(outline.buffer(-0.35, join_style=2).exterior.coords),
         bites=kicad(bites), wire_pads=kicad(wires), battery_pads=kicad(bat),
         controller_pads=kicad(bl["controller"]),
         height=H, ball=L["ball"], keys=L["keys"], switch_angle=SWITCH_ANGLE, nano=L["nano"], battery=L["battery"],
-        main_board=kicad(main_plan.exterior.coords), sensor_board=kicad(sensor_plan.exterior.coords),
-        main_holes=kicad(bp), sensor_holes=kicad(sensor_holes(L)), sensor_parts=SENSOR_PARTS,
+        main_board=kicad(main_plan.exterior.coords), sensor_board=held(sensor_plan.exterior.coords),
+        sensor_shift=shift, main_holes=kicad(board_holes()), sensor_holes=held(sensor_holes(L)), sensor_parts=SENSOR_PARTS,
         nano_row1=NANO_ROW1, opt=OPT, pcb_top=PCB_TOP, back=L["back"]),
         open(os.path.join(HERE, "design.json"), "w"), indent=1, default=lambda o: [float(v) for v in o])
-    return L, sh, plate, ps
+    return L, lid_m, tray_m, ps
 
 
 if __name__ == "__main__":

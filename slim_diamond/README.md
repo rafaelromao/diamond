@@ -54,10 +54,10 @@ keeping the existing 6.6° tent, PCB outline, connector and screw-hole positions
 7 × 20 × 40 mm finished pack is checked with a 7.5 × 20.5 × 41 mm envelope and the case's
 clearance. Measure the actual protected pack, including tabs and wire exit, before printing;
 never compress a pouch cell to make it fit. The electrical board and pin map are unchanged.
-The trackball and trackpad retain their smaller 752025, 250 mAh batteries.
+The trackball and trackpad use smaller 752025, 250 mAh batteries.
 
-Use the updated half cases, dock and module cases together: their front facets and heights
-are a matched revision. The unchanged keyboard PCB and top plates can be reused.
+Use the half cases, dock and module parts from the same version together: their front facets and
+heights are matched.
 
 ## Independent tenting on the Ugreen's tilting platform
 
@@ -174,7 +174,8 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   drawer is open at both the top and the front. Its sides are straight and uninterrupted: no
   raised ends at the mouth, no ribs or matching grooves. The insert's front is shaped in 3D by
   the halves' exact front facet planes, rather than set back to a vertical wall, so the assembled
-  front reads as one element. Grip that front and pull horizontally; lifting is not necessary.
+  front reads as one element. Pull the hidden underside woven ribbon horizontally;
+  do not pull the ball, keycaps or cable. Lifting is not necessary.
 - **Six side magnets per half:** the dock's continuous walls are 2.4 mm thick at their
   thinnest and house six of the common **8 × 1.5 mm N52 magnets per side**, matching all six
   half seam magnets. The gap between the halves is widened by 1.25 mm to preserve insert space.
@@ -184,20 +185,18 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   magnets per side, evenly spaced at y = -7.0, 28.6 and 64.2 mm (seam magnets 2, 4 and
   6, every other magnet in the six-position row). The same insert magnets meet either half directly on the desk.
   Check magnetic holding force with real magnets before relying on it to carry the assembly.
-- **No rear retention magnet:** the rear is reserved for the USB-C connector, cable and power
-  switch. The six side magnets retain each insert. The 2.2 mm bottom plates retain 0.7 mm above
-  their foot recesses; neither the floor nor rear wall has an extra magnet pocket.
-- **Lap use:** the rear hood recess and USB passage remove material from the dock spine. Previous
-  stiffness estimates predate these cuts and must not be used to rate this revision. A removable
-  insert is not bonded, and hollow modules and fit clearance reduce its contribution. Test a
-  printed dock under load before relying on it for lap use.
+- **A magnet under each pointing module:** one more 8 × 1.5 mm N52 disc in the module's floor and its
+  mate in the drawer floor, on the centreline at y = −48.3 mm, midway between the two stand magnets
+  under the spine. The rear stays free for USB-C and the power switch.
+- **Lap use:** the rear hood recess and USB passage remove material from the dock spine, and an
+  insert is not bonded to it. Test a printed dock under load before relying on it for lap use.
 - **Magnets in the wings** under six of each half's seven floor magnets. `MAG_COST` rejects
   positions that would add more than 1° to the tent needed for the base pocket. `MAG_ROOF`
   keeps 1 mm under a pocket over the base. Pockets near a 45° wall are nudged inwards to retain
   their surrounding plastic without losing alignment with the case's magnet.
 - **Feet:** the underside is cut 0.5 mm (`FOOT_LIFT`) off the desk, and three 8 × 2 mm bump-ons
   under each wing, spread to the largest triangle, make that up.
-- 195.1 × 111.0 × 30.2 mm, 84.4 cm³. `python3 dock.py` prints the fit check: each half, its pads, the
+- 195.1 × 111.0 × 30.2 mm, about 83 cm³. `python3 dock.py` prints the fit check: each half, its pads, the
   base and the hinge against the dock, all 0 mm³, and the plastic round every magnet and foot.
 
 | **With the phone** | **From the front** |
@@ -210,22 +209,38 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
 
 ## Drawer modules: a trackball or a trackpad
 
-### USB-C connection
+Two standalone ZMK pointing devices. Either slides into the dock's drawer from the front, or snaps onto
+either half's inner wall on the desk, or sits on its own on its bump-ons. They are built like a half: a
+tray, a lid, and the same M3 × 8 flat-head screws from the top. The tray is one print, shared by every
+module; only the lid changes.
 
-Both modules retain their rear USB-C connection. These renders show an illustrative straight
-plug (12.35 × 6.5 mm overmold), seated at the controller, with a cable extending through the rear.
-The dock has a wide recess for the seated plug and a **12.8 mm wide upper rear passage**, leaving the
-side-magnet skins intact below it. With the drawer empty, feed the plug through from the rear in
-its normal orientation, connect the module and slide the module in while feeding the cable. The model
-checks the 12.35 × 6.5 mm overmold along this threading path. A larger plug may not pass:
-remove the module for charging instead. Unplug before
-removing a module with a restrained cable. Actual cable dimensions and bend radius must be checked.
+- **Shared by both:** the tray, the main board (keys, hot-swap sockets, power switch), the nice!nano,
+  a 752025 (250 mAh) battery, and a sensor board holding the reset button. All in the same places, so the
+  power slider, the USB-C port and the reset hole are in the same spot on every module.
+- **Retention:** three common magnets a side where the halves' inner-wall magnets are (the 2nd, 4th and
+  6th), at the same height over the plane both stand on, plus one in the floor over its mate in the drawer.
+- **Pull tab:** the small dark tongue at the module's front is an 8 mm woven ribbon bonded under the floor,
+  to pull the module out of the drawer without touching the ball, keycaps or cable.
 
-At the rear the inserts' tops extend over the dock's sloped support to the existing rear facet.
-The common underside and its mating support are **45°**, separated by 0.25 mm normal clearance;
-the lower module bodies do not extend over the support. The hood remains part of each shell (and
-the solid cover), and the USB and switch openings remain accessible. Printed fit and support
-strength need physical testing.
+| **Trackball** | **The parts** |
+|---|---|
+| ![](renders/trackball.png) | ![](renders/trackball_structure.png) |
+| **Choc v1 lid, same tray and boards** | **Inside (cut through the middle)** |
+| ![](renders/trackball_choc.png) | ![](renders/trackball_open.png) |
+| **On a half, on the desk** | **Its boards (front / back)** |
+| ![](renders/trackball_with_half.png) | ![](renders/trackball_board_top.png) ![](renders/trackball_board_bottom.png) |
+| **Trackpad** | **The parts** |
+| ![](renders/trackpad.png) | ![](renders/trackpad_structure.png) |
+| **On a half, on the desk** | **The placeholder in the drawer** |
+| ![](renders/trackpad_with_half.png) | ![](renders/dock_insert.png) |
+
+### USB-C
+
+The rear of each module has a USB-C opening below the power slider. The dock has a **12.8 mm wide rear
+passage all the way down through the underside**. With the drawer empty, feed the plug through from the
+rear, connect the module and slide the module in while feeding the cable. A 12.35 × 6.5 mm overmold fits.
+If yours doesn't, charge with the module out. At the rear the module's top extends over the dock's sloped
+support: the common underside and its mating support are 45°, with 0.25 mm clearance.
 
 | Trackball: rear connection | Cutaway to the receptacle |
 |---|---|
@@ -235,114 +250,52 @@ strength need physical testing.
 | Trackball docked | Trackpad docked |
 | ![](renders/trackball_usb_dock.png) | ![](renders/trackpad_usb_dock.png) |
 
-Two standalone ZMK pointing devices, each with its own nice!nano, a 752025 (250 mAh) battery, a
-power switch and a reset button, connecting over their own Bluetooth. Either slides into the dock's
-drawer from the front, or snaps onto either half's inner wall on the desk, or sits on its own on its
-bump-ons. Both share one shell (`module_shell.py`): the drawer's outline, vertical walls, a
-  screwed bottom plate, and three common magnets a side where the halves' inner-wall magnets are
-(the 2nd, 4th and 6th), at the same height over the plane both stand on. In the dock the module's
-magnets face the dock's thin magnets through its inner skin; on the desk they face either half
-directly. The standing plane remains z = 0 for both parts; their magnet centres are 7.2 mm above
-it. In the dock the insert stands at z = 9.181 mm and its side magnets at z = 16.381 mm, level with
-the tented halves' magnets. No part needs to be lifted or shimmed for the magnets to meet.
+### Slim Diamond Trackball (`trackball/trackball.py`)
 
-`python3 -m unittest test_stl_export test_half_battery test_drawer test_module_assembly trackball.test_layout`
-runs the artifact and assembly regressions. `test_drawer` checks all three inserts: uninterrupted walls, at least two
-dock-side magnet pairs per half (there are six), full inner skins, coplanar front facets,
-seated USB plug clearance, the complete horizontal removal path in 0.5 mm steps,
-and desk contact beside either half. `python3 -m unittest test_half_battery` checks the 500 mAh
-half-battery envelope and the independent-stand contact group.
-Both module scripts also check every part against the shell and bottom plate: all 0 mm³.
-The [audit follow-up](STL_AUDIT.md) records the independent STL findings, source fixes
-and remaining physical-validation limits; the initial report is retained alongside it.
+A 34 mm ball and two MX or Choc v1 hot-swap keys on one shared PCB. The MX lid stands 4 mm over the
+halves; the Choc lid 1.2 mm. Both bevel up at 45°.
 
-| **Trackball** | **Cutaway (not a service position)** |
-|---|---|
-| ![](renders/trackball.png) | ![](renders/trackball_open.png) |
-| **Choc v1 case, same PCB** | **Rear USB-C connection** |
-| ![](renders/trackball_choc.png) | ![](renders/trackball_usb.png) |
-| **On a half, on the desk** | **Its board (front / back)** |
-| ![](renders/trackball_with_half.png) | ![](renders/trackball_board_top.png) ![](renders/trackball_board_bottom.png) |
-| **Trackpad** | **Cutaway (not a service position)** |
-| ![](renders/trackpad.png) | ![](renders/trackpad_open.png) |
-| **On a half, on the desk** | **The placeholder in the drawer** |
-| ![](renders/trackpad_with_half.png) | ![](renders/dock_insert.png) |
-
-**Slim Diamond Trackball** (`trackball/trackball.py`): a 34 mm ball and two MX or Choc v1
-hot-swap keys on one shared PCB. The MX shell is 4 mm taller than the halves; the Choc shell is
-1.2 mm taller. Both bevel up at 45° and retain room for the battery and wired nice!nano below.
-
-- The ball sits in a cup in the shell on three 3 mm Si3N4 balls and lifts straight out; its top
-  is 20.2 mm over the MX shell (23.0 mm over the Choc shell). Under it, a PMW3610 on its own board looks up through an LM18-LSI
-  lens (circuit after siderakb's pmw3610-pcb, CERN-OHL-P-2.0, at 3.3 V logic with a TLV74318).
-- The shared main PCB accepts **MX or Choc v1 hot-swap sockets**, not both populated together.
-  Choc sockets face 180° opposite the MX sockets. MX uses `trackball/case/shell.stl` (1.5 mm plate);
-  Choc uses `trackball/case/shell_choc.stl` (1.2 mm plate, top 2.8 mm lower). Both use the same
-  PCB, ball/sensor positions and bottom plate. Use **M2 × 3** main-board screws for Choc,
-  **M2 × 5** for MX; both use M2 × 5 for the sensor. Choc v2 is not supported.
-- The nice!nano is supported face down on shell-mounted ledges and wired to labelled pads rather
-  than pinned through the switch PCB, avoiding socket/pin-hole collisions. Secure it with
-  insulating tape without covering its antenna or USB opening. Ten leads connect GND, VCC, RST,
-  VBAT → B+, and the six GPIO signals below. Shared sensor/controller pads take two leads.
-  The main PCB also carries the power switch, battery and seven sensor-wire pads. The reset button is on the
-  sensor board, facing down: press it with a pin through the bottom plate.
-- Keys move 3.8 mm rearward on the trackball and 4 mm on the trackpad; the trackball controller moves 1.8 mm rearward
-  to y = −58.4 mm, stopping short of the taper. A maximum 1.5 mm upper bevel retains
-  at least 1 mm of plate around the rear switch. Both socket families rotate with the keys.
-- Bottom plates fit a vertical extraction envelope. Remove the module from the dock,
-  switch it off, remove its three floor screws and lower the floor gently with wire slack.
-  The trackball controller stays in the shell; its battery and sensor board move with the floor.
-  Do not pull on their wires. Disconnect leads before separating the pieces fully.
-- The exported top-down MX and Choc shells **require supports beneath the rear hood**:
-  its underside starts 4.0 / 1.2 mm above the bed. Paint build-plate supports under the
-  entire projecting hood, excluding switch/ball openings; inspect the sliced first hood
-  layers and support-removal access. Tune the interface gap for your printer and test-print
-  this region first. This strategy is not physically validated; the 45° assembled mating
-  face does not make the hood self-supporting in this print orientation.
-- A [flex feasibility study](trackball/FLEX_FEASIBILITY.md) compares Leonardo-style
-  routed FR4 springs with JLCPCB polyimide flex. Keep the rigid breakaway boards and
-  wires as the baseline: a ≤100 × 100 mm bounding box alone does not establish quote
-  eligibility, bend durability or a suitable stiffener stack.
-- Controller wiring: sensor SCLK P0.11, SDIO P1.00 (SPI2, 3-wire), NCS P0.24, MOTION
-  P0.22; key 1 P1.04, key 2 P0.17 (other legs to GND).
-- One board to order (`trackball/fab/trackball_jlcpcb.zip`): the sensor board snaps off a tab.
+- The ball sits in a cup in the lid on three 3 mm Si3N4 balls and lifts straight out. Under it, a PMW3610
+  on its own board looks up through an LM18-LSI lens (circuit after siderakb's pmw3610-pcb, CERN-OHL-P-2.0,
+  at 3.3 V logic with a TLV74318).
+- The main board accepts **MX or Choc v1 hot-swap sockets**, not both populated together. Choc sockets
+  face 180° opposite the MX sockets. MX uses `trackball/case/lid.stl` (1.5 mm plate), Choc uses
+  `trackball/case/lid_choc.stl` (1.2 mm plate). Choc v2 is not supported.
+- The nice!nano hangs face down under the main board on two printed piers, wired to labelled pads: GND,
+  VCC, RST, VBAT → B+, and the six GPIO signals below. Secure it with kapton without covering its antenna
+  or USB opening.
+- Controller wiring: sensor SCLK P0.11, SDIO P1.00 (SPI2, 3-wire), NCS P0.24, MOTION P0.22; key 1 P1.04,
+  key 2 P0.17 (other legs to GND).
+- One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 35.6 × 99.5 mm: the main board and the
+  sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
-   Sensor-routing reuse verifies the unchanged sensor circuit, translates its copper, then routes
-   the shared switch board and refills both ground planes. Final DRC is the fabrication gate;
-   fit checks alone do not certify routing. Library-reference and silkscreen warnings may remain.
-  To reuse that sensor routing when regenerating, run
-  `SENSOR_ROUTING=trackball/pcb/trackball.kicad_pcb ./trackball/route.sh` (with `PY` set if needed).
-  The script verifies that the sensor circuit is unchanged and preserves the generator's placement.
-- The ball is at y = −77.937 mm. The bottom-plate post search reserves the wire rows,
-  sensor board and main-board posts first, keeping its notches clear; it uses an absolute 0.5 mm
-  grid. The main-board screw holes sit between the keys, fully enclosed by the board and separate
-  from the bottom-plate posts.
-  `python3 -m unittest discover -s trackball -p 'test_*.py'` checks that layout.
-- Unconfirmed, measure before printing: `LENS_ABOVE` (the lens's base over the sensor board, sets
-  the ball's height) and `NANO_ROW1` (the nice!nano's first pin row from its USB end).
+- Unconfirmed, measure before printing: `LENS_ABOVE` (the lens's base over the sensor board, sets the
+  ball's height) and `NANO_ROW1` (the nice!nano's first pin row from its USB end).
 
-**Slim Diamond Trackpad** (`trackpad/trackpad.py`): a 40 mm Cirque (TM040040, SPI) and two Choc
-keys stacked behind it, hand-wired, flush with the halves.
+### Slim Diamond Trackpad (`trackpad/trackpad.py`)
 
-- The pad sits in the top on a ledge, open at the back for its cable. Under it, on the plate: the
-  battery in a cradle and the cable's FFC adapter on a shelf over it; behind them a 13.5 mm gap
-  for the wires and the reset button (pressed through the plate). The nice!nano sits in a cradle
-  under the keys, USB-C out of the back wall; the power switch in a pocket over it.
+The same module with a 40 mm Cirque (TM040040, SPI) in the lid instead of the ball. It uses the Choc
+sockets on the shared main board and stands at the Choc lid's height, 1.2 mm over the halves.
+
+- The pad sits in the lid on a ledge, open at the back for its cable. The cable's adapter tapes onto the
+  sensor board, which carries only the reset button here.
 - Unconfirmed: the pad's thickness and the parts on its back (`PAD`), the adapter's size.
 
 | Wire | nice!nano pin |
 |---|---|
 | Pad SCK (FFC 1), SO (2), SS (3), DR (4), SI (5) | D3 (P0.20), D4 (P0.22), D6 (P1.00), D7 (P0.11), D5 (P0.24) |
 | Pad GND (FFC 11), VDD (FFC 12) | GND, VCC (3.3 V) |
-| Key 1, key 2 (other legs to GND) | D8 (P1.04), D9 (P1.06) |
-| Reset (other leg to GND) | RST |
-| Battery + (through the power switch), − | B+, B− |
+| Main board K1, K2 | D8 (P1.04), D9 (P1.06) |
+| Main board GND, VBAT, RST | GND, B+, RST |
 
 **Firmware** (`zmk/`): a ZMK config with both shields, `slim_diamond_trackball` (the PMW3610 through
 badjeff's zmk-pmw3610-driver) and `slim_diamond_trackpad` (the Cirque through petejohanson's
 cirque-input-module), pinned in `zmk/config/west.yml`. Key 1 clicks left; key 2 clicks right, and
 held turns pointing into scrolling; both together click middle. If the pointer runs the wrong way,
 toggle `invert-x` / `invert-y` (trackball) or `x-invert` / `y-invert` (trackpad) in the overlay.
+
+`python3 -m unittest test_stl_export test_half_battery test_drawer test_module_assembly trackball.test_layout`
+runs the checks.
 
 ## How a reversible board makes two halves
 

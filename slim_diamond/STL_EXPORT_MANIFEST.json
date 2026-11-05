@@ -1,0 +1,377 @@
+{
+  "files": [
+    {
+      "path": "case/case_left.stl",
+      "sha256": "b8419049fdd1cc62a28dfc311d2a59c5cf2109677ed8554a26ee961fcea9f7e5",
+      "bytes": 415184,
+      "triangles": 8302,
+      "components": 1,
+      "volume_mm3": 65912.7475,
+      "size_mm": [
+        93.01289,
+        100.45101,
+        20.64834
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/case_left.stl",
+      "sha256": "b8419049fdd1cc62a28dfc311d2a59c5cf2109677ed8554a26ee961fcea9f7e5",
+      "bytes": 415184,
+      "triangles": 8302,
+      "components": 1,
+      "volume_mm3": 65912.7475,
+      "size_mm": [
+        93.01289,
+        100.45101,
+        20.64834
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/case_right.stl",
+      "sha256": "1b8406b17fb5b485b6fa3f33d9f8132b6863bb90402ffd78170760430cc9b94b",
+      "bytes": 415084,
+      "triangles": 8300,
+      "components": 1,
+      "volume_mm3": 65912.74691,
+      "size_mm": [
+        93.01288,
+        100.45101,
+        20.64834
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/case_right.stl",
+      "sha256": "1b8406b17fb5b485b6fa3f33d9f8132b6863bb90402ffd78170760430cc9b94b",
+      "bytes": 415084,
+      "triangles": 8300,
+      "components": 1,
+      "volume_mm3": 65912.74691,
+      "size_mm": [
+        93.01288,
+        100.45101,
+        20.64834
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/dock.stl",
+      "sha256": "667084584a83c52cfaf6cb03b43ebfe97980fcea9f1a02b38c47e301cbdcb221",
+      "bytes": 443084,
+      "triangles": 8860,
+      "components": 1,
+      "volume_mm3": 82803.2312,
+      "size_mm": [
+        195.07201,
+        110.95706,
+        30.15157
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/dock.stl",
+      "sha256": "667084584a83c52cfaf6cb03b43ebfe97980fcea9f1a02b38c47e301cbdcb221",
+      "bytes": 443084,
+      "triangles": 8860,
+      "components": 1,
+      "volume_mm3": 82803.2312,
+      "size_mm": [
+        195.07201,
+        110.95706,
+        30.15157
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/insert.stl",
+      "sha256": "560bf24db651df285848669ffdd421a34e3a4f0dbb4b2ed4beb708c8871f0479",
+      "bytes": 89284,
+      "triangles": 1784,
+      "components": 1,
+      "volume_mm3": 64428.41448,
+      "size_mm": [
+        52.40642,
+        100.57304,
+        21.47086
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/insert.stl",
+      "sha256": "560bf24db651df285848669ffdd421a34e3a4f0dbb4b2ed4beb708c8871f0479",
+      "bytes": 89284,
+      "triangles": 1784,
+      "components": 1,
+      "volume_mm3": 64428.41448,
+      "size_mm": [
+        52.40642,
+        100.57304,
+        21.47086
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/module_tray.stl",
+      "sha256": "dc3282736d8eb0cb3ae5a7cff845f1bfde7afa48ef87669650c64c4443e4f80a",
+      "bytes": 218484,
+      "triangles": 4368,
+      "components": 1,
+      "volume_mm3": 16739.64894,
+      "size_mm": [
+        52.40642,
+        100.57304,
+        20.97086
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/module_tray.stl",
+      "sha256": "dc3282736d8eb0cb3ae5a7cff845f1bfde7afa48ef87669650c64c4443e4f80a",
+      "bytes": 218484,
+      "triangles": 4368,
+      "components": 1,
+      "volume_mm3": 16739.64894,
+      "size_mm": [
+        52.40642,
+        100.57304,
+        20.97086
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/plate_left.stl",
+      "sha256": "e0f9723ff6dd5d13f46429d282257cd223edccb076a6ed47661ec6bbd5b3b3f4",
+      "bytes": 147084,
+      "triangles": 2940,
+      "components": 1,
+      "volume_mm3": 4278.88284,
+      "size_mm": [
+        87.5527,
+        92.25101,
+        2.2
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/plate_left.stl",
+      "sha256": "e0f9723ff6dd5d13f46429d282257cd223edccb076a6ed47661ec6bbd5b3b3f4",
+      "bytes": 147084,
+      "triangles": 2940,
+      "components": 1,
+      "volume_mm3": 4278.88284,
+      "size_mm": [
+        87.5527,
+        92.25101,
+        2.2
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "case/plate_right.stl",
+      "sha256": "33d01e9ab24619b3c2157b3f8f5374982a0402638635e6828fd7b3f24e14e8b2",
+      "bytes": 147084,
+      "triangles": 2940,
+      "components": 1,
+      "volume_mm3": 4278.88284,
+      "size_mm": [
+        87.5527,
+        92.25101,
+        2.2
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/plate_right.stl",
+      "sha256": "33d01e9ab24619b3c2157b3f8f5374982a0402638635e6828fd7b3f24e14e8b2",
+      "bytes": 147084,
+      "triangles": 2940,
+      "components": 1,
+      "volume_mm3": 4278.88284,
+      "size_mm": [
+        87.5527,
+        92.25101,
+        2.2
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "trackball/case/lid.stl",
+      "sha256": "93a8d62927bbd2766bd2b37c347f1f62400c3f1436bbe6112e4c027502b404b4",
+      "bytes": 644384,
+      "triangles": 12886,
+      "components": 1,
+      "volume_mm3": 4991.78437,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        11.26243
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/trackball_lid.stl",
+      "sha256": "93a8d62927bbd2766bd2b37c347f1f62400c3f1436bbe6112e4c027502b404b4",
+      "bytes": 644384,
+      "triangles": 12886,
+      "components": 1,
+      "volume_mm3": 4991.78437,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        11.26243
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "trackball/case/lid_choc.stl",
+      "sha256": "54541398422d9dc4f220f4c598a1dfa30f442a265f0ac5767f1b3a70d2b299a5",
+      "bytes": 526684,
+      "triangles": 10532,
+      "components": 1,
+      "volume_mm3": 3192.72075,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        8.46243
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/trackball_lid_choc.stl",
+      "sha256": "54541398422d9dc4f220f4c598a1dfa30f442a265f0ac5767f1b3a70d2b299a5",
+      "bytes": 526684,
+      "triangles": 10532,
+      "components": 1,
+      "volume_mm3": 3192.72075,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        8.46243
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "trackpad/case/lid.stl",
+      "sha256": "02b94e9e68fc8daaaf75b9a50b87955a7006b602cbca2da6cf9b2d44f66b9eb8",
+      "bytes": 253984,
+      "triangles": 5078,
+      "components": 1,
+      "volume_mm3": 1625.70477,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        3.28
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": "../stls/slim_diamond/trackpad_lid.stl",
+      "sha256": "02b94e9e68fc8daaaf75b9a50b87955a7006b602cbca2da6cf9b2d44f66b9eb8",
+      "bytes": 253984,
+      "triangles": 5078,
+      "components": 1,
+      "volume_mm3": 1625.70477,
+      "size_mm": [
+        51.59545,
+        84.56261,
+        3.28
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": ".render/dock_halves.stl",
+      "sha256": "8174bced7f7b1fb87b611ad03c5bcf1b0003d489e48c11c5c3edbb9165037597",
+      "bytes": 830284,
+      "triangles": 16604,
+      "components": 2,
+      "volume_mm3": 131825.49122,
+      "size_mm": [
+        215.85329,
+        111.94615,
+        30.03156
+      ],
+      "watertight": true,
+      "winding": true
+    },
+    {
+      "path": ".render/dock_ugreen.stl",
+      "sha256": "8cf0f0bc0398f529462518e13c606d5f74120183f30cc49167725a86f6ddc960",
+      "bytes": 10284,
+      "triangles": 204,
+      "components": 1,
+      "volume_mm3": 35668.7746,
+      "size_mm": [
+        85.0,
+        105.0,
+        4.0
+      ],
+      "watertight": true,
+      "winding": true
+    }
+  ],
+  "identical_public_pairs": [
+    [
+      "case/case_left.stl",
+      "../stls/slim_diamond/case_left.stl"
+    ],
+    [
+      "case/case_right.stl",
+      "../stls/slim_diamond/case_right.stl"
+    ],
+    [
+      "case/dock.stl",
+      "../stls/slim_diamond/dock.stl"
+    ],
+    [
+      "case/insert.stl",
+      "../stls/slim_diamond/insert.stl"
+    ],
+    [
+      "case/module_tray.stl",
+      "../stls/slim_diamond/module_tray.stl"
+    ],
+    [
+      "case/plate_left.stl",
+      "../stls/slim_diamond/plate_left.stl"
+    ],
+    [
+      "case/plate_right.stl",
+      "../stls/slim_diamond/plate_right.stl"
+    ],
+    [
+      "trackball/case/lid.stl",
+      "../stls/slim_diamond/trackball_lid.stl"
+    ],
+    [
+      "trackball/case/lid_choc.stl",
+      "../stls/slim_diamond/trackball_lid_choc.stl"
+    ],
+    [
+      "trackpad/case/lid.stl",
+      "../stls/slim_diamond/trackpad_lid.stl"
+    ]
+  ],
+  "note": "Binary topology/copy integrity only; not a physical buildability certificate."
+}

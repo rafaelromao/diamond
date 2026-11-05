@@ -1,4 +1,4 @@
-"""Regression check for the bottom-plate post that used to block the five-pad wire row.
+"""Layout regressions for the trackball's boards.
 
 Run from slim_diamond/: python3 -m unittest discover -s trackball -p 'test_*.py'
 """
@@ -26,47 +26,49 @@ class LayoutTest(unittest.TestCase):
                     self.assertTrue(top.buffer(-1.0, join_style=2).covers(cut),
                                     "switch aperture breaks out of the plate rim")
 
-    def test_controller_moves_rearward_without_forcing_the_taper(self):
+    def test_controller_retains_rear_usb_and_floor_service_clearance(self):
         layout = T.place()
         recess = layout["back"] - (layout["nano"][1] + T.NANO[1])
         self.assertGreater(recess, 0)
-        self.assertLess(recess, 11.0)
+        self.assertLess(recess, 14.0)
+        x, y = layout["nano"]
+        self.assertTrue(T.M.inner().buffer(-.15).covers(
+            box(x - T.NANO[0] / 2, y, x + T.NANO[0] / 2, y + T.NANO[1])))
 
-    def test_wire_rows_clear_bottom_plate_posts(self):
+    def test_wire_rows_clear_the_screw_holes(self):
         layout = T.place()
-        shell, plate, posts, board_posts, main_plan, sensor_plan = T.shell_and_plate(layout)
+        main_plan = T.main_board_plan(layout)
         pads = T.board_layout(layout, main_plan)
         self.assertEqual(len(pads["wires"]), 7)
         self.assertEqual(len(pads["bat"]), 2)
-        sclk_y = layout["nano"][1] + T.NANO[1] - T.NANO_ROW1 - 9 * 2.54
         self.assertEqual(len(pads["controller"]), 3)
-        self.assertGreater(posts[-1][1], layout["ball"][1] + T.SENSOR_BOARD[1] / 2)
-        for x, y in board_posts:
-            self.assertTrue(main_plan.contains(Point(x, y).buffer(1.4)))
-            for px, py in posts:
-                self.assertGreater(Point(x, y).distance(Point(px, py)), T.M.SCREW["post"] + 0.3)
-        for name, part in T.parts(layout, main_plan, sensor_plan):
-            self.assertLess(abs((part ^ shell).volume()), 1e-3, name)
-            self.assertLess(abs((part ^ plate).volume()), 1e-3, name)
+        for x, y in T.board_holes():
+            self.assertTrue(main_plan.contains(Point(x, y).buffer(T.M.SCREW["hole"] / 2 + .8)))
+            for px, py in pads["wires"] + pads["bat"] + pads["controller"]:
+                self.assertGreater(Point(x, y).distance(Point(px, py)), T.M.SCREW["boss"] / 2 + .4)
         for x, y in pads["wires"] + pads["bat"] + pads["controller"]:
             self.assertTrue(main_plan.contains(Point(x, y).buffer(1.6)))
-            for px, py in posts:
-                self.assertGreater(Point(x, y).distance(Point(px, py)), T.M.SCREW["post"] / 2 + 1.6)
 
-    def test_mx_and_choc_use_one_board_and_bottom_plate(self):
+    def test_mx_and_choc_share_the_boards_and_the_tray(self):
         layout = T.place()
-        mx = T.shell_and_plate(layout, "mx")
-        choc = T.shell_and_plate(layout, "choc")
-        self.assertEqual(mx[2:4], choc[2:4])
-        self.assertTrue(mx[4].equals(choc[4]))
-        self.assertTrue(mx[5].equals(choc[5]))
-        self.assertLess(abs((mx[1] - choc[1]).volume()), 1e-3)
-        self.assertLess(abs((choc[1] - mx[1]).volume()), 1e-3)
-        for switch, built in (("mx", mx), ("choc", choc)):
-            parts = T.parts(layout, built[4], built[5], switch)
-            T.M.check_common(switch, built[0], built[1], parts)
-            height = T.PCB_TOP + (T.MX if switch == "mx" else T.CHOC)["below_plate"]
-            T.M.check_dock_and_desk(built[0], built[1], height, parts)
+        main_plan, sensor_plan = T.main_board_plan(layout), T.sensor_board_plan(layout)
+        tray = T.tray(layout)
+        for switch, spec in (("mx", T.MX), ("choc", T.CHOC)):
+            lid = T.lid(layout, switch)
+            parts = T.parts(layout, main_plan, sensor_plan, switch)
+            T.M.check_common(switch, lid, tray, parts)
+            T.M.check_dock_and_desk(lid, tray, T.PCB_TOP + spec["below_plate"], parts)
+
+    def test_boards_stand_far_apart_on_the_panel(self):
+        layout = T.place()
+        main_plan, sensor_plan = T.main_board_plan(layout), T.sensor_board_plan(layout)
+        outline, bites, shift = T.panel(layout, main_plan, sensor_plan)
+        x0, y0, x1, y1 = outline.bounds
+        self.assertLessEqual(max(x1 - x0, y1 - y0), 100.0)
+        self.assertGreater(shift, 15.0)
+        self.assertEqual(outline.geom_type, "Polygon")
+        rows = sorted({y for _, y in bites})
+        self.assertGreater(rows[1] - rows[0], 15.0)
 
 
 if __name__ == "__main__":

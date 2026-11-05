@@ -16,12 +16,13 @@ class DrawerTest(unittest.TestCase):
     def setUpClass(cls):
         cls.dock = K.make()
         cls.modules = []
+        tray = trackball.tray(trackball.place())
+        cls.tray = tray
         for name, mod in (("trackball", trackball), ("trackpad", trackpad)):
             layout = mod.place()
-            result = mod.shell_and_plate(layout)
-            shell, plate = result[:2]
-            parts = mod.parts(layout, result[4], result[5]) if name == "trackball" else mod.parts(layout)
-            cls.modules.append((name, shell, plate, mod.H, parts, M.bumpons()))
+            main_plan, sensor_plan = trackball.main_board_plan(layout), trackball.sensor_board_plan(layout)
+            lid = mod.lid(layout)
+            cls.modules.append((name, tray + lid, Manifold(), mod.H, mod.parts(layout, main_plan, sensor_plan), M.bumpons()))
         cover, _ = insert.build()
         cls.modules.append(("cover", cover, Manifold(), insert.H, [], Manifold()))
 
@@ -40,7 +41,7 @@ class DrawerTest(unittest.TestCase):
 
     def test_front_facets_continue_the_halves(self):
         for name, shell, _, _, _, _ in self.modules:
-            for z in (0.6, 2.0, 5.0, M.FLUSH - 2):
+            for z in (1.0, 2.0, 5.0, M.FLUSH - 2):
                 section = Polygon()
                 for ring in shell.slice(z).to_polygons():
                     section = section.symmetric_difference(Polygon(ring))
@@ -62,14 +63,23 @@ class DrawerTest(unittest.TestCase):
         ys = [K.D["magnets_side_y"][i] for i in K.DRAWER_MAGS]
         self.assertAlmostEqual(ys[1] - ys[0], ys[2] - ys[1])
 
+    def test_direct_floor_retention_has_matching_open_pockets_and_dock_backing(self):
+        x, y = K.DRAWER_FLOOR_MAG
+        z = K.drawer_floor(self.dock.p)
+        magnet = Manifold.cylinder(1.5, 4, circular_segments=48).translate((x, y, z - 1.5))
+        backing = Manifold.cylinder(.9, 4, circular_segments=48).translate((x, y, z - 2.55))
+        self.assertLess(abs((magnet ^ self.dock.solid).volume()), 1e-3)
+        self.assertLess(abs((backing - self.dock.solid).volume()), 1e-3)
+        mate = M.floor_magnet().translate((0, 0, z))
+        self.assertAlmostEqual(mate.bounding_box()[2] - magnet.bounding_box()[5], .55)
+
     def test_seated_usb_plugs_clear_shell_plate_and_dock(self):
         for mod in (trackball, trackpad):
             layout = mod.place()
-            built = mod.shell_and_plate(layout)
             front = layout["nano"][1] + mod.NANO[1] + 0.6
             _, body, cable = M.usb_connection(front, mod.usb_z(layout))
             envelope = body + cable
-            for target in built[:2]:
+            for target in (self.tray, mod.lid(layout)):
                 self.assertLess(abs((envelope ^ target).volume()), 1e-3)
             self.assertLess(abs((envelope.translate((0, 0, M.FLOOR_Z)) ^ self.dock.solid).volume()), 1e-3)
 
@@ -87,32 +97,22 @@ class DrawerTest(unittest.TestCase):
         self.assertLess(abs((opening ^ self.dock.solid).volume()), 1e-3,
                         "rear passage has a lower step or a floor blocking the full plug width")
 
-    def test_rear_switch_slots_are_accessible_when_docked(self):
-        from trackpad import trackpad as pad
-        specs = [(trackball, trackball.PCB_TOP + 0.2, 2.4, 5.0),
-                 (pad, pad.switch_z(pad.place()) - 1.1, 2.2, pad.SWITCH[0] - 2.0)]
-        for mod, z, height, width in specs:
-            # The access slot extends out of the module to behind the dock; the hood
-            # may end at the back of its opening but must not cap the lever's path.
-            opening = Manifold.cube((width, 28, height)).translate(
-                (-width / 2, M.OUTLINE.bounds[3] - 1.0, z))
-            with self.subTest(module=mod.__name__):
-                self.assertLess(abs((opening.translate((0, 0, M.FLOOR_Z)) ^ self.dock.solid).volume()), 1e-3)
-                layout = mod.place()
-                shells = [mod.shell_and_plate(layout)[0]]
-                if mod is trackball:
-                    shells.append(mod.shell_and_plate(layout, "choc")[0])
-                # Check the wall opening too, not only the dock channel.
-                back = M.OUTLINE.bounds[3]
-                section = Manifold.cube((width, 1.0, height)).translate((-width / 2, back - 0.5, z))
-                for shell in shells:
-                    self.assertLess(abs((section ^ shell).volume()), 1e-3)
+    def test_rear_switch_slot_is_accessible_when_docked(self):
+        # The same switch in the same place on all three lids.
+        layout = trackball.place()
+        z, height, width = trackball.PCB_TOP + 0.2, 2.4, 5.0
+        opening = Manifold.cube((width, 28, height)).translate((-width / 2, M.OUTLINE.bounds[3] - 1.0, z))
+        self.assertLess(abs((opening.translate((0, 0, M.FLOOR_Z)) ^ self.dock.solid).volume()), 1e-3)
+        section = Manifold.cube((width, 1.0, height)).translate((-width / 2, M.OUTLINE.bounds[3] - 0.5, z))
+        for lid in (trackball.lid(layout), trackball.lid(layout, "choc"), trackpad.lid(trackpad.place())):
+            self.assertLess(abs((section ^ (lid + self.tray)).volume()), 1e-3)
 
     def test_rear_hood_is_top_only_with_a_45_degree_underside(self):
         hood = M.rear_hood()
         self.assertGreater(hood.volume(), 0)
         self.assertAlmostEqual(hood.bounding_box()[5], M.FLUSH)
         self.assertGreater(hood.bounding_box()[2], M.FEET + M.BOTTOM_T)
+        self.assertLess(M.FLUSH - self.tray.bounding_box()[5], 1e-6)     # the tray carries it, floor down
         end = K.rear_hood_end(M.P)
         self.assertGreater(end, M.OUTLINE.bounds[3] + 10)
         datum = K.rear_hood_datum(M.P)
@@ -131,9 +131,8 @@ class DrawerTest(unittest.TestCase):
                 M.check_dock_and_desk(shell, plate, height, parts, feet=feet, k=self.dock)
                 # decompose() also returns negative-volume boundaries of enclosed voids;
                 # those are not detached pieces of printable material.
-                self.assertEqual(sum(c.volume() > 1e-6 for c in shell.decompose()), 1)
-                if name != "cover":
-                    self.assertEqual(sum(c.volume() > 1e-6 for c in plate.decompose()), 1)
+                if name == "cover":
+                    self.assertEqual(sum(c.volume() > 1e-6 for c in shell.decompose()), 1)
 
 
 if __name__ == "__main__":

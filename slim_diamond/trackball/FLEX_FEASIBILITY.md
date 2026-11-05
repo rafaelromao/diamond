@@ -1,6 +1,7 @@
 # Slim Diamond Trackball: flexible interconnect feasibility
 
-Research date: **2026-11-04**. Manufacturing and price statements below refer to
+Research date: **2026-11-04**, designer history and JLCPCB FPC capabilities rechecked
+**2026-11-05**. Manufacturing and price statements below refer to
 the official pages accessed on that date, not a completed fabrication quote.
 This is a feasibility note; no PCB, case or generator changes are proposed as
 already validated.
@@ -59,22 +60,22 @@ Sources [2] and [3] are pinned to repository commit
 ## Trackball constraints checked in the current inputs
 
 - [`design.json`](design.json) gives a **28 × 30 mm sensor island** and an overall
-  flat panel bounding box of **35.497 × 76.6368 mm** (min/max of `panel`). Thus
+   flat panel bounding box of **35.5868 × 76.6368 mm** (min/max of `panel`). Thus
   the present outline fits the user's 100 × 100 mm envelope. A longer spring,
   flex tail, handling border or different panel arrangement must be checked
   again; folded dimensions are not fabrication dimensions.
-  Rechecked after the 3.8 mm rearward key shift and 270° footprint rotation: the
-  regenerated panel retains these same bounding dimensions.
+  Rechecked after the reinforced magnet bosses and revised nut joints; this is
+  the regenerated outline, not the old 35.497 mm-wide one.
 - [`trackball.py`](trackball.py) specifies `PCB_T = 1.6`, two alternative
   **MX / Choc v1 hot-swap sockets per key**, a nice!nano below the main board,
   and seven wires: **VCC, GND, RST, SCLK, SDIO, NCS, MOTION**. The existing
   breakaway tab is for manufacturing/depanelization, not a live flex hinge.
 - The main PCB top is **20.470856 mm**, from `design.json`'s `pcb_top`.
-  The sensor PCB top is **7.3 mm**: `PLATE_TOP + SENSOR_BELOW + PCB_T`, or
-  `0.5 + 2.2 + 3.0 + 1.6`, using `MODULE_FEET` in
+  The sensor PCB top is **7.7 mm**: `PLATE_TOP + SENSOR_BELOW + PCB_T`, or
+  `0.5 + 2.2 + 3.4 + 1.6`, using `MODULE_FEET` in
   [`../dock.py`](../dock.py), `BOTTOM_T` in
   [`../module_shell.py`](../module_shell.py), and `trackball.py`.
-  Their top-plane offset is therefore **13.170856 mm**. This is not a flex
+  Their top-plane offset is therefore **12.770856 mm**. This is not a flex
   length calculation: endpoint locations, bend tangents and clearance determine
   the needed developed length.
 - The code labels the lens reference height and nice!nano first-row position
@@ -186,10 +187,42 @@ thinning helps but does not establish allowable strain for this laminate,
 copper, plating and soldermask. Keep components/vias away from the strained
 sections, avoid sharp roots and breakaway perforations there, constrain the
 islands mechanically, and prototype the assembled displacement. Accommodating
-the **13.17 mm height offset** within the available planar spring length is
+  the **12.77 mm height offset** within the available planar spring length is
 unproven; a 100 × 100 mm outline alone says nothing about bend survival.
 
 ## Before changing the design
+
+### Answer to the renewed Leonardo request (November 5)
+
+**A ≤100 mm panel is possible; a qualified one-piece bending PCB has not been
+implemented.** The ordinary rigid panel remains 35.59 ×76.64 mm. Leonardo's
+original author still explicitly documents routed squiggles and changes among
+1.0/1.2/1.6 mm rigid boards, including a return to 1.6 mm for socket pins. That
+does not qualify a short FR4 neck for this module's 12.77 mm vertical offset or
+for repeated floor opening.
+
+The available **installed** side envelope is only about 52 mm wide at its
+widest, narrowing sharply toward the keys. A serpentine that merely fits a
+100 mm fabrication square may still stick out of the assembled case. There
+must be a continuous, strain-qualified three-dimensional path around the cup,
+battery, controller, new retention magnet and screws. No such path or supplier
+approved spring construction is supplied here. Copper cannot simply be added
+across the perforated breakaway tab and called a flex PCB.
+
+The practical next integral alternative is **PI all-flex with locally stiffened
+sensor and socket regions**, still mechanically clamped and with an unstrained
+service loop. It needs a different stackup, pin/socket-support design, developed
+outline and priced stiffener/panel options. JLCPCB's currently published service
+supports that material class, but **not laminated rigid-flex**. The advertised
+$2/5 flex entry offer is not a confirmed quote for this stiffened design. The
+cheapest-rigid requirement and an integral all-flex requirement cannot be
+silently treated as the same order.
+
+This revision therefore keeps the honest, supported baseline: two 1.6 mm
+rigid islands and now **defined detachable harnesses**. The trackpad already
+uses its Cirque FFC. This is not a claim to have delivered the requested
+integrated flex board; it is an explicit remaining engineering/quote decision,
+with no purchase or upload performed.
 
 1. Obtain a baseline JLCPCB/JLCONE quote for the existing **1.6 mm FR4** panel,
    including its actual design count and routed slots. Confirm promo eligibility,
