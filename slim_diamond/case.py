@@ -322,9 +322,8 @@ def to_pcb_frame(m):
 
 
 def stl(m, path):
-    mesh = m.to_mesh()
-    v = np.asarray(mesh.vert_properties)[:, :3]
-    f = np.asarray(mesh.tri_verts)
+    from stl_mesh import clean_mesh
+    v, f = clean_mesh(m)
     with open(path, "wb") as fh:
         fh.write(b"slim diamond".ljust(80, b" "))
         fh.write(np.uint32(len(f)).tobytes())

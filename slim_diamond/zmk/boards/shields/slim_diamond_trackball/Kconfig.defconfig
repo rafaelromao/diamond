@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT
+
+if SHIELD_SLIM_DIAMOND_TRACKBALL
+
+config ZMK_KEYBOARD_NAME
+    default "SD Trackball"
+
+endif

@@ -2,13 +2,17 @@
 
 The Ugreen base (85 x 105 x 4 mm) stays on the desk on its own feet, carrying the phone; the
 dock sits over it, the base in a pocket in its underside, and behind the spine the base's back
-strip with the arm's hinge is left bare. BASE_MAGS magnets in the pocket's roof snap onto as
-many glued on top of the base (it is aluminium).
+strip with the arm's hinge is left bare. BASE_MAGS thin magnets in the pocket's roof (thin
+enough to stack under the drawer's floor) snap onto as many glued on top of the base (it is
+aluminium).
 
-Each half lies on a wing the shape of its floor, inner side up, its outer pad on the desk; 8x3
+Each half lies on a wing the shape of its floor, inner side up, its outer pad on the desk; common
 magnets in each wing face the half's own floor magnets. Between the halves a spine rises to the
 seam walls' top edges, its front carrying on the halves' front facets (its point cut off square), with a magnet facing each
-of the case's six seam magnets and the joined board's diamond cut in low relief on its top. Under each half's girdle every wall
+of the case's six seam magnets and the joined board's diamond cut in low relief on its top. With DRAWER its middle is a
+drawer, open at the top and the front, for a module that faces DRAWER_MAGS of the seam magnets itself; the dock keeps
+DOCK_MAGS in continuous side walls, behind DRAWER_SKIN on the inside. The insert's front carries
+on the halves' facets and pulls out horizontally, without ribs or notches at the mouth. Under each half's girdle every wall
 carries on the case's own 45-degree bottom chamfer down to the desk, one plane with it, so the dock
 reads as the board's continuation. The
 underside is cut FOOT_LIFT off the desk, and bump-ons under the wings make that up.
@@ -22,6 +26,7 @@ half is the mirror in x. Writes case/dock.stl (and the repo's STL folder), print
 """
 import math
 import shutil
+from functools import lru_cache
 
 import numpy as np
 from manifold3d import CrossSection, FillRule, Manifold
@@ -41,7 +46,7 @@ RING = 3.0                    # plastic round the pocket where the dock is flat
 ROOF = 1.6                    # plastic over the base's pocket
 MAG_ROOF = 1.0                # the roof under a magnet pocket over the base
 SPLAY = 12.0                  # each half's turn, tops towards the middle (degrees)
-GAP_BACK = 15.0               # between the seams' back ends: the trapezoid's narrow side
+GAP_BACK = 16.25              # preserve insert room with the thicker common-magnet walls
 CLR = 0.2                     # lateral gap between the dock and a half
 MIN_T = 1.0                   # thinnest wing edge kept (the outer side runs out to the desk)
 UNDER = 0.6                   # plastic under a magnet pocket
@@ -49,13 +54,23 @@ FOOT_LIFT = 0.5               # the dock's underside, cut this far off the desk:
 FEET = 3                      # bump-ons under each wing (the case's 8 x 2 mm ones)
 FOOT_SKIN = 0.6               # plastic over each foot's recess
 RELIEF = (0.6, 1.0, 2.5)      # the diamond cut in the spine's top: depth, line width, margin round it
-BASE_MAGS = 5                 # magnets between the dock and the base
+BASE_MAGS = 5                 # magnets between the dock and the base, at most (as many as fit)
+BASE_MAG = D["magnet_floor_size"]  # the same 8 x 1.5 mm discs used everywhere else
+DRAWER = True                 # the spine's middle is a drawer for a module, pulled out through the front
+DRAWER_MAGS = (1, 3, 5)       # three evenly spaced mates across the insert's side walls
+DOCK_MAGS = tuple(range(6))   # six per half; the insert still uses three side magnets per side
+DOCK_SIDE_MAG = (D["magnet_side_size"][0], D["magnet_nominal_size"][1])
+DRAWER_WALL = 2.4             # continuous walls house the common magnets and their inner skins
+DRAWER_SKIN = 0.6             # dock wall between the drawer and the dock's own side magnets' pockets
+DRAWER_BACK = -14.0           # the drawer's back (y): both modules end there
+DRAWER_CLR = 0.2              # round a module in the drawer
+MODULE_FEET = 0.5             # a module's bump-ons stand this far below it
 BASE_MAG_SLOP = 0.3           # round the base's magnets, which are glued on by hand
 MAG_COST = 1.0                # most extra tent (degrees) a floor magnet may add to get its pocket
 PAD_DROP = D["pads"]["size"][1] - D["pads"]["depth"]   # bump-on below the floor
 PAD_CLR = 0.3                 # round and under each pad
 MAG_D, MAG_H = D["magnet_floor_size"]
-SIDE_D, SIDE_H = D["magnet_side_size"]
+SIDE_D, SIDE_H = DOCK_SIDE_MAG if DRAWER else D["magnet_side_size"]
 WALL_OUT = C.WALL_OUT
 POCKET_TOP = UG[2] + UG_TOL
 
@@ -218,6 +233,8 @@ def shortfall(tent, magnets):
         if pocket.buffer(MAG_D / 2 + UNDER).contains(Point(P[:2])):
             need += POCKET_TOP + MAG_ROOF - UNDER  # a thinner roof under it than ROOF will do
         worst = max(worst, need - p.floor_z(x - MAG_D / 2))
+    if DRAWER and BASE_MAGS:
+        worst = max(worst, base_magnet_pocket(0, 0)[1] + UNDER - drawer_floor(p))
     return worst
 
 
@@ -229,6 +246,7 @@ def least_tent(magnets):
     return hi
 
 
+@lru_cache(maxsize=1)
 def solve_tent():
     """The roof's tent, raised for each floor magnet that costs at most MAG_COST more; a magnet
     too near the outer pad (where the slope runs out) would need far more, and is left out. The
@@ -239,35 +257,53 @@ def solve_tent():
     return max([tent] + [least_tent([m]) for m in used]), used
 
 
-def seam_magnets():
-    """Pockets in the spine, in the half's frame: one facing each seam magnet, from the spine's
-    face (CLR off the seam) SIDE_H deep, the magnet flush with the face."""
+def dock_side_mags():
+    """The halves' inner-wall magnets the dock faces itself: all of them, or with a drawer
+    DOCK_MAGS (a module faces DRAWER_MAGS)."""
+    return list(DOCK_MAGS) if DRAWER else list(range(len(D["magnets_side_y"])))
+
+
+def seam_magnets(grow=0.0):
+    """Pockets in the spine, in the half's frame: one facing each seam magnet in dock_side_mags(),
+    from the spine's face (CLR off the seam) SIDE_H deep, the magnet flush with the face (`grow`
+    larger all round: the plastic they need round them)."""
     out = Manifold()
-    for my in D["magnets_side_y"]:
-        m = Manifold.cylinder(SIDE_H + 0.1, SIDE_D / 2, circular_segments=40).rotate((0, 90, 0))
+    for my in [D["magnets_side_y"][i] for i in dock_side_mags()]:
+        m = Manifold.cylinder(SIDE_H + 0.1 + grow, SIDE_D / 2 + grow, circular_segments=40).rotate((0, 90, 0))
         out += m.translate((WALL_OUT + CLR - 0.05, -my, D["magnet_side_z"]))
     return out
 
 
 def base_magnet_spots(dock, pocket):
     """Over the base, where the dock is solid from the pocket's roof up past both magnets plus
-    UNDER, all round: in practice the spine. BASE_MAGS of them, symmetric about x = 0: the
-    largest triangle first (one on the centre line, a mirrored pair), then each next one (a pair,
-    or one on the centre line) as far from the rest as it can be."""
-    r = MAG_D / 2 + BASE_MAG_SLOP + 1.0
-    top = UG[2] + 2 * MAG_H + 0.4 + UNDER
+    UNDER, all round. Up to BASE_MAGS of them, symmetric about x = 0: the largest triangle first
+    (one on the centre line, a mirrored pair) when there is room for one, then each next one (a
+    pair, or one on the centre line) as far from the rest as it can be, while they keep apart."""
+    r = BASE_MAG[0] / 2 + BASE_MAG_SLOP + 1.0
+    top = base_magnet_pocket(0, 0)[1] + UNDER
     ok = solid_region(dock, POCKET_TOP + 0.05, top).intersection(pocket).buffer(-r)
     ok = ok.intersection(affinity.scale(ok, -1, 1, origin=(0, 0)))
+    if ok.is_empty:
+        return []
     x0, y0, x1, y1 = ok.bounds
     grid = [(x, y) for x in np.arange(0, x1, 0.5) for y in np.arange(y0, y1, 0.5) if ok.contains(Point(x, y))]
     apexes = [y for x, y in grid if x == 0]
-    (x, y), ya = max(((q, ya) for q in grid if q[0] > 0 for ya in apexes), key=lambda t: t[0][0] * abs(t[1] - t[0][1]))
-    spots = [(0.0, ya), (-x, y), (x, y)]
-    while len(spots) < BASE_MAGS:
+    pairs = [q for q in grid if q[0] >= r]
+    if apexes and pairs:
+        (x, y), ya = max(((q, ya) for q in pairs for ya in apexes), key=lambda t: t[0][0] * abs(t[1] - t[0][1]))
+        spots = [(0.0, ya), (-x, y), (x, y)]
+    elif apexes:
+        spots = [(0.0, apexes[len(apexes) // 2])]
+    else:
+        spots = [(-pairs[0][0], pairs[0][1]), pairs[0]] if pairs else []
+    while spots and len(spots) < BASE_MAGS:
         room = BASE_MAGS - len(spots)
-        options = [q for q in grid if (q[0] == 0 or room >= 2)]
+        options = [q for q in grid if (q[0] == 0 or (room >= 2 and q[0] >= r))]
+        if not options:
+            break
         q = max(options, key=lambda q: min(math.dist(q, s) for s in spots + ([(-q[0], q[1])] if q[0] else [])))
-        assert min(math.dist(q, s) for s in spots) >= 2 * r, "no room for another base magnet"
+        if min(math.dist(q, s) for s in spots) < 2 * r:
+            break                                   # no room for another
         spots += [q] if q[0] == 0 else [(-q[0], q[1]), q]
     return spots
 
@@ -275,10 +311,11 @@ def base_magnet_spots(dock, pocket):
 def base_magnet_pocket(x, y):
     """Up from the pocket's roof: room for the base's magnet (glued on its top, BASE_MAG_SLOP
     round it), then the dock's own, pressed in from below, with 0.3 between the two."""
-    low_top = UG[2] + MAG_H + 0.3
-    low = Manifold.cylinder(low_top - POCKET_TOP + 0.01, MAG_D / 2 + BASE_MAG_SLOP, circular_segments=48)
-    high = Manifold.cylinder(MAG_H + 0.1, MAG_D / 2, circular_segments=40)
-    return (low.translate((x, y, POCKET_TOP - 0.01)) + high.translate((x, y, low_top))), low_top + MAG_H + 0.1
+    bd, bh = BASE_MAG
+    low_top = UG[2] + bh + 0.3
+    low = Manifold.cylinder(low_top - POCKET_TOP + 0.01, bd / 2 + BASE_MAG_SLOP, circular_segments=48)
+    high = Manifold.cylinder(bh, bd / 2, circular_segments=40)
+    return (low.translate((x, y, POCKET_TOP - 0.01)) + high.translate((x, y, low_top))), low_top + bh
 
 
 def spine_plan(p, top):
@@ -444,7 +481,9 @@ def solid_region(m, z0, z1):
     """Where m is solid at every height from z0 to z1 (plan)."""
     out = None
     for z in np.arange(z0, z1 + 0.01, 0.25):
-        sl = unary_union([Polygon(q) for q in m.slice(z).to_polygons()]).buffer(0)
+        sl = Polygon()
+        for q in m.slice(z).to_polygons():          # even-odd: a hole's ring cuts it back out
+            sl = sl.symmetric_difference(Polygon(q).buffer(0))
         out = sl if out is None else out.intersection(sl)
     return out
 
@@ -528,6 +567,89 @@ def back_flat(p):
     return flats(p, planes, p.points([(WALL_OUT, SEAM_BACK, top)])[0])
 
 
+def drawer_magnets(p):
+    """The halves' inner-wall magnets a module meets (left half), as placed: centres (x, y, z)."""
+    return [p.points([(WALL_OUT, -D["magnets_side_y"][i], D["magnet_side_z"])])[0] for i in DRAWER_MAGS]
+
+
+def drawer_floor(p):
+    """The drawer's floor (z), where a module stands on its feet: its magnets, at a half's own
+    height over the desk (the half on its pads, the module on its feet), meet the halves'."""
+    return drawer_magnets(p)[0][2] - (D["magnet_side_z"] + PAD_DROP)
+
+
+def drawer_plan(p, back=None):
+    """The drawer in plan: vertical sides DRAWER_WALL in from each half's leaning inner wall where
+    it is nearest (the girdle; above it the wall leans away); the back at DRAWER_BACK. The
+    front is open and the sides uninterrupted, so every insert pulls straight out forwards."""
+    (n, d), _ = seam_planes(p)
+    nxy = n[:2] / np.linalg.norm(n[:2])
+    c = (d - n[2] * girdle_height(p)) / np.linalg.norm(n[:2]) + DRAWER_WALL
+    def half_plane(normal):
+        t = np.array((-normal[1], normal[0]))
+        o = normal * c
+        return Polygon([tuple(o - t * 400), tuple(o + t * 400), tuple(o + t * 400 + normal * 400),
+                        tuple(o - t * 400 + normal * 400)])
+    sides = half_plane(nxy).intersection(half_plane(np.array((-nxy[0], nxy[1]))))
+    return sides.intersection(box(-200, -300, 200, DRAWER_BACK if back is None else back))
+
+
+REAR_HOOD_T = 1.2             # common top-only extension, flush with the halves at the rear
+REAR_HOOD_GAP = 0.25          # normal clearance between the two parallel 45-degree surfaces
+USB_EXIT_W = 12.8             # full plug width, open all the way through the dock's underside
+USB_EXIT_PLUG_Z = 2.2         # low insertion height, measured above the drawer's standing plane
+
+
+def rear_hood_end(p):
+    """Stop just inside the dock's existing rear facet, without a protruding rear lip."""
+    n, d = back_flat(p)[0]
+    return (d - n[2] * spine_height(p)) / n[1] - REAR_HOOD_GAP
+
+
+def rear_hood_plan(p):
+    """Continue the insert's side planes rearwards; only its top extends, not its floor."""
+    end = rear_hood_end(p)
+    return drawer_plan(p, back=end + DRAWER_CLR).buffer(-DRAWER_CLR, join_style=2).intersection(
+        box(-200, DRAWER_BACK - DRAWER_CLR - 1.6, 200, end))
+
+
+def rear_hood_datum(p):
+    """The module-frame underside is z = y + datum: exactly 45 degrees in side view."""
+    return spine_height(p) - drawer_floor(p) - REAR_HOOD_T - rear_hood_end(p)
+
+
+def rear_hood_cut(p):
+    """Keep a matching 45-degree rear support below the removable module's top extension."""
+    plan = rear_hood_plan(p).buffer(REAR_HOOD_GAP, join_style=2).intersection(
+        box(-200, DRAWER_BACK, 200, 100))
+    blank = extrude(plan, drawer_floor(p), spine_height(p) + 5)
+    normal = (0, -1 / math.sqrt(2), 1 / math.sqrt(2))
+    datum = drawer_floor(p) + rear_hood_datum(p) - REAR_HOOD_GAP * math.sqrt(2)
+    return blank.trim_by_plane(normal, datum / math.sqrt(2))
+
+
+def module_plan(p, z=None):
+    """The insert's plan at global height z, or a plan envelope of its whole faceted front.
+    The front is shaped in 3D, not set back to the most restrictive slice at every height."""
+    top = spine_height(p)
+    out = drawer_plan(p).buffer(-DRAWER_CLR, join_style=2)
+    for n, d in front_planes(p) + front_flat(p, top):          # the spine keeps n.(x, y, z) <= d
+        at = (drawer_floor(p) if n[2] > 0 else top) if z is None else z
+        a, b, c = n[0], n[1], d - n[2] * at                     # a x + b y <= c
+        line = [(x, (c - a * x) / b) for x in (-300, 300)]
+        far = 600 if b > 0 else -600                            # the outside: a x + b y > c
+        out = out.difference(Polygon(line + [(300, far), (-300, far)]))
+    return out
+
+
+def module_front(solid, p, inset=0.0):
+    """Continue the halves' exact front planes onto an insert, in its standing-plane frame.
+    inset offsets an internal cavity to retain a wall behind the faceted front."""
+    for n, d in front_planes(p) + front_flat(p, spine_height(p)):
+        solid = solid.trim_by_plane(tuple(-n), -(d - n[2] * drawer_floor(p) - inset))
+    return solid
+
+
 class Dock:
     pass
 
@@ -554,6 +676,12 @@ def build(tent, magnets):
     for cut in (seat, pads, mags, side):
         dock -= cut + cut.mirror((1, 0, 0))
     dock -= extrude(pocket, -1, POCKET_TOP)
+    if DRAWER:
+        dock -= extrude(drawer_plan(p), drawer_floor(p), spine_top + 1)
+        dock -= rear_hood_cut(p)
+        # One continuous, full-width opening: no lower step, shelf or floor across it.
+        dock -= Manifold.cube((USB_EXIT_W, 70, spine_top + 3)).translate(
+            (-USB_EXIT_W / 2, DRAWER_BACK - 0.25, -1))
     spots = base_magnet_spots(dock, pocket)
     for x, y in spots:
         dock -= base_magnet_pocket(x, y)[0]
@@ -565,11 +693,13 @@ def build(tent, magnets):
         for sx in (1, -1):
             dock -= foot_recess(sx * x, y)
 
-    # the diamond, on the finished top (seats and all cut)
-    top_poly = unary_union([Polygon(q) for q in dock.slice(spine_top - 0.05).to_polygons()]).buffer(0)
-    top_poly = max(getattr(top_poly, "geoms", [top_poly]), key=lambda g: g.area)
-    art, scale = relief(top_poly, spine_top)
-    dock -= art
+    # the diamond, on the finished top (seats and all cut); with a drawer the spine's top is gone
+    scale = 0.0
+    if not DRAWER:
+        top_poly = unary_union([Polygon(q) for q in dock.slice(spine_top - 0.05).to_polygons()]).buffer(0)
+        top_poly = max(getattr(top_poly, "geoms", [top_poly]), key=lambda g: g.area)
+        art, scale = relief(top_poly, spine_top)
+        dock -= art
 
     out = Dock()
     out.relief_scale, out.feet = scale, feet
@@ -594,14 +724,22 @@ def magnet_solids(k):
     half = Manifold()
     for x, y in k.magnets:
         half += disc().translate((x, y, -MAG_H - 0.01))
-    for my in D["magnets_side_y"]:
-        half += disc().rotate((0, 90, 0)).translate((WALL_OUT + CLR, -my, D["magnet_side_z"]))
+    for my in [D["magnets_side_y"][i] for i in dock_side_mags()]:
+        side_disc = Manifold.cylinder(SIDE_H, SIDE_D / 2 - 0.1, circular_segments=32)
+        half += side_disc.rotate((0, 90, 0)).translate((WALL_OUT + CLR, -my, D["magnet_side_z"]))
     half = k.p(half)
     out = half + half.mirror((1, 0, 0))
-    low_top = UG[2] + MAG_H + 0.3
+    bd, bh = BASE_MAG
+    low_top = UG[2] + bh + 0.3
+    bdisc = lambda: Manifold.cylinder(bh - 0.1, bd / 2 - 0.1, circular_segments=32)
     for x, y in k.base_spots:
-        out += disc().translate((x, y, low_top + 0.1)) + disc().translate((x, y, UG[2]))
+        out += bdisc().translate((x, y, low_top + 0.05)) + bdisc().translate((x, y, UG[2]))
     return out
+
+
+def placement():
+    """Where the halves sit, without building the dock (for the modules' design)."""
+    return Placement(solve_tent()[0])
 
 
 def make():
@@ -642,9 +780,13 @@ def check(k):
         P = p.points([(x, y, 0)])[0]
         for sx in (1, -1):
             under = under.difference(Point(sx * P[0], P[1]).buffer(MAG_D / 2 + 1.0))
+    for x, y in k.base_spots:                # and the base's magnets have their own pockets
+        under = under.difference(Point(x, y).buffer(BASE_MAG[0] / 2 + BASE_MAG_SLOP + 0.05))
     gaps = []
     for z in np.arange(POCKET_TOP + 0.05, POCKET_TOP + ROOF, 0.1):
-        sl = unary_union([Polygon(q) for q in dock.slice(z).to_polygons()]).buffer(0)
+        sl = Polygon()
+        for q in dock.slice(z).to_polygons():      # even-odd: holes count as holes
+            sl = sl.symmetric_difference(Polygon(q).buffer(0))
         gaps.append(under.difference(sl).area)
     print("  roof over the base, %.1f mm: %.2f mm2 uncovered at worst" % (ROOF, max(gaps)))
     print("  floor magnets: %d of %d per half" % (len(magnets), len(MAGNETS)))
@@ -658,7 +800,7 @@ def check(k):
         print("  magnet at (%5.1f, %5.1f): %.1f %% of the shell round and under it is plastic, pocket %.1f %% open"
               % (x, y, 100 * (sh ^ dock).volume() / sh.volume(), 100 * (pk - dock).volume() / pk.volume()))
     side = Manifold()
-    for my in D["magnets_side_y"]:
+    for my in [D["magnets_side_y"][i] for i in dock_side_mags()]:
         r = SIDE_D / 2
         pocket = Manifold.cylinder(SIDE_H + 0.1, r, circular_segments=40).rotate((0, 90, 0))
         shell = Manifold.cylinder(SIDE_H + 1.1, r + 1.0, circular_segments=40).rotate((0, 90, 0)) - pocket
@@ -666,9 +808,16 @@ def check(k):
         sh, pk = at(shell), at(pocket)
         print("  spine magnet y %5.1f: %.1f %% of the shell round and behind it is plastic, pocket %.1f %% open" %
               (my, 100 * (sh ^ dock).volume() / sh.volume(), 100 * (pk - dock).volume() / pk.volume()))
+        if DRAWER:
+            skin = Manifold.cylinder(DRAWER_SKIN, r, circular_segments=40).rotate((0, 90, 0))
+            skin = at(skin.translate((SIDE_H + 0.1, 0, 0)))
+            for name, cap in (("left", skin), ("right", skin.mirror((1, 0, 0)))):
+                missing = abs((cap - dock).volume())
+                print("    %s drawer skin %.1f mm: %.3f mm3 missing" % (name, DRAWER_SKIN, missing))
+                assert missing < 1e-3, "side magnet backing skin is incomplete"
     for x, y in k.base_spots:
         pocket, top = base_magnet_pocket(x, y)
-        shell = Manifold.cylinder(top - POCKET_TOP + 1.0, MAG_D / 2 + BASE_MAG_SLOP + 1.0,
+        shell = Manifold.cylinder(top - POCKET_TOP + UNDER, BASE_MAG[0] / 2 + BASE_MAG_SLOP + 1.0,
                                   circular_segments=48).translate((x, y, POCKET_TOP)) - pocket
         print("  base magnet (%5.1f, %5.1f): %.1f %% of the shell round and over it is plastic, pocket %.1f %% open" %
               (x, y, 100 * (shell ^ dock).volume() / shell.volume(), 100 * (pocket - dock).volume() / pocket.volume()))

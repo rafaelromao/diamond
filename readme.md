@@ -25,7 +25,7 @@ Diamond is a handwired board originally designed by me but heavily inspired by t
 
 ## [Slim Diamond](slim_diamond/README.md)
 
-A wireless Choc version on a reversible PCB: XIAO nRF52840, 752025 battery,
+A wireless Choc version on a reversible PCB: XIAO nRF52840, 500 mAh battery,
 tented by the battery underneath, and magnets to join the halves or stack
 them back to back.
 
@@ -51,7 +51,12 @@ Both halves are provided, already oriented for printing: the bases floor-down, t
 - [Case Right](stls/slim_diamond/case_right.stl)
 - [Plate Left](stls/slim_diamond/plate_left.stl)
 - [Plate Right](stls/slim_diamond/plate_right.stl)
-- [Cyberdeck Dock](stls/slim_diamond/dock.stl)
+- [Cyberdeck Dock](stls/slim_diamond/dock.stl), [Drawer Placeholder](stls/slim_diamond/insert.stl)
+- Trackball: [MX Shell](stls/slim_diamond/trackball_shell.stl), [Choc v1 Shell](stls/slim_diamond/trackball_shell_choc.stl), [Shared Bottom Plate](stls/slim_diamond/trackball_bottom_plate.stl)
+- [Trackpad Module Shell](stls/slim_diamond/trackpad_shell.stl), [Bottom Plate](stls/slim_diamond/trackpad_bottom_plate.stl)
+
+Trackball shells require rear-hood supports in the supplied print orientation; see
+the [build guide](slim_diamond/BUILD.md). Printed fit and load capacity remain unverified.
 
 # Firmware
 

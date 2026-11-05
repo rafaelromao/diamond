@@ -44,6 +44,10 @@ batt = C.battery()
 sockets = next(p for n, p, h in parts if n == "sockets")
 overlap("battery vs base", batt, base)
 overlap("battery vs sockets", batt, C.to_desk_solid(C.slab(sockets, -DZ.SOCKET_DEPTH, 0)))
+for name, poly, h in parts:
+    if name != "sockets":
+        overlap("battery vs " + name, batt, C.to_desk_solid(C.slab(poly, -h, 0)))
+overlap("battery vs pcb", batt, C.to_desk_solid(C.slab(Polygon(D["pcb_outline"]), 0, C.PCB_T)))
 
 # The plate, in place.
 plate, _ = C.plate()
@@ -204,3 +208,5 @@ for name, pts in supports.items():
           f"{'ok' if not out else f'{len(out)} keys outside'}")
 
 print("ALL CLEAR" if max(results) < 1e-3 else "INTERFERENCE")
+if max(results) >= 1e-3:
+    raise SystemExit(1)

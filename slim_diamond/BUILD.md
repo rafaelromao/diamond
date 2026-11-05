@@ -40,7 +40,7 @@ The module always lies flat on the parts face, with its pad side against the PCB
   | Right | `slim_diamond_peripheral_right-zmk.uf2` | `slim_diamond_peripheral_right-zmk.uf2` |
 
   A dead module is much easier to swap now than after soldering.
-- **Battery polarity.** Silkscreen `+` marks pin 1 of the JST socket. Cheap 752025 cells ship with either polarity: check the plug with the multimeter. If it's reversed, swap the two crimps in the plug housing (lift each tab with a needle).
+- **Battery size and polarity.** The halves use nominal **7 × 20 × 40 mm, 500 mAh** cells; the trackball and trackpad keep **752025, 250 mAh** cells. Verify actual dimensions and lead clearance before assembly. Silkscreen `+` marks pin 1 of the JST socket. Cells ship with either polarity: check the plug with the multimeter. If reversed, swap the two crimps in the disconnected plug housing (lift each tab with a needle), keeping the contacts insulated from each other.
 - **Magnet polarity.** Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.
 
 ## 1. Bridge the D0–D2 jumpers and the battery selector (switch face)
@@ -131,7 +131,7 @@ It goes on the **switch face**, in the gap above the thumb keys, inside its outl
 
 The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the module.
 
-1. Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.
+1. Fit **13 common 8 × 1.5 mm N52 discs per half** (polarity!): seven underneath and six along the seam. Dry-fit first, without forcing the plastic, then apply a little suitable adhesive. Keep adhesive off the mating faces.
 2. Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.
 3. Lower the PCB, parts face down, into the base. Each part drops into its pocket, the switch lever slides down its slot, and the USB-C port lines up with its recess. Nothing should need force: every pocket has 0.6 mm of clearance, and the PCB 0.5 mm to the outer walls.
 4. Lay the plate on top, its pillars and screw bosses resting on the PCB, and fit the four **M3 × 8 flat-head** screws through the plate and PCB. They cut their own thread in the Nylon: turn them in slowly, and stop when the heads sit flush in their countersinks.
@@ -144,6 +144,18 @@ The base is solid up to the PCB's underside, with a pocket for every part. The P
    ![Both floors from below: the pads in black](renders/pads.png)
 
    Clean the slots with isopropyl alcohol first and press each pad down firmly against the slot's roof, centred in its round end. Stack the halves to check: they should close flat, with no rocking.
+
+## Optional stands and drawer retention
+
+- Use the same **8 × 1.5 mm N52 discs everywhere**. The dock takes six wing magnets and six side magnets per half and five base pairs (including five glued to the Ugreen base): 34 discs total. No rear magnet is fitted; leave USB and cable clearance unobstructed.
+- Each insert takes three evenly spaced side magnets per side (mating seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position, at 35.6 mm pitch. Check the full half → dock → insert polarity chain before gluing.
+- Trackball: secure the wired nice!nano face down on the shell ledges, not on the floor. Leave slack to lower the battery/sensor floor independently after removing its three screws. The trackpad controller still moves with its floor. Disconnect wiring before full separation; the renders labelled “Cutaway” do not illustrate disassembly.
+- Trackball printing: the supplied top-down MX/Choc shells need build-plate supports beneath the projecting rear hood (4.0/1.2 mm bed gap). Paint supports across its underside, keep ball/switch apertures clear, inspect the first hood layers and removal access in the slicer, and test-print the hood first. Support settings and removal remain physically unvalidated. Print floors flat; their foot recesses retain a modeled 0.7 mm roof.
+- Test front pull-out removal with the dock held down. The insert slides horizontally, without lifting, front notches or protruding handles. Verify retention with real parts before carrying or lap use.
+- For USB use while docked, remove the module, feed the USB-C plug through the dock's **12.8 mm upper rear passage** in its normal orientation, connect it to the module and slide the module in while feeding the cable. The modeled 12.35 × 6.5 mm overmold fits; actual plugs and bend radii vary. If yours does not fit, charge with the module removed. Unplug before pulling out a module with a restrained cable.
+- The rear top hood and dock support meet at a 45° slope with 0.25 mm modeled normal clearance. Check printed fit and horizontal removal before loading the magnets; do not force the pieces together.
+- For independent tenting, print `case/stand_magnet_template_left.svg` and `case/stand_magnet_template_right.svg` at 100%. Check the 54 mm boundary with a ruler. Glue three mates to each stand's **tilting phone platform**, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.
+- Measure the platform first: it needs a clear flat 54 mm contact patch. Use **2.0 mm bump-ons**; the modeled platform clearance is 0.6 mm. Actual platform fit, adhesive strength and retention remain unverified. Start flat, support the half while increasing tilt, then test typing forces before relying on it. The COG model is an estimate, not a holding-force certification.
 
 ## Resetting a closed half
 

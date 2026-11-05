@@ -15,6 +15,9 @@ records where that speck is in .render/scenes.json.
 """
 import json
 import math
+import sys
+
+import numpy as np
 
 from manifold3d import CrossSection, FillRule, Manifold
 from shapely.geometry import box
@@ -109,8 +112,129 @@ def dock_scenes():
     dock = [(plan(k.solid), vrml.CASE), (plan(K.magnet_solids(k)), vrml.METAL), (plan(K.feet_solids(k)), vrml.PAD)]
     stand = [(plan(m), rgb) for m, rgb in stand_and_phone(k.yb)]
     base = stand[:1]
+    import insert
+    import module_shell as M
+    ins = [(plan(insert.build()[0].translate((0, 0, M.FLOOR_Z))), vrml.CASE)]
     return {"cyberdeck": dock + left + right + stand, "dock": dock, "dock_base": dock + base,
-            "dock_unibody": dock + left + right}
+            "dock_unibody": dock + left + right, "dock_insert": dock + ins + left + right}
+
+
+BALL_RGB = (0.62, 0.12, 0.14)
+PAD_RGB = (0.08, 0.08, 0.09)
+PART_RGB = {"ball": BALL_RGB, "pad": PAD_RGB, "pad's back parts": vrml.CHIP, "battery": vrml.BATTERY,
+            "nice!nano": vrml.XIAO_PCB, "FFC adapter": (0.1, 0.32, 0.18), "main board": (0.1, 0.32, 0.18),
+            "sensor board": (0.1, 0.32, 0.18), "sensor's parts": vrml.CHIP, "lens": (0.8, 0.8, 0.85),
+            "reset": vrml.BUTTON, "power switch": vrml.METAL}
+
+
+def _module(kind, switch="mx"):
+    """A module's solids (dock frame) as (solid, rgb): shell, plate, bump-ons, magnets, parts."""
+    import importlib
+    import module_shell as M
+    mod = importlib.import_module(kind + "." + kind)
+    L = mod.place()
+    built = mod.shell_and_plate(L, switch) if kind == "trackball" else mod.shell_and_plate(L)
+    sh, plate = built[0], built[1]
+    if kind == "trackball":
+        ps = mod.parts(L, built[4], built[5], switch)
+    else:
+        ps = mod.parts(L)
+    out = [(sh, vrml.CASE), (plate, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL)]
+    for name, m in ps:
+        if name == "nice!nano":
+            front = L["nano"][1] + mod.NANO[1] + 0.6
+            z = mod.usb_z(L)
+            receptacle = Manifold.cube((9.0, 7.9, 3.2)).translate((-4.5, front - 7.9, z - 1.6))
+            opening = Manifold.cube((8.4, 7.6, 2.6)).translate((-4.2, front - 7.5, z - 1.3))
+            out.append((receptacle - opening, vrml.METAL))
+            m -= receptacle
+        rgb = PART_RGB.get(name)
+        if rgb is None:
+            rgb = vrml.KEYCAP if name.startswith("keycap") else vrml.SWITCH if name[:2] in ("MX", "ch", "CH") else vrml.SOCKET
+        out.append((m, rgb))
+    height = mod.PCB_TOP + mod.CHOC["below_plate"] if kind == "trackball" and switch == "choc" else mod.H
+    return out, height
+
+
+def _module_magnets(M):
+    out = Manifold()
+    for w, n in M.magnets():
+        d, h = D["magnet_nominal_size"]
+        c = Manifold.cylinder(h, d / 2, circular_segments=32)
+        ang = math.degrees(math.atan2(-n[1], -n[0]))
+        out += c.rotate((0, 90, 0)).rotate((0, 0, ang)).translate((w[0], w[1], M.MAG_Z))
+    return out
+
+
+def _usb_parts(kind):
+    import importlib
+    import module_shell as M
+    mod = importlib.import_module(kind + "." + kind)
+    L = mod.place()
+    metal, body, cable = M.usb_connection(L["nano"][1] + mod.NANO[1] + 0.6, mod.usb_z(L))
+    return [(metal, vrml.METAL), (body, (0.14, 0.15, 0.17)), (cable, (0.07, 0.08, 0.09))]
+
+
+def independent_tenting():
+    """One stand per half, using the compact floor-magnet group. Stand geometry is illustrative:
+    the existing 60 mm holder proxy, not a measurement of the real tilting platform."""
+    import dock as K
+    centre = C.plan([D["stand_mount"]["centre"]])[0]
+    cx, cy = centre[0], -centre[1]
+    tilt = K.rot("y", -20.0)
+    raised = lambda m: m.transform(tilt[:3]).translate((0, 0, 40))
+    platform = raised(Manifold.cylinder(4, 30, circular_segments=64).translate((0, 0, -4)))
+    base = K.extrude(K.rounded_rect(*K.UG[:2], 8, 0, K.UG[1] / 2), 0, K.UG[2])
+    arm = Manifold.hull_points([(x, y, z) for x in (-5, 5) for y, z in ((22, 3.5), (28, 3.5), (-3, 37), (3, 37))])
+    out = []
+    for half, sx in ((0, 1), (1, -1)):
+        parts = [(base, UGREEN), (arm, UGREEN), (platform, UGREEN)]
+        for x, y in C.plan(D["stand_mount"]["magnets"]):
+            d, h = D["magnet_nominal_size"]
+            disc = Manifold.cylinder(h, d / 2, circular_segments=32).translate((x - cx, -y - cy, 0))
+            parts.append((raised(disc), vrml.METAL))
+        for m, rgb in left_half() + [(C.pads(half), vrml.PAD)]:
+            parts.append((raised(C.real(m).translate((-cx, -cy, D["magnet_nominal_size"][1]))), rgb))
+        for m, rgb in parts:
+            if sx < 0:
+                m = m.mirror((1, 0, 0))
+            out.append((C.real(m.translate((-80 * sx, 0, 0))), rgb))
+    return out
+
+
+def module_scenes(k):
+    """Each module on its own (closed, and cut open down the middle), the trackball module in the
+    dock with the halves, and on the desk snapped onto the left half. Plan frame (y down)."""
+    import dock as K
+    import module_shell as M
+    plan = C.real
+    scenes = {}
+    for kind in ("trackball", "trackpad"):
+        parts, height = _module(kind)
+        scenes[kind] = [(plan(m), rgb) for m, rgb in parts]
+        cut = [(m.trim_by_plane((-1, 0, 0), 0.0), rgb) for m, rgb in parts]
+        scenes[kind + "_open"] = [(plan(m), rgb) for m, rgb in cut if not m.trim_by_plane((-1, 0, 0), 0.0).is_empty()]
+        scenes[kind + "_docked"] = [(plan(m.translate((0, 0, M.FLOOR_Z))), rgb) for m, rgb in parts]
+        flat = K.Placement(0.0)
+        mag = [(K.WALL_OUT, -K.D["magnets_side_y"][i], K.D["magnet_side_z"]) for i in K.DRAWER_MAGS]
+        m0 = flat.points(mag)
+        w, n = [q for q in M.magnets() if q[0][0] < 0][0]
+        shift = (w - np.array(m0[0][:2])) @ n
+        half = [(plan(flat(plan(m)).translate((n[0] * shift, n[1] * shift, 0))), rgb)
+                for m, rgb in left_half() + [(C.pads(0), vrml.PAD)]]
+        scenes[kind + "_with_half"] = scenes[kind] + half
+        if kind == "trackball":
+            choc_parts, _ = _module(kind, "choc")
+            scenes["trackball_choc"] = [(plan(m), rgb) for m, rgb in choc_parts]
+        connected = parts + _usb_parts(kind)
+        scenes[kind + "_usb"] = [(plan(m), rgb) for m, rgb in connected]
+        cut = [(m.trim_by_plane((-1, 0, 0), 0.0), rgb) for m, rgb in parts]
+        scenes[kind + "_usb_open"] = [(plan(m), rgb) for m, rgb in cut if not m.is_empty()] + [
+            (plan(m), rgb) for m, rgb in _usb_parts(kind)]
+        k = K.make() if k is None else k
+        scenes[kind + "_usb_dock"] = [(plan(k.solid), vrml.CASE)] + [
+            (plan(m.translate((0, 0, M.FLOOR_Z))), rgb) for m, rgb in connected]
+    return scenes
 
 
 def main():
@@ -129,10 +253,30 @@ def main():
         "unibody": {"speck": [seam - 12, centre_y], "z": -2.0, "size": 2 * (seam - min(xs))},
         "stacked": {"speck": [(min(xs) + seam) / 2, centre_y], "z": 0.0, "size": max(ys) - min(ys)},
     }
-    # the dock scenes: the speck in the spine, between the base's magnets, above the base
+    # the dock scenes: the speck in the spine's block behind the drawer, above the base
     dock = dock_scenes()
+    import dock as K
+    mods = module_scenes(None)
+    dock["cyberdeck"] += mods.pop("trackball_docked")
+    dock["dock_unibody"] += mods["trackpad_docked"]
+    mods.pop("trackpad_docked")
     for name in dock:
-        scenes[name] = {"speck": [0.0, 20.0], "z": -12.0, "size": 215.0}
+        scenes[name] = {"speck": [0.0, 7.0], "z": -12.0, "size": 215.0}
+    dock["independent_tenting"] = independent_tenting()
+    scenes["independent_tenting"] = {"speck": [0.0, 0.0], "z": 0.0, "size": 270.0}
+    # the modules: the speck in the battery (its front corner on the left, standing on the plate)
+    import module_shell as M
+    for name in mods:
+        bat_y = -(json.load(open("%s/design.json" % name.split("_")[0]))["battery"][1]
+                 if name.startswith("trackball") else json.load(open("trackpad/design.json"))["layout"]["battery"][1])
+        scenes[name] = {"speck": [-5.0, bat_y - 5.0], "z": -(M.FEET + M.BOTTOM_T + 4.0), "size": 100.0}
+        if "_usb" in name:
+            scenes[name]["speck"] = [0.0, 40.0]
+            if name.endswith("_dock"):
+                scenes[name]["speck"] = [0.0, 7.0]
+                scenes[name]["z"] = -12.0
+                scenes[name]["size"] = 215.0
+        dock[name] = mods[name]
     for name, parts in (("unibody", unibody), ("stacked", stacked), *dock.items()):
         dz = scenes[name]["z"]
         vrml.write_parts(f".render/3d/{name}.wrl", [(m.translate((0, 0, dz)), rgb) for m, rgb in parts])

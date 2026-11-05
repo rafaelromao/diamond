@@ -1,0 +1,4 @@
+# The Slim Diamond's add-on modules (trackball, trackpad) as a ZMK config module.
+build:
+  settings:
+    board_root: .

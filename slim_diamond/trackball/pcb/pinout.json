@@ -1,0 +1,28 @@
+{
+ "pins": {
+  "MOTION": "P0.22",
+  "NCS": "P0.24",
+  "SDIO": "P1.00",
+  "SCLK": "P0.11",
+  "K1": "P1.04",
+  "K2": "P0.17"
+ },
+ "wires_main": [
+  "SCLK",
+  "SDIO",
+  "NCS",
+  "MOTION",
+  "RST",
+  "VCC",
+  "GND"
+ ],
+ "wires_sensor": [
+  "VCC",
+  "GND",
+  "RST",
+  "SCLK",
+  "SDIO",
+  "NCS",
+  "MOTION"
+ ]
+}

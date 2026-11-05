@@ -1,0 +1,44 @@
+/*
+ * Slim Diamond Trackball: key 1 (in front, by the ball) clicks left; key 2 clicks right when
+ * tapped, and held, turns the ball into a scroll wheel. Both together: middle click.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/pointing.h>
+#include <dt-bindings/zmk/bt.h>
+
+/ {
+    behaviors {
+        scroll_or_right: scroll_or_right {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <200>;
+            bindings = <&mo>, <&mkp>;
+        };
+    };
+
+    combos {
+        compatible = "zmk,combos";
+        middle {
+            timeout-ms = <50>;
+            key-positions = <0 1>;
+            bindings = <&mkp MCLK>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        base {
+            bindings = <&mkp LCLK &scroll_or_right 1 RCLK>;
+        };
+
+        scroll {
+            bindings = <&mkp MCLK &trans>;
+        };
+    };
+};

@@ -1,0 +1,81 @@
+/*
+ * Slim Diamond Trackball: a PMW3610 under a 34 mm ball, two MX keys, on a nice!nano.
+ * Pins from trackball/build_pcb.py (trackball/pcb/pinout.json): SCLK P0.11 (D7), SDIO P1.00 (D6,
+ * both SPI data lines: the sensor's one-wire data), NCS P0.24 (D5), MOTION P0.22 (D4), key 1 P1.04
+ * (D8), key 2 P0.17 (D2). SPI2: the nice!nano board doesn't claim it.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors.dtsi>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+    };
+
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-direct";
+        wakeup-source;
+        input-gpios
+            = <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ;
+    };
+
+    trackball_listener: trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+
+        /* layer 1 (the right key held): the ball scrolls */
+        scroller {
+            layers = <1>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 12>;
+        };
+    };
+};
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 11)>,
+                    <NRF_PSEL(SPIM_MOSI, 1, 0)>,
+                    <NRF_PSEL(SPIM_MISO, 1, 0)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 11)>,
+                    <NRF_PSEL(SPIM_MOSI, 1, 0)>,
+                    <NRF_PSEL(SPIM_MISO, 1, 0)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi2 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
+
+    trackball: trackball@0 {
+        status = "okay";
+        compatible = "pixart,pmw3610-alt";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <800>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+        /* The sensor looks up at the ball from below, its pin rows across the module: if the
+         * pointer runs the wrong way, toggle these (and swap-xy if it moves sideways). */
+        invert-x;
+        force-awake;
+    };
+};

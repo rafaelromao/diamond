@@ -134,9 +134,9 @@ main img { cursor: zoom-in; }
       <tr><th>Keys</th><td>24 Choc v1 hot-swap, all 1u: 3×3, a pinky key and two thumbs per half</td></tr>
       <tr><th>Wiring</th><td>Diodeless, one pin per key: 11 Xiao edge pins plus the NFC1 pad</td></tr>
       <tr><th>Controller</th><td>A XIAO-sized nRF52840 per half: the Seeed XIAO nRF52840 or the NologoTech Super52840, on the same board. ZMK firmware, the same for both</td></tr>
-      <tr><th>Power</th><td>752025 LiPo (250 mAh) on a JST PH socket, MSK-12C02 slide switch beside the USB-C port</td></tr>
+      <tr><th>Power</th><td>Nominal 7 × 20 × 40 mm LiPo (500 mAh) per half on a JST PH socket, MSK-12C02 slide switch beside the USB-C port; pointing modules retain 250 mAh cells</td></tr>
       <tr><th>PCB</th><td><span class="num">87.6 × 92.3 mm</span>, 2 layers, one reversible design for both halves</td></tr>
-      <tr><th>Case</th><td>Solid printed base tented <span class="num">6.6°</span>, <span class="num">18.6 mm</span> at the seam and <span class="num">8.7 mm</span> at the outer edge, with a <span class="num">1.2 mm</span> top plate</td></tr>
+      <tr><th>Case</th><td>Solid printed base tented <span class="num">6.6°</span>, <span class="num">20.4 mm</span> at the seam and <span class="num">10.5 mm</span> at the outer edge, with a <span class="num">1.2 mm</span> top plate</td></tr>
       <tr><th>Extras</th><td>Magnets to join the halves or stack them for travel, anti-slip pads that interleave when stacked, a reset button under a cone hole in the plate</td></tr>
       <tr><th>Assembly</th><td>Soldering iron only: no paste, no hot air</td></tr>
     </table>
@@ -224,7 +224,7 @@ main img { cursor: zoom-in; }
       <div class="find"><div><h3>A USB-C cable seats fully</h3><p>A recess the size of the largest Type-C overmold (<span class="num">12.35 × 6.5 mm</span>) reaches the port, and the PCB edge is notched in front of it. The check plugs in a cable of that size.</p></div></div>
       <div class="find"><div><h3>The PCB drops straight in</h3><p>The power switch's lever reaches past the PCB edge, so it slides down a slot open to the top. The slot widens outwards so a fingernail reaches the lever. The check sweeps the lever along the drop-in path.</p></div></div>
       <div class="find"><div><h3>Room for tolerances</h3><p><span class="num">0.5 mm</span> around the PCB and plate covers JLCPCB's ±<span class="num">0.2 mm</span> outline tolerance plus print shrinkage.</p></div></div>
-      <div class="find"><div><h3>Magnets in solid plastic</h3><p>Ten <span class="num">8 × 3 mm</span> magnets per half, six along the seam and four in the floor. Each pocket keeps <span class="num">0.5 mm</span> of plastic all round, measured against the printed base.</p></div></div>
+      <div class="find"><div><h3>One magnet throughout</h3><p>Thirteen <span class="num">8 × 1.5 mm N52</span> discs per half: six along the seam and seven underneath, including three circular stand contacts. Each pocket keeps <span class="num">0.5 mm</span> of plastic all round, measured against the printed base. The larger battery raises the PCB and case by 1.8 mm without changing the PCB outline or wiring.</p></div></div>
     </div>
 <pre class="term">$ python check_fit.py
 sockets vs base                       0.000 mm3
@@ -261,28 +261,66 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <span class="eyebrow">Cyberdeck</span>
     <h2>A dock for a phone stand</h2>
     <p>A phone on a Ugreen folding stand is the computer and the screen. The dock is one printed part that holds both halves around it. It sits over the stand's base, which stays on the desk on its own feet and carries the phone; behind the dock the base is bare, its hinge half a millimetre off the halves and the spine. Without the stand, it is a sturdier, tented unibody.</p>
-    <p>The dock reads as the board's lower half: under each half's girdle, its widest line, every wall carries on the case's own 45° bottom chamfer down to the desk, one flat plane with it, the spine and wings alike and one piece below the girdle. Each half lies on a wing the shape of its floor, inner side up, its outer pad on the desk, splayed 12°. The wings add 5.75° of tent (12.3° in all), the least that leaves 1.6 mm of plastic over the base. Between the halves a spine rises to their top edges, its front and back carrying on their walls, its point cut to a flat as wide as the joined board's, with the joined board's diamond cut into its top.</p>
-    <p>Magnets hold it all together: three under each half's floor magnets (the fourth is too near the outer edge), six down each side of the spine facing the inner walls' magnets, and five in the pocket's roof, onto magnets glued on top of the base. The underside is cut 0.5 mm off the desk and three bump-ons under each wing make that up. The same checks as the case: every half, pad, the base and the hinge against the dock, all 0 mm³.</p>
+    <p>The dock continues the halves' 45° bottom facets down to the desk, with 12° splay and 5.96° extra tent (12.5° total). Its middle is a front-opening drawer for a trackball, trackpad or solid cover, preserving continuous front facets and horizontal removal. At the back each insert extends only its top into a 45° hood over a matching sloped dock support, with 0.25 mm modeled normal clearance. USB relief and the hood recess remove material from the spine; old stiffness estimates predate those cuts. Test the printed dock before lap use.</p>
+    <p>Every magnet is an 8 × 1.5 mm N52 disc. Six wing magnets mate six of each half's seven floor magnets; six per side fit 2.4 mm drawer walls with 0.6 mm inner skins. Three insert magnets per side align through those skins, forming an attracting half → dock → insert chain. Five pairs attach the dock to the Ugreen base. There is no rear retention magnet: that space is reserved for USB and the power switch. The dock is 195.1 × 111.0 × 30.2 mm, 84.4 cm³, with six bump-ons. Real magnetic retention and adhesive strength still need testing.</p>
+    <h3>Independent tenting</h3>
+    <p>Use two stands, with three common discs glued to each tilting phone platform, not the base. The mirrored SVG templates place them 120° apart on a 44 mm circle around the estimated assembled centre of gravity. A clear flat 54 mm contact patch is required: the actual Ugreen platform remains unmeasured. Specified 2.0 mm bump-ons clear the platform by 0.6 mm. The estimated gravity projection remains inside the contact triangle through 35° of tilt, but this does not certify magnetic holding force or stand stability.</p>
+    <figure><img src="renders/independent_tenting.png" alt="Each keyboard half independently tented on an illustrative phone stand" width="1600" height="1200" loading="lazy"><figcaption>Independent platforms; illustrative stand geometry, not confirmed Ugreen fit.</figcaption></figure>
   </section>
 
   <figure class="hero">
     <img src="renders/cyberdeck.png" alt="Both halves on the dock, splayed and tented, with a phone on the Ugreen stand behind them" width="1600" height="1200" loading="lazy">
-    <figcaption>The cyberdeck: dock, both halves and the phone on its stand (the stand and phone are stand-ins).</figcaption>
+    <figcaption>The cyberdeck: dock, both halves, the trackball in the drawer, and the phone on its stand (the stand and phone are stand-ins).</figcaption>
   </figure>
 
   <div class="grid2">
     <figure><img src="renders/cyberdeck_front.png" alt="The cyberdeck seen from the front: the halves tilt down from the spine to the desk" width="1600" height="1200" loading="lazy"><figcaption>From the front: the halves slope down from the spine, the dock under them like a gem's lower half.</figcaption></figure>
     <figure><img src="renders/cyberdeck_side.png" alt="The cyberdeck from the side: the keyboard low on the desk, the phone on its arm behind" width="1600" height="1200" loading="lazy"><figcaption>From the side: the hinge right behind the board.</figcaption></figure>
     <figure><img src="renders/cyberdeck_top.png" alt="The cyberdeck from above: the halves splayed either side of the spine, the phone behind" width="1600" height="1200" loading="lazy"><figcaption>From above: 12° of splay a side, the spine between.</figcaption></figure>
-    <figure><img src="renders/dock_unibody.png" alt="Both halves on the dock without the stand: one tented, splayed unibody" width="1600" height="1200" loading="lazy"><figcaption>Without the stand: a sturdier, more tented unibody.</figcaption></figure>
+    <figure><img src="renders/dock_unibody.png" alt="Both halves on the dock without the stand: one tented, splayed unibody" width="1600" height="1200" loading="lazy"><figcaption>Without the stand: a sturdier, more tented unibody, here with the trackpad.</figcaption></figure>
   </div>
 
   <div class="grid2">
+    <figure><img src="renders/dock_insert.png" alt="Both halves on the dock with the solid placeholder in the drawer, the diamond cut into its top" width="1600" height="1200" loading="lazy"><figcaption>With the placeholder in the drawer.</figcaption></figure>
     <figure><img src="renders/dock_unibody_side.png" alt="The unibody on the dock from the side" width="1600" height="1200" loading="lazy"><figcaption>The unibody from the side.</figcaption></figure>
-    <figure><img src="renders/dock.png" alt="The dock alone: two wings with floor magnets, the spine between them with the diamond cut in its top" width="1600" height="1200" loading="lazy"><figcaption>The dock: wing magnets, pad recesses, the spine and its diamond.</figcaption></figure>
-    <figure><img src="renders/dock_base.png" alt="The dock on the Ugreen base seen from behind, the spine's six magnets on its side and the base's back strip left bare" width="1600" height="1200" loading="lazy"><figcaption>From behind, on the base: the spine's magnets, the base bare round the hinge.</figcaption></figure>
-    <figure><img src="renders/dock_under.png" alt="The dock from below: the pocket for the Ugreen base with five magnets in its roof, and three bump-on feet under each wing" width="1600" height="1200" loading="lazy"><figcaption>Underneath: the base's pocket, its five magnets, the feet.</figcaption></figure>
+    <figure><img src="renders/dock.png" alt="The dock alone: two wings with floor magnets, the drawer between them" width="1600" height="1200" loading="lazy"><figcaption>The dock: wing magnets, pad recesses, the drawer.</figcaption></figure>
+    <figure><img src="renders/dock_base.png" alt="The dock on the Ugreen base seen from behind, the base's back strip left bare" width="1600" height="1200" loading="lazy"><figcaption>From behind, on the base: bare round the hinge.</figcaption></figure>
+    <figure><img src="renders/dock_under.png" alt="The dock from below: the pocket for the Ugreen base, and three bump-on feet under each wing" width="1600" height="1200" loading="lazy"><figcaption>Underneath: the base's pocket and the feet.</figcaption></figure>
   </div>
+
+  <section class="stack col">
+    <span class="eyebrow">Pointing</span>
+    <h2>A trackball or a trackpad, in the drawer</h2>
+    <p>Both pointing devices retain their own nice!nano, 752025 250 mAh battery, power switch and reset. Three common side magnets per side use every other position in the halves' six-magnet row: 35.6 mm pitch on the inserts, 17.8 mm on the halves and dock. There is no floor or rear-wall retention magnet. The 2.2 mm bottom plates retain 0.7 mm above foot recesses. Magnet centres are 7.2 mm above the desk, or 16.381 mm docked with the standing plane at 9.181 mm. Regression checks cover alignment, side skins, equal spacing, horizontal removal, both standalone sides and seated USB clearance.</p>
+    <p><strong>The trackball:</strong> a 34 mm ball and PMW3610 sensor, with two MX or Choc v1 hot-swap keys on one shared PCB. Populate only one socket family. Two shells provide the correct plate thickness: MX 1.5 mm, Choc 1.2 mm with its top 2.8 mm lower. Both share the ball/sensor positions and bottom plate. The nice!nano is supported below the PCB and wired to labelled pads, avoiding socket/pin-hole overlap. <strong>The trackpad:</strong> a 40 mm Cirque pad and two hand-wired Choc keys, flush with the halves.</p>
+    <figure><img src="renders/trackball_choc.png" alt="Choc v1 trackball case with lower switches, sharing the MX variant's PCB" width="1600" height="1200" loading="lazy"><figcaption>Choc v1 hot-swap variant: same PCB and bottom plate, lower top shell.</figcaption></figure>
+    <p>Keys move 3.8 mm rearward on the trackball and 4 mm on the trackpad; the trackball controller moves 1.8 mm rearward onto shell-mounted ledges, staying in the shell while the battery/sensor floor lowers for service. A smaller upper bevel preserves the rear switch rim. The dock USB opening is 12.8 mm wide all the way through the underside, passing a normally oriented plug.</p>
+    <p><strong>Print caveat:</strong> the top-down trackball shells need build-plate supports under the projecting rear hood. Inspect support access and sliced first layers, then test-print the region; physical validation remains outstanding. Interior views are cutaways, not disassembly instructions. The audit regressions cover screw seats, foot roofs, switch-lever travel, populated floor extraction and binary-STL topology.</p>
+    <p><a href="trackball/FLEX_FEASIBILITY.md">Flex feasibility research</a>: Leonardo uses routed rigid-PCB springs. Retain rigid boards and wires for this release; JLCPCB's 100 × 100 mm size tier alone does not establish flex pricing, stiffeners or bend durability.</p>
+    <h3>USB-C, seated</h3>
+    <p>The rear connection is shown with an illustrative 12.35 × 6.5 mm plug and cable. With the drawer empty, feed the plug normally through the dock's 12.8 mm upper rear passage, connect the module, then slide it in while feeding the cable. The lower passage stays narrower to protect the side-magnet skins. Real plug dimensions and bend radius still need checking; if the plug is too large, remove the module for charging instead.</p>
+    <figure><img src="renders/trackball_usb.png" alt="Trackball module with a USB-C cable seated through the rear opening" width="1600" height="1200" loading="lazy"><figcaption>Trackball: rear USB-C connection.</figcaption></figure>
+    <figure><img src="renders/trackball_usb_open.png" alt="Cutaway showing the USB-C plug seated at the nice!nano" width="1600" height="1200" loading="lazy"><figcaption>Cutaway to the controller's receptacle.</figcaption></figure>
+    <figure><img src="renders/trackball_usb_dock.png" alt="Trackball docked with its USB cable through the rear exit" width="1600" height="1200" loading="lazy"><figcaption>Cable connected before docking.</figcaption></figure>
+    <figure><img src="renders/trackpad_usb.png" alt="Trackpad module with a seated USB-C cable" width="1600" height="1200" loading="lazy"><figcaption>Trackpad: rear USB-C connection.</figcaption></figure>
+    <figure><img src="renders/trackpad_usb_open.png" alt="Trackpad cutaway exposing the USB-C connection" width="1600" height="1200" loading="lazy"><figcaption>Trackpad receptacle and plug.</figcaption></figure>
+    <figure><img src="renders/trackpad_usb_dock.png" alt="Trackpad docked with a USB cable through the rear passage" width="1600" height="1200" loading="lazy"><figcaption>Trackpad with the cable pre-connected.</figcaption></figure>
+  </section>
+
+  <div class="grid2">
+    <figure><img src="renders/trackball.png" alt="The trackball module: a red ball at the front, two MX keys stacked behind it" width="1600" height="1200" loading="lazy"><figcaption>The trackball module.</figcaption></figure>
+    <figure><img src="renders/trackball_open.png" alt="The trackball module cut open: the sensor board under the ball, the main board under the keys, the nice!nano and the battery under it" width="1600" height="1200" loading="lazy"><figcaption>Cut open: sensor board, main board, nice!nano, battery.</figcaption></figure>
+    <figure><img src="renders/trackpad.png" alt="The trackpad module: a round Cirque pad at the front, two Choc keys stacked behind it" width="1600" height="1200" loading="lazy"><figcaption>The trackpad module.</figcaption></figure>
+    <figure><img src="renders/trackpad_open.png" alt="The trackpad module cut open: the battery and adapter under the pad, the nice!nano under the keys" width="1600" height="1200" loading="lazy"><figcaption>Cut open: battery and adapter under the pad, the nice!nano under the keys.</figcaption></figure>
+    <figure><img src="renders/trackball_with_half.png" alt="The trackball module snapped onto the left half on the desk" width="1600" height="1200" loading="lazy"><figcaption>On the desk, snapped onto a half.</figcaption></figure>
+    <figure><img src="renders/trackpad_with_half.png" alt="The trackpad module snapped onto the left half on the desk" width="1600" height="1200" loading="lazy"><figcaption>The trackpad, on a half.</figcaption></figure>
+
+  </div>
+
+  <div class="grid2">
+    <figure><img src="renders/trackball_board_top.png" alt="The trackball's board from the front: the main board with the keys' and the nice!nano's holes, the sensor board below it on a breakaway tab" width="1600" height="1200" loading="lazy"><figcaption>The trackball's board, one to order: the sensor board snaps off its tab.</figcaption></figure>
+    <figure><img src="renders/trackball_board_bottom.png" alt="The trackball's board from the back: the MX hot-swap sockets, and the sensor's regulator, capacitors and reset button" width="1600" height="1200" loading="lazy"><figcaption>Back face: the sockets, and the sensor's parts facing the plate.</figcaption></figure>
+</div>
 
   <section class="stack">
     <span class="eyebrow">Parts</span>
@@ -340,10 +378,10 @@ packs come in round numbers anyway.</p>
 </tr>
 <tr>
 <td>6</td>
-<td>LiPo battery 752025, 250 mAh, 3.7 V</td>
+<td>LiPo battery, 500 mAh, 3.7 V</td>
 <td>2</td>
-<td><code>752025 lipo 250mah JST PH 2.0</code></td>
-<td>7.5 × 20 × 25 mm. Ask for the <strong>JST PH 2.0</strong> plug. Check polarity before plugging in (see below).</td>
+<td><code>702040 lipo 500mah JST PH 2.0</code></td>
+<td>Nominal <strong>7 × 20 × 40 mm</strong>, for the halves only. Verify the seller's actual dimensions, lead exit and protection board; ask for the <strong>JST PH 2.0</strong> plug and check polarity.</td>
 </tr>
 <tr>
 <td>7</td>
@@ -368,10 +406,10 @@ packs come in round numbers anyway.</p>
 </tr>
 <tr>
 <td>10</td>
-<td>Disc magnets 8 × 3 mm, N52</td>
-<td>20 (+4)</td>
-<td><code>8x3mm N52 neodymium magnet</code></td>
-<td>Ten per half, all the same part: four in the floor (the halves stack back to back) and six in the inner wall (the halves join as a unibody).</td>
+<td>Disc magnets 8 × 1.5 mm, N52</td>
+<td>26 (+4)</td>
+<td><code>8x1.5mm N52 neodymium magnet</code></td>
+<td>Thirteen per half: four stacking positions, three circular stand contacts, six inner-wall magnets evenly spread at 17.8 mm pitch. The same part is used in every accessory.</td>
 </tr>
 <tr>
 <td>11</td>
@@ -385,24 +423,181 @@ packs come in round numbers anyway.</p>
 <td>Silicone bump-ons 8 × 2 mm, self-adhesive</td>
 <td>10 (+6)</td>
 <td><code>8x2mm silicone bumpon self adhesive</code></td>
-<td>Five per half, in the slots under the floor (see BUILD.md). Clear or black, round, 8 mm diameter, 2 mm tall; up to 2.2 mm still lets the floors meet.</td>
+<td>Five per half, in the slots under the floor (see BUILD.md). Use the specified 2.0 mm height to retain the checked stand-platform clearance.</td>
 </tr>
 <tr>
 <td>13</td>
 <td>Filament</td>
 <td>~170 g</td>
 <td>Nylon (PA)</td>
-<td>Case left + right (solid base, 57.3 cm³ each) and the two top plates (4.3 cm³ each).</td>
+<td>Case left + right (solid base, 65.9 cm³ each) and the two top plates (4.3 cm³ each); approximately 160 g solid nylon before print overhead.</td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Cyberdeck dock (optional):</strong> <code>case/dock.stl</code> (137 cm³, about 155 g of Nylon), for a Ugreen folding phone
+<p><strong>Cyberdeck dock (optional):</strong> <code>case/dock.stl</code> (84.4 cm³, about 96 g of Nylon), for a Ugreen folding phone
 stand with an 85 × 105 × 4 mm base, or on its own as a tented unibody. Print it flat side down, with
-supports inside the pocket (its roof spans 85 mm). It takes <strong>28 more 8 × 3 mm magnets</strong>: three under
-each half's floor, six down each side of the spine, five in the pocket's roof, and five glued on top
-of the stand's base under those (the base is aluminium; leave those out for the unibody alone). Seat
-each one by letting it snap onto the magnet it will face, then glue it. And <strong>6 more 8 × 2 mm
-bump-ons</strong>, three under each wing: the underside is cut 0.5 mm off the desk for them.</p>
+supports inside the pocket (its roof spans 85 mm). It takes <strong>34 additional common 8 × 1.5 mm discs</strong>:
+12 under the halves (six per half), 12 in the uninterrupted 2.4 mm drawer walls (six per side),
+10 for the five base-magnet pairs. There is no rear retention magnet: that area is reserved for USB. The side magnets
+face all six seam magnets outside; positions 2, 4 and 6 also face the insert through a 0.6 mm inner skin. Load them from
+outside, flush, then glue in place. Seat each dock magnet by letting it snap onto the half it faces;
+orient the insert's magnets to attract its other pole through the inner wall. A magnet chain must
+attract throughout: half → dock → insert. Five base discs go in the dock and five are glued on the
+aluminium Ugreen base, paired with opposite poles facing. Add <strong>6 more 8 × 2 mm bump-ons</strong>, three under each
+wing: the underside is cut 0.5 mm off the desk for them.</p>
+<p><strong>Independent tenting (optional):</strong> two Ugreen stands and <strong>6 common discs</strong>, three glued to each
+tilting phone platform. Use the mirrored 1:1 SVG templates in <code>case/</code>; the magnet centres form a
+44 mm circle and require a <strong>54 mm clear flat contact patch</strong>. Measure the real platform and test
+the adhesive, magnetic retention and stand stability before use; platform compatibility is unconfirmed.</p>
+<p><strong>Drawer placeholder:</strong> <code>case/insert.stl</code> (64.5 cm³, solid), for when neither module is in the drawer:
+<strong>6 common discs</strong>, three a side.</p>
+<p><strong>Drawer modules (optional):</strong> either slides into the dock's drawer from the front, or snaps onto either
+half's inner wall on the desk. Each needs <strong>6 common discs</strong> (three a side;
+test every mating polarity before gluing), <strong>3 × 8 × 2 mm
+bump-ons</strong> and <strong>3 × M2 × 6 flat-head screws</strong> for its bottom plate, a <strong>752025, 250 mAh battery</strong>
+(7.5 × 20 × 25 mm, unchanged; not the halves' larger cell),
+and its printed shell and bottom plate. Trackball shells print top down <strong>with rear-hood
+supports</strong>; inspect the slicer and test-print that region first (see BUILD.md).</p>
+<p><strong>Magnet total:</strong> both halves 26 + dock/base 34 + independent stands 6 + all three inserts 18
+= <strong>84 discs</strong>, before spares. One insert rather than all three gives 72 discs with both stand options.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Slim Diamond Trackball</th>
+<th>Qty</th>
+<th>Search for</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PCB, <code>trackball/fab/trackball_jlcpcb.zip</code></td>
+<td>1 (order 5)</td>
+<td>(JLCPCB)</td>
+<td>One board: snap the sensor board off its tab. 2 layers, 1.6 mm</td>
+</tr>
+<tr>
+<td>nice!nano v2</td>
+<td>1</td>
+<td><code>nice!nano v2</code> / <code>SuperMini nRF52840</code></td>
+<td>Face down on shell-mounted ledges, secured with insulating tape; wired to labelled PCB pads, not pinned through the switch footprints. USB-C at the back; leave floor-service slack</td>
+</tr>
+<tr>
+<td>PixArt PMW3610DM-SUDU + LM18-LSI lens</td>
+<td>1 + 1</td>
+<td><code>PMW3610</code> (eBay, Tindie: Randware) / <code>LM18-LSI</code></td>
+<td>Through-hole sensor in the sensor board's cut-out, on its back face; the lens clips on from the front, looking up</td>
+</tr>
+<tr>
+<td>TLV74318PDBVR, SOT-23-5</td>
+<td>1</td>
+<td><code>TLV74318PDBVR</code></td>
+<td>The sensor's 1.8 V</td>
+</tr>
+<tr>
+<td>0805 capacitors: 10 µF, 3.3 µF, 1 µF ×2, 100 nF ×3, 10 nF ×2; 0805 resistor 10 kΩ</td>
+<td>9 + 1</td>
+<td><code>0805 capacitor kit</code></td>
+<td>Values as siderakb's PMW3610 board (CERN-OHL-P), which this circuit follows</td>
+</tr>
+<tr>
+<td>TS-1187A reset button (5.1 × 5.1 × 2.0 mm)</td>
+<td>1</td>
+<td><code>5.1x5.1x2.0 SMD tactile switch 4 pin</code></td>
+<td>On the sensor board, facing down: press it with a pin through the bottom plate</td>
+</tr>
+<tr>
+<td>MSK-12C02 power switch</td>
+<td>1</td>
+<td><code>MSK-12C02 SMD slide switch</code></td>
+<td>Lever out of the back wall</td>
+</tr>
+<tr>
+<td>MX switches + Kailh MX sockets + 1u DSA caps, <strong>or</strong> Choc v1 switches + Choc sockets + caps</td>
+<td>2 each</td>
+<td><code>Kailh MX hotswap socket</code> / <code>Kailh choc hotswap socket PG1350</code></td>
+<td>One shared PCB; populate only one socket family. MX uses <code>shell.stl</code>, Choc v1 uses <code>shell_choc.stl</code>; bottom plate is shared. Choc v2 is not supported.</td>
+</tr>
+<tr>
+<td>34 mm trackball, 3 mm Si3N4 balls</td>
+<td>1 + 3</td>
+<td><code>34mm trackball</code> / <code>3mm ceramic ball Si3N4</code></td>
+<td>The ceramic balls glue into the cup's three pockets</td>
+</tr>
+<tr>
+<td>M2 × 5 pan-head screws</td>
+<td>2</td>
+<td></td>
+<td>Sensor board to its posts, either case</td>
+</tr>
+<tr>
+<td>M2 × 5 (MX) <strong>or M2 × 3 (Choc)</strong> pan-head screws</td>
+<td>2</td>
+<td></td>
+<td>Main board to the top-shell posts. The Choc shell needs the shorter screws; 5 mm screws would protrude through its lower top.</td>
+</tr>
+<tr>
+<td>Hookup wire</td>
+<td>17 × ~50 mm</td>
+<td></td>
+<td>Seven sensor-to-main wires plus ten controller wires: GND, VCC, RST, VBAT (to B+), SCLK, SDIO, NCS, MOTION, K1, K2. Leave slack for opening the bottom plate.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Slim Diamond Trackpad</th>
+<th>Qty</th>
+<th>Search for</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cirque TM040040, SPI</td>
+<td>1</td>
+<td><code>TM040040</code> (Mouser)</td>
+<td>The SPI version (the label's interface digit 4, R1 fitted): no change needed</td>
+</tr>
+<tr>
+<td>12-pin 0.5 mm FFC cable and FFC-to-2.54 mm adapter</td>
+<td>1 + 1</td>
+<td><code>12P 0.5mm FFC adapter board</code></td>
+<td>The adapter sits on a shelf over the battery; the case allows 20 × 14 mm</td>
+</tr>
+<tr>
+<td>nice!nano v2</td>
+<td>1</td>
+<td><code>nice!nano v2</code></td>
+<td>In a cradle on the bottom plate, USB-C at the back</td>
+</tr>
+<tr>
+<td>Choc v1 switches and keycaps</td>
+<td>2 + 2</td>
+<td><code>Kailh choc low profile switch</code></td>
+<td>Clip into the top; wired by hand</td>
+</tr>
+<tr>
+<td>SS12D00G3 slide switch</td>
+<td>1</td>
+<td><code>SS12D00G3 mini slide switch</code></td>
+<td>In its pocket on the back wall, lever out of it</td>
+</tr>
+<tr>
+<td>6 × 6 mm tact switch (through-hole)</td>
+<td>1</td>
+<td><code>6x6x4.3 tactile switch</code></td>
+<td>In its cradle on the plate: press it with a pin from below</td>
+</tr>
+<tr>
+<td>Hookup wire</td>
+<td>~15 × 60 mm</td>
+<td></td>
+<td>See the wiring table in the README</td>
+</tr>
+</tbody>
+</table></div>
 <p>Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
 or epoxy for the magnets.</p>
 <p>Soldering, assembly and printing: see <a href="BUILD.md">BUILD.md</a>.</p>
@@ -482,7 +677,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 </tbody>
 </table></div>
 <p>A dead module is much easier to swap now than after soldering.
-- <strong>Battery polarity.</strong> Silkscreen <code>+</code> marks pin 1 of the JST socket. Cheap 752025 cells ship with either polarity: check the plug with the multimeter. If it's reversed, swap the two crimps in the plug housing (lift each tab with a needle).
+- <strong>Battery size and polarity.</strong> The halves use nominal <strong>7 × 20 × 40 mm, 500 mAh</strong> cells; the trackball and trackpad keep <strong>752025, 250 mAh</strong> cells. Verify actual dimensions and lead clearance before assembly. Silkscreen <code>+</code> marks pin 1 of the JST socket. Cells ship with either polarity: check the plug with the multimeter. If reversed, swap the two crimps in the disconnected plug housing (lift each tab with a needle), keeping the contacts insulated from each other.
 - <strong>Magnet polarity.</strong> Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.</p>
 <h3>1. Bridge the D0–D2 jumpers and the battery selector (switch face)</h3>
 <p>On the switch face, inside the module's outline, there are three small pad pairs labelled <strong>D0, D1, D2</strong>, on the face without the module. Flux them and bridge each pair with a small blob of solder.</p>
@@ -596,7 +791,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <h3>8. Case and plate</h3>
 <p>The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the module.</p>
 <ol>
-<li>Press the magnets into their pockets (polarity!) and wick a drop of CA glue around each.</li>
+<li>Fit <strong>13 common 8 × 1.5 mm N52 discs per half</strong> (polarity!): seven underneath and six along the seam. Dry-fit first, without forcing the plastic, then apply a little suitable adhesive. Keep adhesive off the mating faces.</li>
 <li>Lay the battery in its bay and plug it into the JST socket. The plug and the slack of its leads sit in the bay, between the battery and the socket.</li>
 <li>Lower the PCB, parts face down, into the base. Each part drops into its pocket, the switch lever slides down its slot, and the USB-C port lines up with its recess. Nothing should need force: every pocket has 0.6 mm of clearance, and the PCB 0.5 mm to the outer walls.</li>
 <li>Lay the plate on top, its pillars and screw bosses resting on the PCB, and fit the four <strong>M3 × 8 flat-head</strong> screws through the plate and PCB. They cut their own thread in the Nylon: turn them in slowly, and stop when the heads sit flush in their countersinks.</li>
@@ -607,6 +802,18 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p>The rule is the same on both halves: turn the half over and go <strong>clockwise round the floor</strong>. In every slot, the pad goes in the end you reach <strong>second</strong>. Then each half's five pads sit in the ends the other half leaves empty.</p>
 <p><img alt="Both floors from below: the pads in black" src="renders/pads.png" /></p>
 <p>Clean the slots with isopropyl alcohol first and press each pad down firmly against the slot's roof, centred in its round end. Stack the halves to check: they should close flat, with no rocking.</p>
+<h3>Optional stands and drawer retention</h3>
+<ul>
+<li>Use the same <strong>8 × 1.5 mm N52 discs everywhere</strong>. The dock takes six wing magnets and six side magnets per half and five base pairs (including five glued to the Ugreen base): 34 discs total. No rear magnet is fitted; leave USB and cable clearance unobstructed.</li>
+<li>Each insert takes three evenly spaced side magnets per side (mating seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position, at 35.6 mm pitch. Check the full half → dock → insert polarity chain before gluing.</li>
+<li>Trackball: secure the wired nice!nano face down on the shell ledges, not on the floor. Leave slack to lower the battery/sensor floor independently after removing its three screws. The trackpad controller still moves with its floor. Disconnect wiring before full separation; the renders labelled “Cutaway” do not illustrate disassembly.</li>
+<li>Trackball printing: the supplied top-down MX/Choc shells need build-plate supports beneath the projecting rear hood (4.0/1.2 mm bed gap). Paint supports across its underside, keep ball/switch apertures clear, inspect the first hood layers and removal access in the slicer, and test-print the hood first. Support settings and removal remain physically unvalidated. Print floors flat; their foot recesses retain a modeled 0.7 mm roof.</li>
+<li>Test front pull-out removal with the dock held down. The insert slides horizontally, without lifting, front notches or protruding handles. Verify retention with real parts before carrying or lap use.</li>
+<li>For USB use while docked, remove the module, feed the USB-C plug through the dock's <strong>12.8 mm upper rear passage</strong> in its normal orientation, connect it to the module and slide the module in while feeding the cable. The modeled 12.35 × 6.5 mm overmold fits; actual plugs and bend radii vary. If yours does not fit, charge with the module removed. Unplug before pulling out a module with a restrained cable.</li>
+<li>The rear top hood and dock support meet at a 45° slope with 0.25 mm modeled normal clearance. Check printed fit and horizontal removal before loading the magnets; do not force the pieces together.</li>
+<li>For independent tenting, print <code>case/stand_magnet_template_left.svg</code> and <code>case/stand_magnet_template_right.svg</code> at 100%. Check the 54 mm boundary with a ruler. Glue three mates to each stand's <strong>tilting phone platform</strong>, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.</li>
+<li>Measure the platform first: it needs a clear flat 54 mm contact patch. Use <strong>2.0 mm bump-ons</strong>; the modeled platform clearance is 0.6 mm. Actual platform fit, adhesive strength and retention remain unverified. Start flat, support the half while increasing tilt, then test typing forces before relying on it. The COG model is an estimate, not a holding-force certification.</li>
+</ul>
 <h3>Resetting a closed half</h3>
 <p>Press straight down into the cone above the thumbs with a fingertip (the pad, not the nail, is enough: the cone is 4.2 mm across at the top and the plunger 2.0 mm wide).</p>
 <ul>

@@ -25,7 +25,12 @@ from layout import cap, layout_left
 # --- parts (sizes include tolerance) ----------------------------------------------
 XIAO_W, XIAO_L = 20.8, 21.3        # 17.5 x 21 module; width includes the iron-friendly pads
 XIAO_DEPTH = 1.0 + 3.3             # Xiao PCB + USB-C shell, hanging under our PCB
-BATT_W, BATT_L, BATT_T = 20.5, 26.0, 7.5   # 752025, leads on a 20 mm side
+BATT_W, BATT_L, BATT_T = 20.5, 41.0, 7.5   # 500 mAh, nominal 7 x 20 x 40 mm, with size allowance
+BATTERY_SPOT = ((3.8, -25.0), 0)          # lower-left corner and orientation, under the inner columns
+PCB_EXTRA_HEIGHT = 1.8                    # larger bay: raise the PCB, not its tent or outline
+MIN_CASE_TENT = 6.560791989027047          # preserve the existing half's angle and board placement
+JST_SPOT = ((30.0, 16.0), 180)             # preserve the routed board's connector and wire opening
+MOUNT_HOLES = [(34.0, 44.5), (-39.0, -5.5), (-33.5, 23.0), (27.0, 23.5)]
 SOCKET_DEPTH = 1.85                # Kailh hot-swap socket
 JST_W, JST_D, JST_H = 9.2, 10.9, 4.9  # JST PH S2B-PH-SM4-TB, pads included
 PLUG_L = 9.0                       # room in front of the JST opening for the plug and its wires
@@ -55,16 +60,21 @@ SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d":
 # Top plate (Choc v1: 13.8 mm body through the plate, flange 2.2 mm over the PCB, clips take
 # plates up to 1.3 mm). Printed holes come out small: the cutout gets CUT_TOL per side.
 PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
-# Magnets: 8x3 N52 discs everywhere, floor (back to back) and seam (unibody): one part to buy,
-# and of the common sizes the strongest join that fits the seam (6 x 8x3 beats 4 x 10x3 and
-# 8 x 5x2; a second row doesn't fit under the PCB). Pockets get 0.1 mm of clearance.
-MAG = (8.2, 3.1)
+# Common 8 x 1.5 mm N52 discs: floor (stacking / stand) and seam (unibody / dock).
+# Relocating the 500 mAh battery frees the full seam for six evenly spaced magnets.
+# Pockets get 0.1 mm of axial clearance and 0.2 mm diametral clearance.
+MAGNET_SIZE = (8.0, 1.5)           # one N52 disc size for every connection in the system
+MAG = (MAGNET_SIZE[0] + 0.2, MAGNET_SIZE[1] + 0.1)
 MAG_FLOOR = MAG_SIDE = MAG
 # magnets.py finds both sets by measuring the solid base, 0.5 mm of plastic round every pocket:
-# the floor's four as far apart as they can be, then the most the seam holds in one row (2.5 mm
-# of plastic between pockets). Pinned here; rerun it if the layout changes.
-MAG_FLOOR_SPOTS = [[-36.54, 14.45], [-10.88, -22.05], [2.21, 48.95], [31.4, 15.45]]  # 44.3 mm apart
-MAG_SIDE_SPOTS = (6.3, [10.1, 20.92, 31.74, 42.57, 53.39, 64.21])   # (centre height, y of each)
+# Seven floor magnets include the three-contact stand ring; seam pockets remain separated.
+# Pinned here; rerun it if the layout changes.
+MAG_FLOOR_SPOTS = [[-36.54, 14.45], [-10.88, -22.05], [2.21, 48.95], [31.4, 15.45]]
+STAND_CENTRE = (4.6988, 13.9764)            # estimated assembled centre of gravity, desk plan
+STAND_RING_RADIUS = 22.0                   # three equally spaced magnets on a 44 mm circle
+STAND_RING_PHASE = 64.0                    # rotate clear of screw pilots and the antenna
+STAND_CONTACT_DIAMETER = 54.0              # required clear flat patch; measure the real platform
+MAG_SIDE_SPOTS = (6.3, [-24.8 + 17.8 * i for i in range(6)])  # even pitch; rear skin clears full-depth USB cut
 MAG_SEAM_STRIP = MAG[1] + 0.5 + 0.5    # floor magnets keep this far from the seam face, for the row
 GIRDLE = 2.0                       # floor flare past the rim: the lean of the gem facets
 CHAMFER = 1.5                      # 45-degree cut under the girdle; the foot on the desk is inside it
@@ -350,8 +360,8 @@ def main():
 
     def tent_for(items):
         """Smallest rise per mm giving each (shape, height) its room under the PCB."""
-        z_out = SOCKET_DEPTH + AIR
-        slope = 0.0
+        z_out = SOCKET_DEPTH + AIR + PCB_EXTRA_HEIGHT
+        slope = math.tan(math.radians(MIN_CASE_TENT))
         for shape, h in items:
             run = shape.bounds[0] - x_out
             if h + AIR <= z_out:
@@ -385,6 +395,11 @@ def main():
                 if best is None or key < best[0]:
                     best = (key, batt)
     batt = best[1]
+    if BATTERY_SPOT is not None:
+        (bx, by), angle = BATTERY_SPOT
+        w, l = (BATT_W, BATT_L) if angle == 0 else (BATT_L, BATT_W)
+        batt = box(bx, by, bx + w, by + l)
+        assert inside.contains(batt) and not batt.intersects(keep_off), "battery placement does not fit"
 
     # --- JST connector: the spot needing the least tent, nearest the battery, with room in
     # front of its opening for the plug and its wires (PLUG_L). Any of four orientations.
@@ -407,6 +422,12 @@ def main():
                 if best is None or key < best[0]:
                     best = (key, j, plug, (gx, gy), jr)
     _, jst, plug, jst_c, jst_r = best
+    if JST_SPOT is not None:
+        jst_c, jst_r = JST_SPOT
+        jst = place(box(-JST_W / 2, -4.6, JST_W / 2, 6.25), jst_c, jst_r)
+        plug = place(box(-JST_W / 2, 6.25, JST_W / 2, 6.25 + PLUG_L), jst_c, jst_r)
+        assert room.contains(jst) and room.contains(plug) and not jst.intersects(blocked) \
+            and not plug.intersects(plug_blocked), "pinned JST connector does not fit"
     # the battery bay reaches the plug: leads run from the battery's end into the plug's zone
     bay = unary_union([batt, plug]).convex_hull
 
@@ -470,8 +491,10 @@ def main():
             .difference(pockets.buffer(SCREW["pilot_d"] / 2 + 1.5)))
     grid = [(gx / 2, gy / 2) for gx in range(-120, 100) for gy in range(-80, 160)
             if room.contains(Point(gx / 2, gy / 2))]
-    holes = []
-    if grid:
+    holes = list(MOUNT_HOLES) if MOUNT_HOLES is not None else []
+    if MOUNT_HOLES is not None:
+        assert all(room.contains(Point(h)) for h in holes), "pinned mounting hole does not fit"
+    elif grid:
         cx0, cy0 = plate_outline.centroid.x, plate_outline.centroid.y
         holes.append(max(grid, key=lambda p: (p[0] - cx0) ** 2 + (p[1] - cy0) ** 2))
         while len(holes) < 4:
@@ -537,7 +560,10 @@ def main():
         room = room.difference(Point(h).buffer(MAG_FLOOR[0] / 2 + 3.5))
     room = room.intersection(box(-1e3, -1e3, wall_in + WALL - MAG_SEAM_STRIP - MAG_FLOOR[0] / 2 - 0.5, 1e3))
     floor_room = room                    # magnets.py adds the depth: where the base is deep enough
-    floor_spots = MAG_FLOOR_SPOTS or []
+    stand_spots = [list(from_floor((STAND_CENTRE[0] + STAND_RING_RADIUS * math.cos(math.radians(a)),
+                                   STAND_CENTRE[1] + STAND_RING_RADIUS * math.sin(math.radians(a)))))
+                   for a in (STAND_RING_PHASE + 120 * i for i in range(3))]
+    floor_spots = list(MAG_FLOOR_SPOTS or []) + stand_spots
     # Inner wall: the pinned row (MAG_SIDE_SPOTS), checked against the base by check_fit.py.
     wall_pts = [c for c in case.exterior.coords if abs(c[0] - (wall_in + WALL)) < 1e-6]
     wy0, wy1 = min(c[1] for c in wall_pts), max(c[1] for c in wall_pts)
@@ -568,6 +594,12 @@ def main():
         "magnet_floor_room": [list(g.exterior.coords) for g in getattr(floor_room, "geoms", [floor_room])], "magnet_floor_size": MAG_FLOOR,
         "magnets_side_y": side_spots, "magnet_side_z": side_z, "magnet_side_size": MAG_SIDE,
         "battery_size": [BATT_W, BATT_L, BATT_T],
+        "battery_nominal_size": [20.0, 40.0, 7.0], "battery_capacity_mah": 500,
+        "magnet_nominal_size": MAGNET_SIZE,
+        "stand_mount": {"magnets": stand_spots, "contact_diameter": STAND_CONTACT_DIAMETER,
+                        "centre": list(from_floor(STAND_CENTRE)), "ring_radius": STAND_RING_RADIUS,
+                        "phase_degrees": STAND_RING_PHASE, "centre_is_estimated": True,
+                        "platform_fit_confirmed": False},
         "girdle": GIRDLE, "chamfer": CHAMFER,
         # pad slots under the floor, as their two spots (PCB plan, like everything here: case.py
         # maps them to the floor): the left half's pad in the first, the right half's (mirrored

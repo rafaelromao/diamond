@@ -1,0 +1,78 @@
+/*
+ * Slim Diamond Trackpad: a 40 mm Cirque (TM040040, SPI), two Choc keys, hand-wired to a nice!nano.
+ * Wiring from trackpad/trackpad.py: pad SCK P0.20 (D3), SO/MISO P0.22 (D4), SI/MOSI P0.24 (D5),
+ * SS P1.00 (D6), DR P0.11 (D7); key 1 P1.04 (D8), key 2 P1.06 (D9). SPI2: the nice!nano board
+ * doesn't claim it.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors.dtsi>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+    };
+
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-direct";
+        wakeup-source;
+        input-gpios
+            = <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio1 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ;
+    };
+
+    glidepoint_listener: glidepoint_listener {
+        compatible = "zmk,input-listener";
+        device = <&glidepoint>;
+
+        /* layer 1 (the right key held): the pad scrolls */
+        scroller {
+            layers = <1>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 8>;
+        };
+    };
+};
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 22)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 24)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 22)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 24)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi2 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+
+    glidepoint: glidepoint@0 {
+        compatible = "cirque,pinnacle";
+        reg = <0>;
+        spi-max-frequency = <1000000>;
+        status = "okay";
+        dr-gpios = <&gpio0 11 (GPIO_ACTIVE_HIGH)>;
+        sensitivity = "4x";
+        sleep;
+        no-secondary-tap;
+        /* The pad lies flat, its cable towards the keys: if the pointer runs the wrong way,
+         * toggle x-invert / y-invert, or add rotate-90. */
+    };
+};
