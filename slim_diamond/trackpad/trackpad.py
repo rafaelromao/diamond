@@ -3,8 +3,8 @@
 It is the trackball's module with a different lid. The tray, the main board (keys, sockets, power
 switch), the nice!nano, the battery and a sensor board are all the same, in the same places: the
 power switch and USB-C at the back, the reset button pressed from below. Only the lid differs: it
-carries the pad, on a ledge. The sensor board carries nothing but its reset button; the pad's cable
-adapter is taped on top of it.
+carries the pad, on a ledge. The sensor board carries nothing but its reset button. No ribbon cable:
+seven wires go straight from the pad's labelled test pads to the nice!nano.
 
 Writes trackpad/design.json (placement, wiring), case/lid.stl, and prints the fit check.
 """
@@ -26,8 +26,9 @@ from trackball import trackball as B
 
 H = M.PCB_TOP + B.CHOC["below_plate"]   # the Choc trackball's height
 TOP_T = 1.2                    # the top: a Choc plate (the switches clip into 1.2 to 1.3 mm)
-PAD = dict(d=40.0, t=1.2, back=2.0, clr=0.25, rim=1.0, ledge=1.8, gap=12.0)   # TM040040: check t, back
-ADAPTER = (20.0, 14.0, 1.6, 2.2)   # 12-pin 0.5 mm FFC to 2.54 mm adapter: w, l, PCB, its connector
+# TM040040 spec: 0.99 mm PCB + overlay, 5.15 +/- 0.2 mm with components, none in the outer 2 mm ring.
+# The seat is 1.2 deep: the difference is the adhesive dots. The ledge sits under that free ring.
+PAD = dict(d=40.0, t=1.2, back=4.4, clr=0.3, rim=1.0, ledge=1.8, gap=12.0)
 NANO = B.NANO
 box3 = B.box3
 usb_z = B.usb_z
@@ -41,7 +42,6 @@ def place():
     # the pad: as far forward as fits with PAD['rim'] of top round it
     L["pad"] = (0.0, next(y for y in np.arange(top.bounds[1] + r, -30, 0.1)
                           if top.buffer(-PAD["rim"]).contains(Point(0, y).buffer(r))))
-    L["adapter"] = (2.5, L["ball"][1] - 2.0)    # on the sensor board, clear of its screw heads
     L["reset"] = B.sensor_reset(L)
     return L
 
@@ -55,10 +55,6 @@ def parts(L, main_plan, sensor_plan):
     out.append(("pad", Manifold.cylinder(PAD["t"], PAD["d"] / 2, circular_segments=96).translate((px, py, pz))))
     out.append(("pad's back parts", Manifold.cylinder(PAD["back"], PAD["d"] / 2 - PAD["ledge"] - 0.3,
                                                       circular_segments=96).translate((px, py, pz - PAD["back"]))))
-    ax, ay = L["adapter"]
-    az = PLATE_TOP + B.SENSOR_BELOW + B.PCB_T
-    out.append(("FFC adapter", box3(ax - ADAPTER[0] / 2, ay - ADAPTER[1] / 2, az, ax + ADAPTER[0] / 2, ay + ADAPTER[1] / 2,
-                                    az + ADAPTER[2] + ADAPTER[3])))
     return out
 
 
@@ -84,12 +80,11 @@ def lid(L):
 
 
 def wiring():
-    """nice!nano pins (Pro Micro names, nRF52840 port.pin) for each wire. The keys, reset and power
-    go through the main board's labelled pads, as on the trackball."""
+    """nice!nano pins (Pro Micro names, nRF52840 port.pin) for each wire, from the pad's labelled test
+    pads. The keys, reset and power go through the main board's pads, as on the trackball."""
     return {
-        "pad SCK (FFC 1)": ("D3", "P0.20"), "pad SO (FFC 2)": ("D4", "P0.22"),
-        "pad SS (FFC 3)": ("D6", "P1.00"), "pad DR (FFC 4)": ("D7", "P0.11"),
-        "pad SI (FFC 5)": ("D5", "P0.24"), "pad GND (FFC 11)": ("GND", ""), "pad VDD (FFC 12)": ("VCC", "3.3 V"),
+        "pad SCK": ("D3", "P0.20"), "pad SO": ("D4", "P0.22"), "pad SS": ("D6", "P1.00"), "pad DR": ("D7", "P0.11"),
+        "pad SI": ("D5", "P0.24"), "pad GND": ("GND", ""), "pad VDD": ("VCC", "3.3 V"),
         "main board K1": ("D8", "P1.04"), "main board K2": ("D9", "P1.06"),
         "main board GND": ("GND", ""), "main board VBAT": ("B+", ""), "main board RST": ("RST", ""),
     }

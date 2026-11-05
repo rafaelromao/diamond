@@ -173,8 +173,8 @@ def _module(kind, switch="mx"):
     import module_shell as M
     mod, L, lid, tray, ps = _built(kind, switch)
     out = [(lid, vrml.CASE), (tray, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL),
-           (M.lid_fasteners(), vrml.METAL), (_sensor_screws(L), vrml.METAL),
-           (M.floor_magnet(), vrml.METAL), (M.pull_ribbon(), (0.18, .2, .22))]
+           (M.lid_fasteners(_height(mod, kind, switch)), vrml.METAL), (_sensor_screws(L), vrml.METAL),
+           (M.floor_magnet(), vrml.METAL)]
     for name, m in ps:
         m = _shown(mod, kind, name, m, L)
         if name == "nice!nano":
@@ -202,7 +202,7 @@ def module_assembly(kind):
     mod, L, lid, tray, ps = _built(kind)
     up = (0, 0, 30)
     out = [(lid.translate(up), vrml.CASE), (tray, vrml.CASE), (M.bumpons(), vrml.PAD), (_module_magnets(M), vrml.METAL),
-           (M.floor_magnet(), vrml.METAL), (M.lid_fasteners(42), vrml.METAL), (_sensor_screws(L), vrml.METAL)]
+           (M.floor_magnet(), vrml.METAL), (M.lid_fasteners(mod.H, 42), vrml.METAL), (_sensor_screws(L), vrml.METAL)]
     for name, solid in ps:
         solid = _shown(mod, kind, name, solid, L)
         out.append((solid.translate(up) if _on_lid(name) else solid, _colour(name)))
@@ -213,15 +213,15 @@ def module_instruction_scenes(kind, switch="mx"):
     """Engineering views in contrast colours: the real printed parts, nothing sectioned."""
     import module_shell as M
     mod, L, lid, tray, ps = _built(kind, switch)
-    structure = [(lid.translate((0, 0, 24)), LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(38), SCREW_RGB)]
-    seam = [(lid, LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(), SCREW_RGB)]
+    structure = [(lid.translate((0, 0, 24)), LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(_height(mod, kind, switch), 38), SCREW_RGB)]
+    seam = [(lid, LID_RGB), (tray, TRAY_RGB), (M.lid_fasteners(_height(mod, kind, switch)), SCREW_RGB)]
     populated = [(tray, TRAY_RGB), (M.floor_magnet(), vrml.METAL), (_sensor_screws(L), SCREW_RGB)]
     for label, solid in ps:
         if not _on_lid(label):
             populated.append((_shown(mod, kind, label, solid, L), _colour(label)))
     empty = [(tray, TRAY_RGB), (_sensor_screws(L), SCREW_RGB)]
     for label, solid in ps:
-        if label in ("battery", "nice!nano", "reset", "sensor board", "lens", "sensor's parts", "FFC adapter"):
+        if label in ("battery", "nice!nano", "reset", "sensor board", "lens", "sensor's parts"):
             empty.append((solid, _colour(label)))
     rx, ry = L["reset"] if kind == "trackpad" else mod.sensor_reset(L)
     reset = dict(ps)["reset"]

@@ -46,8 +46,8 @@ RING = 3.0                    # plastic round the pocket where the dock is flat
 ROOF = 1.6                    # plastic over the base's pocket
 MAG_ROOF = 1.0                # the roof under a magnet pocket over the base
 SPLAY = 12.0                  # each half's turn, tops towards the middle (degrees)
-GAP_BACK = 16.25              # preserve insert room with the thicker common-magnet walls
-CLR = 0.2                     # lateral gap between the dock and a half
+GAP_BACK = 20.1               # preserve insert room with the thicker common-magnet walls
+CLR = 0.3                     # lateral gap between the dock and a half
 MIN_T = 1.0                   # thinnest wing edge kept (the outer side runs out to the desk)
 UNDER = 0.6                   # plastic under a magnet pocket
 FOOT_LIFT = 0.5               # the dock's underside, cut this far off the desk: bump-on feet make it up
@@ -63,7 +63,7 @@ DOCK_SIDE_MAG = (D["magnet_side_size"][0], D["magnet_nominal_size"][1])
 DRAWER_WALL = 2.4             # continuous walls house the common magnets and their inner skins
 DRAWER_SKIN = 0.6             # dock wall between the drawer and the dock's own side magnets' pockets
 DRAWER_BACK = -14.0           # the drawer's back (y): both modules end there
-DRAWER_CLR = 0.2              # round a module in the drawer
+DRAWER_CLR = 0.35             # round a module in the drawer: both parts print once, no sanding
 DRAWER_FLOOR_MAG = (0.0, -48.3)   # on the centreline, midway between the stand magnets under the spine
 MODULE_FEET = 0.5             # a module's bump-ons stand this far below it
 BASE_MAG_SLOP = 0.3           # round the base's magnets, which are glued on by hand
@@ -596,7 +596,7 @@ def drawer_plan(p, back=None):
 
 
 REAR_HOOD_T = 1.2             # common top-only extension, flush with the halves at the rear
-REAR_HOOD_GAP = 0.25          # normal clearance between the two parallel 45-degree surfaces
+REAR_HOOD_GAP = 0.4           # normal clearance between the two parallel 45-degree surfaces
 USB_EXIT_W = 12.8             # full plug width, open all the way through the dock's underside
 USB_EXIT_PLUG_Z = 2.2         # low insertion height, measured above the drawer's standing plane
 
@@ -688,7 +688,7 @@ def build(tent, magnets):
         dock -= base_magnet_pocket(x, y)[0]
     if DRAWER:
         x, y = DRAWER_FLOOR_MAG
-        dock -= Manifold.cylinder(1.61, 4.1, circular_segments=48).translate(
+        dock -= Manifold.cylinder(1.61, 4.15, circular_segments=48).translate(
             (x, y, drawer_floor(p) - 1.6))
 
     # the underside cut FOOT_LIFT up, and a recess for each bump-on foot in the wings

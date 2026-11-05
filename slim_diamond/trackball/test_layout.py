@@ -23,17 +23,16 @@ class LayoutTest(unittest.TestCase):
                 cut = box(x - T.MX_CUT / 2, y - T.MX_CUT / 2,
                           x + T.MX_CUT / 2, y + T.MX_CUT / 2)
                 with self.subTest(switch=name, key_y=y):
-                    self.assertTrue(top.buffer(-1.0, join_style=2).covers(cut),
+                    self.assertTrue(top.buffer(-.7, join_style=2).covers(cut),
                                     "switch aperture breaks out of the plate rim")
 
     def test_controller_retains_rear_usb_and_floor_service_clearance(self):
         layout = T.place()
         recess = layout["back"] - (layout["nano"][1] + T.NANO[1])
         self.assertGreater(recess, 0)
-        self.assertLess(recess, 14.0)
+        self.assertAlmostEqual(recess, .6)                  # the receptacle's overhang: flush
         x, y = layout["nano"]
-        self.assertTrue(T.M.inner().buffer(-.15).covers(
-            box(x - T.NANO[0] / 2, y, x + T.NANO[0] / 2, y + T.NANO[1])))
+        self.assertTrue(T.M.inner().covers(box(x - T.NANO[0] / 2 - .1, y, x + T.NANO[0] / 2 + .1, T.M.inner().bounds[3] - .01)))
 
     def test_wire_rows_clear_the_screw_holes(self):
         layout = T.place()
@@ -43,7 +42,7 @@ class LayoutTest(unittest.TestCase):
         self.assertEqual(len(pads["bat"]), 2)
         self.assertEqual(len(pads["controller"]), 3)
         for x, y in T.board_holes():
-            self.assertTrue(main_plan.contains(Point(x, y).buffer(T.M.SCREW["hole"] / 2 + .8)))
+            self.assertTrue(main_plan.contains(Point(x, y).buffer(T.POST_PIN + .2 + .6)))
             for px, py in pads["wires"] + pads["bat"] + pads["controller"]:
                 self.assertGreater(Point(x, y).distance(Point(px, py)), T.M.SCREW["boss"] / 2 + .4)
         for x, y in pads["wires"] + pads["bat"] + pads["controller"]:

@@ -34,7 +34,7 @@ and five are glued on the aluminium Ugreen base, paired with opposite poles faci
 tilting phone platform, using the mirrored 1:1 SVG templates in `case/`. The platform needs a
 **54 mm clear flat contact patch**.
 
-**Drawer placeholder:** `case/insert.stl` (64.4 cm³, solid), for when neither module is in the drawer:
+**Drawer placeholder:** `case/insert.stl` (71.5 cm³, solid), for when neither module is in the drawer:
 **6 common discs**, three a side.
 
 **Magnet total:** both halves 26 + dock and base 35 + stands 6 + placeholder 6 + both pointing modules 14
@@ -49,14 +49,14 @@ buy for the halves.
 | Printed tray, `case/module_tray.stl` | 1 | | The same print for every module |
 | Printed lid | 1 | | `trackball/case/lid.stl` (MX), `trackball/case/lid_choc.stl` (Choc v1) or `trackpad/case/lid.stl` |
 | PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm. One panel: main board and sensor board. The same board for trackball and trackpad |
-| M3 × 8 flat-head screws | 6 | same as item 11 | Four through the lid, two through the sensor board |
+| M3 × 8 flat-head screws | 6 | same as item 11 | Four through the lid, two intended for the sensor board; check sensor screw depth before installing the battery |
 | Disc magnets 8 × 1.5 mm, N52 | 7 | same as item 10 | Three a side, one in the floor |
 | Silicone bump-ons 8 × 2 mm | 3 | same as item 12 | |
 | Slide switch MSK-12C02 | 1 | same as item 8 | On the main board, lever out of the back wall |
 | Reset button TS-1187A | 1 | same as item 9 | On the sensor board, facing down |
-| nice!nano v2 | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, wired to its labelled pads |
+| nice!nano v2 or clone | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, USB-C flush with the back, wired to labelled pads |
 | LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell |
-| 30 AWG stranded wire | about 80 mm per wire | `30 AWG silicone wire` | |
+| 30 AWG stranded wire | 80 to 100 mm per wire | `30 AWG silicone wire` | |
 
 | Trackball | Qty | Search for | Notes |
 |---|---|---|---|
@@ -68,12 +68,11 @@ buy for the halves.
 
 | Trackpad | Qty | Search for | Notes |
 |---|---|---|---|
-| Cirque TM040040, SPI | 1 | `TM040040` (Mouser) | The SPI version (the label's interface digit 4, R1 fitted): no change needed |
-| 12-pin 0.5 mm FFC cable and FFC-to-2.54 mm adapter | 1 + 1 | `12P 0.5mm FFC adapter board` | The adapter tapes onto the sensor board; the case allows 20 × 14 mm |
+| Cirque TM040040-2024-302 | 1 | `TM040040-2024-302` (Mouser) | SPI, flat overlay. Direct test-pad wiring and clearance remain to be verified on the actual part; no ribbon cable or adapter |
 | Choc v1 switches, sockets and keycaps | 2 + 2 + 2 | same as items 3, 4, 5 | |
 
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
-or epoxy for the magnets, removable adhesive dots for the trackpad, and an optional 8 mm woven
-ribbon, at most 0.25 mm thick, as a pull tab (one 32 mm piece per drawer insert).
+or epoxy for the magnets, removable adhesive dots for the trackpad, and thin card for the sensor's
+shims.
 
 Soldering, assembly and printing: see [BUILD.md](BUILD.md).

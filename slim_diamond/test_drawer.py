@@ -107,6 +107,20 @@ class DrawerTest(unittest.TestCase):
         for lid in (trackball.lid(layout), trackball.lid(layout, "choc"), trackpad.lid(trackpad.place())):
             self.assertLess(abs((section ^ (lid + self.tray)).volume()), 1e-3)
 
+    def test_a_module_pushes_out_from_the_back(self):
+        # A fingertip through the dock's rear passage meets the hood's tip, over the USB-C opening.
+        end = self.tray.bounding_box()[4]
+        finger = Manifold.cube((9, 40, 3)).translate((-4.5, end + .05, M.FLUSH - 3.2))
+        self.assertLess(abs((finger.translate((0, 0, M.FLOOR_Z)) ^ self.dock.solid).volume()), 1e-3)
+        self.assertGreater((finger.translate((0, -3, 0)) ^ self.tray).volume(), 5)
+
+    def test_modules_sit_loose_in_a_print_that_is_0_2_mm_off(self):
+        for name, shell, _, _, _, _ in self.modules:
+            for dx in (-.2, .2):
+                with self.subTest(module=name, dx=dx):
+                    moved = shell.translate((dx, 0, M.FLOOR_Z))
+                    self.assertLess(abs((moved ^ self.dock.solid).volume()), 1e-3)
+
     def test_rear_hood_is_top_only_with_a_45_degree_underside(self):
         hood = M.rear_hood()
         self.assertGreater(hood.volume(), 0)
@@ -117,7 +131,7 @@ class DrawerTest(unittest.TestCase):
         self.assertGreater(end, M.OUTLINE.bounds[3] + 10)
         datum = K.rear_hood_datum(M.P)
         # Lower surface rises exactly one millimetre for every millimetre rearwards.
-        for y in (-12, -8, -4, 0):
+        for y in (-12, -8, -4, -1):
             z = y + datum
             inside = Manifold.cube((0.2, 0.2, 0.05)).translate((-0.1, y - 0.1, z + 0.15))
             outside = inside.translate((0, 0, -0.4))

@@ -162,6 +162,9 @@ def mount_hole():
     L = F.header("MountingHole_M3", "M3 screw hole", attr="exclude_from_pos_files exclude_from_bom")
     L.append(F.npth(0, 0, 3.4))
     F.write("MountingHole_M3", L)
+    L = F.header("PostHole", "Hole for a printed post", attr="exclude_from_pos_files exclude_from_bom")
+    L.append(F.npth(0, 0, 4.8))
+    F.write("PostHole", L)
 
 
 def bite():

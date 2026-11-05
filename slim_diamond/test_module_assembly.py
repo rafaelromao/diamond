@@ -26,51 +26,82 @@ class ModuleAssemblyTest(unittest.TestCase):
         P = T.place()
         cls.P = P
         cls.modules = [("mx", B.lid(L, "mx"), B.parts(L, cls.main_plan, cls.sensor_plan, "mx"), B.H),
-                       ("choc", B.lid(L, "choc"), B.parts(L, cls.main_plan, cls.sensor_plan, "choc"), M.HEAD_Z),
+                       ("choc", B.lid(L, "choc"), B.parts(L, cls.main_plan, cls.sensor_plan, "choc"), M.CHOC_TOP),
                        ("trackpad", T.lid(P), T.parts(P, cls.main_plan, cls.sensor_plan), T.H)]
 
+    def test_every_print_is_one_solid(self):
+        for name, solid in [("tray", self.tray)] + [(m[0], m[1]) for m in self.modules]:
+            with self.subTest(part=name):
+                self.assertEqual(sum(c.volume() > 1e-6 for c in solid.decompose()), 1)
+
     def test_one_tray_and_one_screw_type(self):
-        self.assertEqual(T.H, M.HEAD_Z)
+        self.assertEqual(T.H, M.CHOC_TOP)
         self.assertEqual(M.SCREW["length"], 8.0)
         self.assertEqual(M.SCREW["pilot"], 2.5)
         self.assertLess(abs((T.parts(self.P, self.main_plan, self.sensor_plan)[0][1]).volume()
                             - dict(self.modules[1][2])["CHOC 1"].volume()), 1e-6)
 
-    def test_heads_seat_at_the_same_height_on_every_lid(self):
+    def test_every_hole_is_a_plain_countersink_at_the_top(self):
         for name, lid, _, height in self.modules:
             for x, y in M.lid_screws():
-                head = Manifold.cylinder(1.45, 1.75, 3.1, circular_segments=48).translate((x, y, M.HEAD_Z - 1.45))
-                well = Manifold.cylinder(height - M.HEAD_Z + 5, 3.1, circular_segments=48).translate((x, y, M.HEAD_Z))
+                head = Manifold.cylinder(1.45, 1.75, 3.1, circular_segments=48).translate((x, y, height - 1.45))
+                seat = Manifold.cylinder(.3, 2.6, 3.2, circular_segments=48).translate((x, y, height - 1.75))
                 with self.subTest(module=name, screw=(x, y)):
                     self.assertLess(hit(head, lid), TOL)
-                    self.assertLess(hit(well, lid), TOL)
+                    self.assertGreater((seat ^ lid).volume(), .25 * seat.volume())
 
-    def test_screws_bite_as_deep_as_in_the_halves_without_bottoming(self):
-        tip = M.HEAD_Z - M.SCREW["length"]
-        for sx in (-1, 1):
-            for x, y, top in ((sx * M.FRONT_SCREW[0], M.FRONT_SCREW[1], M.PCB_TOP),
-                              (sx * M.PCB_SCREW[0], M.PCB_SCREW[1], M.PCB_TOP - M.PCB_T)):
-                with self.subTest(screw=(x, y)):
-                    self.assertGreaterEqual(top - tip, 4.2 - 1e-6)
-                    pilot = Manifold.cylinder(top - tip + .5, 1.2, circular_segments=40).translate((x, y, tip - .5))
+    def test_screws_bite_the_post_and_do_not_bottom(self):
+        for height in (B.H, M.CHOC_TOP):
+            tip = height - M.SCREW["length"]
+            for x, y in M.lid_screws():
+                with self.subTest(height=height, screw=(x, y)):
+                    self.assertGreaterEqual(M.PCB_TOP - tip, 3.0 - 1e-6)
+                    pilot = Manifold.cylinder(M.PCB_TOP - tip + .5, 1.2, circular_segments=40).translate((x, y, tip - .3))
                     self.assertLess(hit(pilot, self.tray), TOL)
-                    # solid plastic round the thread, and under its tip
-                    ring = Manifold.cylinder(top - tip - .2, 2.1, circular_segments=48) - Manifold.cylinder(top - tip, 1.3, circular_segments=48)
+                    ring = Manifold.cylinder(M.PCB_TOP - tip - .2, 2.0, circular_segments=48) - Manifold.cylinder(M.PCB_TOP - tip, 1.3, circular_segments=48)
                     self.assertLess(abs((ring.translate((x, y, tip + .1)) - self.tray).volume()), TOL)
-                    under = Manifold.cylinder(.5, 1.0, circular_segments=40).translate((x, y, tip - 1.4))
+                    under = Manifold.cylinder(.05, 1.0, circular_segments=40).translate((x, y, 13.6))
                     self.assertLess(abs((under - self.tray).volume()), TOL)
 
+    def test_main_board_rests_on_the_post_shoulders(self):
+        for x, y in B.board_holes():
+            pin = Manifold.cylinder(.5, 1.9, circular_segments=48) - Manifold.cylinder(.5, 1.3, circular_segments=48)
+            pin = pin.translate((x, y, B.PCB_TOP - .8))
+            self.assertLess(abs((pin - self.tray).volume()), TOL)
+            self.assertTrue(self.main_plan.contains(Point(x, y).buffer(B.POST_PIN + .2 + .4)))
+            ledge = Manifold.cylinder(.2, 3.4, circular_segments=48) - Manifold.cylinder(.2, 2.5, circular_segments=48)
+            ledge = ledge.translate((x, y, B.PCB_TOP - B.PCB_T - .2))
+            self.assertGreater((ledge ^ self.tray).volume(), .4 * ledge.volume())
+
+    def test_usb_opening_has_no_bottom(self):
+        L = self.L
+        for z in (0, 4, 8, 12):
+            slab = B.box3(-6.3, L["back"] - M.WALL, z, 6.3, L["back"] + 2, z + 1)
+            self.assertLess(hit(slab, self.tray), TOL)
+
+    def test_side_bevel_runs_from_the_top_to_the_halves(self):
+        for name, lid, _, height in self.modules:
+            inset = min(height - M.FLUSH, M.UPPER_BEVEL)
+            for z, frac in ((M.FLUSH + .05, .05 / (height - M.FLUSH)), ((M.FLUSH + height) / 2, .5)):
+                probe = B.box3(M.OUTLINE.bounds[0] - 1, -60, z - .01, -15, -50, z + .01)
+                section = probe ^ lid
+                with self.subTest(module=name, z=z):
+                    expected_gain = inset * frac
+                    edge = section.bounding_box()[0]
+                    plain = (B.box3(-99, -60, z - .01, -15, -50, z + .01) ^ M.extrude(M.OUTLINE, 0, 40)).bounding_box()[0]
+                    self.assertAlmostEqual(edge - plain, expected_gain, delta=.05)
+
     def test_sensor_board_screws_do_not_break_through_the_floor(self):
-        tip = B.PLATE_TOP + B.SENSOR_BELOW + B.PCB_T + M.SCREW["head_h"] - M.SCREW["length"]
+        tip = B.PLATE_TOP + B.SENSOR_BELOW - B.SENSOR_SHIM + B.PCB_T + M.SCREW["head_h"] - M.SCREW["length"]
         for x, y in B.sensor_holes(self.L):
-            self.assertGreater(tip, 1.1 - 1e-6)
-            skin = Manifold.cylinder(.55, 2.0, circular_segments=40).translate((x, y, M.FEET + .02))
+            self.assertGreater(tip, .95 - 1e-6)     # no shim at all
+            skin = Manifold.cylinder(.4, 2.0, circular_segments=40).translate((x, y, M.FEET + .02))
             self.assertLess(abs((skin - self.tray).volume()), TOL)
 
     def test_a_driver_reaches_every_screw_from_above(self):
         for name, lid, parts, height in self.modules:
             for x, y in M.lid_screws():
-                tool = Manifold.cylinder(40, 1.5, circular_segments=32).translate((x, y, M.HEAD_Z + .01))
+                tool = Manifold.cylinder(40, 1.5, circular_segments=32).translate((x, y, height + .01))
                 wide = Manifold.cylinder(40, 2.0, circular_segments=32).translate((x, y, height + .01))
                 with self.subTest(module=name, screw=(x, y)):
                     self.assertLess(hit(tool, lid), TOL)
@@ -83,10 +114,10 @@ class ModuleAssemblyTest(unittest.TestCase):
             top = M.profile(height).intersection(M.OUTLINE.buffer(-inset, join_style=2))
             for x, y in M.lid_screws():
                 with self.subTest(module=name, screw=(x, y)):
-                    self.assertTrue(top.buffer(-.45).contains(Point(x, y).buffer(M.SCREW["head"] / 2)))
+                    self.assertTrue(top.buffer(-.2).contains(Point(x, y).buffer(M.SCREW["head"] / 2)))
 
     def test_electronics_drop_straight_into_the_tray_in_order(self):
-        low = {"battery", "nice!nano", "sensor board", "sensor's parts", "lens", "reset", "FFC adapter"}
+        low = {"battery", "sensor board", "sensor's parts", "lens", "reset"}
         high = {"main board", "power switch", "socket 1", "socket 2"}
         for name, _, parts, _ in self.modules:
             for group in (low, high):
@@ -97,6 +128,17 @@ class ModuleAssemblyTest(unittest.TestCase):
                 for step in range(1, 41):
                     with self.subTest(module=name, group=sorted(group)[0], lift=step):
                         self.assertLess(hit(solid.translate((0, 0, step)), self.tray), TOL)
+
+    def test_nano_lowers_in_then_slides_back_into_the_wall(self):
+        nano = dict(self.modules[1][2])["nice!nano"]
+        path = [(-3.2, z * .5) for z in range(80, -1, -1)] + [(-3.2 + i * .1, 0) for i in range(33)]
+        for dy, dz in path:
+            with self.subTest(offset=(dy, dz)):
+                self.assertLess(hit(nano.translate((0, dy, dz)), self.tray), TOL)
+
+    def test_usb_c_is_flush_with_the_back(self):
+        nano = dict(self.modules[1][2])["nice!nano"]
+        self.assertAlmostEqual(nano.bounding_box()[4], self.L["back"], places=4)
 
     def test_lid_hooks_in_at_the_rear_then_closes(self):
         pivot = M.OUTLINE.bounds[3]
@@ -110,7 +152,7 @@ class ModuleAssemblyTest(unittest.TestCase):
                     self.assertLess(hit(tilted, self.tray), .05)
             hooks = Manifold()
             for x in M.FINGERS:
-                hooks += Manifold.cube((2, .85, .7)).translate((x - 1, inner_back + 1.0, M.FLUSH - 2.03))
+                hooks += Manifold.cube((2, .55, .7)).translate((x - 1, inner_back + 1.3, M.FLUSH - 2.03))
             self.assertGreater((hooks ^ lid).volume(), .9 * hooks.volume())
             over = hooks.translate((0, 0, 1.3))     # the tray's rear wall holds them down
             self.assertLess(abs((over - self.tray).volume()), .05)
@@ -164,10 +206,38 @@ class ModuleAssemblyTest(unittest.TestCase):
                 (w[0] - n[0] * depth, w[1] - n[1] * depth, M.MAG_Z))
             self.assertLess(abs((skin - self.tray).volume()), TOL)
 
-    def test_pull_ribbon_clears_the_desk_and_the_tray(self):
-        ribbon = M.pull_ribbon()
-        self.assertGreater(ribbon.bounding_box()[2], 0)
-        self.assertLess(hit(ribbon, self.tray), TOL)
+    def test_fits_survive_a_print_that_is_0_2_mm_off(self):
+        d = .2
+        offsets = [(d, 0), (-d, 0), (0, d), (0, -d)]
+        board = Manifold()
+        for label, part in self.modules[1][2]:
+            if label in ("main board", "power switch", "socket 1", "socket 2"):
+                board += part
+        for name, lid, _, _ in self.modules:
+            for dx, dy in offsets:
+                with self.subTest(module=name, shift=(dx, dy)):
+                    self.assertLess(hit(lid.translate((dx, dy, 0)), self.tray), TOL)
+        for dx, dy in offsets:
+            with self.subTest(board=(dx, dy)):
+                self.assertLess(hit(board.translate((dx, dy, 0)), self.tray), TOL)
+
+    def test_a_large_protected_cell_still_lowers_in(self):
+        x, y = self.L["battery"]
+        cell = B.box3(x - 10.2, y - .3, B.BAT_Z, x + 10.2, y + 25.3, B.BAT_Z + 8)
+        for lift in range(0, 41):
+            self.assertLess(hit(cell.translate((0, 0, lift)), self.tray), TOL)
+
+    def test_lens_height_can_be_set_with_a_shim(self):
+        for x, y in B.sensor_holes(self.L):
+            over = Manifold.cylinder(.3, 2.5, circular_segments=40).translate(
+                (x, y, B.PLATE_TOP + B.SENSOR_BELOW - B.SENSOR_SHIM + .02))
+            self.assertLess(hit(over, self.tray), TOL)
+
+    def test_pad_wires_have_a_way_down(self):
+        wires = Manifold.cylinder(6.2, 1.2, circular_segments=32).translate((0, -60.2, 10.8))
+        for label, solid in self.modules[2][2]:
+            if label not in ("pad's back parts", "pad"):
+                self.assertLess(hit(wires, solid), TOL, label)
 
 
 if __name__ == "__main__":

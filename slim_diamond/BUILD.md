@@ -71,14 +71,14 @@ Leave the jumpers on the other face open: they're on the parts face, under where
 1. Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.
 2. **Tack two opposite corners:** put solder on the iron, touch it to the board pad and the castellation together, and let it flow. Check the module is flat and every castellation sits over its pad. Reheat a corner to adjust it.
 3. Solder the other 12 edge pads the same way: iron on the board pad, solder fed into the castellation. Each joint should be a small concave fillet up the half-hole.
-4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery), both holes in the second box (P0.09: one under each module's pad, so fill both), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. That means it has wetted the module's pre-tinned pad underneath.
+4. **Turn the board over (switch face up). Fill the boxed holes:** the pair inside one box (the battery), both holes in the second box (P0.09: one under each module's pad, so fill both), and the round hole in the small square box near the USB end (RST, the module's reset pad). Hold the iron on the ring for 2–3 s and feed solder into the hole until it fills and stops sinking. This alone does not prove a good joint: check continuity to accessible points on the module and inspect for shorts before applying power.
    **Fill only the boxed holes.** The unboxed ones belong to the other half. Most sit under bare module areas; the unboxed reset hole sits under the module's GND test pad, and only wires to the other half's (empty) button pads, so it does no harm either way.
 5. Clean off the flux.
 
 The battery holes and one P0.09 hole are smaller than the rest (0.6 mm, as large as the pads above them allow): flux them well, use thin solder (0.5 mm), and hold the iron on the ring until the solder sinks into the hole before you feed more.
 
 **Check:**
-- **Before any battery goes in:** the power switch's middle pin (VBAT) must **not** beep to the module's GND castellation. A beep means the wrong selector row, or both: fix it first.
+- **Before any battery goes in:** the power switch's middle pad (VBAT; the switch is fitted in step 3) must **not** beep to the module's GND castellation. A beep may indicate the wrong selector row, both rows bridged, or another short: find and fix it first.
 - The battery hole the selector made + beeps to the power switch's middle pin.
 - The RST hole does **not** beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
 - No two adjacent castellations beep to each other.
@@ -115,7 +115,7 @@ It goes on the **switch face**, in the gap above the thumb keys, inside its outl
 
 1. Plug in USB. With the firmware flashed and your computer paired or connected, short each socket's two contacts with tweezers. Every key should register.
 2. Plug in the battery, unplug USB and toggle the power switch: the half should stay connected.
-3. Press the reset button once: the half reboots (it disconnects and reconnects). Press it twice quickly: a USB drive appears (the bootloader), as with the module's own button.
+3. Press the reset button once: the half reboots (it disconnects and reconnects). Reconnect USB, then press it twice quickly: a USB drive appears (the bootloader), as with the module's own button.
 
 | Symptom | Look at |
 |---|---|
@@ -150,10 +150,10 @@ The base is solid up to the PCB's underside, with a pocket for every part. The P
 - Use the same **8 × 1.5 mm N52 discs everywhere**. The dock takes six wing magnets and six side magnets per half, five base pairs (five of those discs are glued to the Ugreen base) and one upward-facing disc in the drawer floor: 35 discs total. Leave the rear free for USB and the cable.
 - Each drawer insert takes three evenly spaced side magnets per side (seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position. Check the full half → dock → insert polarity chain before gluing.
 - Each pointing module also takes **one disc in its floor**, on the centreline, directly above the drawer's. Glue both flush or slightly recessed, opposite poles facing. They grip the module from below, whatever the side magnets manage through the walls.
-- All Ø8.2 pockets are glue-clearance: never force a magnet in.
-- Bond an **8 mm woven ribbon, at most 0.25 mm thick**, into the 8.6 mm wide, 0.35 mm deep recess under the module's front: 20 mm or more bonded, about 6 mm left sticking out at the front. Hold the dock down and pull the ribbon straight towards you. Never pull the ball, the keycaps or the cable. The ribbon is optional if your fingers can grip the module's front.
-- For USB use while docked, take the module out, feed the USB-C plug through the dock's **12.8 mm rear passage**, connect it to the module and slide the module in while feeding the cable. A plug overmold up to 12.35 × 6.5 mm fits. If yours doesn't, charge with the module out. Unplug before pulling out a module.
-- The rear hood and the dock meet at a 45° slope with 0.25 mm clearance. Check the printed fit before loading the magnets.
+- The nominal magnet pockets are Ø8.3 mm for 8 mm discs; never force a magnet in.
+- To take a module out, hold the dock and push the tip of the rear hood forwards with a finger through the dock's rear passage, then pull the module out of the front. Unplug USB first.
+- The USB-C port is nominally flush with the module's back, with nothing under it. Feed a plug through the dock's **12.8 mm rear passage**. A 12.35 × 6.5 mm overmold is the nominal modelled envelope, not a guaranteed fit for every plug or printed dock; check the real plug, cable and passage.
+- The rear hood and the dock meet at a 45° slope with 0.4 mm clearance.
 - For independent tenting, print `case/stand_magnet_template_left.svg` and `case/stand_magnet_template_right.svg` at 100% and check the 54 mm boundary with a ruler. Glue three discs to each stand's **tilting phone platform**, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.
 - The platform needs a clear flat 54 mm patch. Use **2.0 mm bump-ons**. Start flat, support the half while increasing the tilt, then test typing on it before relying on it.
 
@@ -167,7 +167,7 @@ Both modules are built the same way as a half: a **tray**, a **lid**, and the sa
 | ![](renders/trackball_choc_structure.png) | ![](renders/trackball_choc_seam.png) |
 | ![](renders/trackpad_structure.png) | ![](renders/trackpad_seam.png) |
 
-The electronics are the same parts in the same places on both modules. The same main board holds the two keys and the power switch. The same battery and nice!nano sit under it. The same sensor board holds the reset button at the front; on the trackpad it carries nothing else.
+The electronics are the same parts in the same places on both modules. The same main board holds the two keys and the power switch. The same battery and nice!nano sit under it. The same sensor board holds the reset button at the front; on the trackpad it carries nothing else. Everything solders with an iron: no paste, no hot air, no ribbon cables.
 
 ### Boards
 
@@ -175,6 +175,8 @@ The electronics are the same parts in the same places on both modules. The same 
 2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side with `SD TRACKBALL`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
 3. **Sensor board, trackball.** Solder the regulator, capacitors, resistor and TS-1187A reset button on the back face, the PMW3610 in its cut-out, and clip on the lens.
 4. **Sensor board, trackpad.** Solder only the TS-1187A reset button, on the back face.
+
+For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.
 
 ### Wiring
 
@@ -190,25 +192,38 @@ Use flexible 30 AWG stranded wire, about 80 mm per wire, so the main board can l
 
 On the **trackball**, also wire `SCLK`, `SDIO`, `NCS` and `MOTION` from the sensor board to the main board's matching pads and on to the nice!nano (pins in the README).
 
-On the **trackpad**, leave the sensor board's other pads empty and wire the pad's cable adapter straight to the nice!nano (table in the README).
+| Trackball signal | nice!nano v2 pin |
+|---|---|
+| Main `CK`, `IO`, `CS`, `MO` | D7 (P0.11), D6 (P1.00), D5 (P0.24), D4 (P0.22), respectively |
+| Main `K1`, `K2` | D8 (P1.04), D2 (P0.17), respectively |
+
+Verify the clone's pin labels and USB location against a genuine nice!nano v2 before wiring; clones can differ. The power switch is between the cell positive and B+, not between the controller and its regulated VCC. Insulate the battery leads while wiring, check polarity and continuity with the battery disconnected, and confirm there is no short between supply and ground before connecting it.
+
+On the **trackpad**, leave the sensor board's other pads empty. The intended connection is seven wires directly from the Cirque to the nice!nano, with no ribbon cable or adapter. **This has not been verified on the specified pad:** before soldering, identify `SCK`, `SO`, `SS`, `DR`, `SI`, `GND` and `VDD` with the manufacturer's pinout and a continuity meter; verify that the pads can be soldered and that the wires and strain relief clear the installed lid and components. Do not proceed on labels alone. Tin the pads with a short touch of the iron and secure the wires against strain; 100 mm is a starting length, not a verified service loop. Check for shorts before connecting power.
+
+| Trackpad signal | nice!nano v2 pin |
+|---|---|
+| `SCK`, `SO`, `SS`, `DR`, `SI` | D3 (P0.20), D4 (P0.22), D6 (P1.00), D7 (P0.11), D5 (P0.24), respectively |
+| `GND`, `VDD` | GND, VCC (3.3 V), respectively |
+| Main `K1`, `K2` | D8 (P1.04), D9 (P1.06), respectively |
 
 ### Into the tray
 
-Work in this order, power off, with the magnets already glued in. The picture shows the first three steps done.
+Work in this order, power off, with the magnets already glued in. Before putting the battery in, perform the sensor screw depth check in step 2. The picture shows the first three steps done.
 
 ![Battery, sensor board and nice!nano in the tray](renders/trackball_stack.png)
 
 1. **Battery.** Lower it straight into its cradle. Its 7.5 mm thickness has room to spare, but measure a protected pack first, including tape, tabs and leads. Never force it.
-2. **Sensor board.** Parts face down, on its two posts, with **two M3 × 8** screws through the board into the posts. Stop when the heads touch: they cut their own thread, and the floor below is thin.
-3. **nice!nano.** Face down, its USB-C towards the back wall, resting on the two rear piers. Run a strip of kapton from one main-board post to the other under its front edge to hold it up. Keep the tape off the antenna end's top if you can, and clear of the USB-C port.
-4. **Main board.** Lower it flat onto the two side posts and the ledge on the back wall, with the power lever going down its slot in the back wall.
+2. **Sensor board.** Before installing the battery, check the two M3 × 8 screws against the actual PCB, posts and floor: the PCB holes are not countersunk, and screw-head dimensions and shim thickness affect the available depth. Do not drive a screw into the floor or toward the battery; the required engagement and clearance have not been physically verified. Trackball: determine the actual unshimmed distance **H** from the top of the board on the posts to the ball surface on the optical axis with the lid, bearings and ball seated. Measure **X** from the board top to the lens reference plane specified by the PMW3610 data sheet. Place one equal-thickness shim under each post, each of thickness **H − X − 2.4 mm**, and verify the assembled reference-plane-to-ball gap is 2.2–2.6 mm. The nominal model gives H = 4.8 mm, but actual dimensions may differ. If the calculated thickness is negative, shimming cannot correct it: do not force the assembly. Trackpad: no optical shim. Fit the board parts face down only after checking screw depth.
+3. **nice!nano.** Face down. Lower it onto the two rear piers about 3 mm forward of its place, then slide it back until the USB-C port is flush with the back: the edges of its board go into two pockets in the back wall. Run a strip of kapton from one side wall to the other under its front edge to hold it up, clear of the antenna end's top.
+4. **Main board.** Lower it flat: the two side posts come up through its large holes and it rests on their shoulders and on the ledge at the back wall. The power lever goes down its slot.
 
 ![Main board in the tray](renders/trackball_tray.png)
 
-5. **Trackpad only.** Tape the FFC adapter onto the sensor board, between its two screw heads, connector towards the pad. Fit the pad into the lid from above, on three small dots of removable adhesive on its ledge. Connect the FFC, adapter end last, and leave it one gentle fold in the space in front of the main board.
+5. **Trackpad only.** Confirm the actual pad has a clear support ring and that adhesive and wires clear its components. Fit it into the lid from above on removable adhesive dots, then route the seven wires toward the nice!nano. Check the complete wired closure and service loop without pinching wires before securing the lid.
 6. **Trackball only.** Glue the three ceramic balls into the lid's cup.
 7. **Lid.** Rear first: tilt the lid, push its two rear hooks into the slots in the back wall, then lower the front. It locates on the tray's rim.
-8. **Four M3 × 8 screws** through the lid: two at the front into the tray's posts, two through the main board into the side posts. Turn them in slowly, and stop when the heads seat. On the MX lid the heads sit at the bottom of short wells. Use a driver with a shaft no wider than 3 mm.
+8. **Four M3 × 8 screws** into the lid's countersinks, as on a half: they go into the tray's four posts. Turn them in slowly, and stop when the heads sit flush.
 9. Clip the switches through the lid into the sockets, fit the keycaps, and drop the ball in.
 
 Stick three 8 × 2 mm bump-ons into the floor's recesses.
@@ -226,9 +241,7 @@ The power switch disconnects the battery only: USB still powers the controller. 
 
 ### Opening a module
 
-Take it out of the dock, switch it off and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. On the trackpad, lift it only as far as the FFC allows and unplug the FFC at the adapter, supporting its stiffened end. The main board then lifts out on its wires.
-
-The Cirque's end of the FFC is a non-ZIF connector (Molex 78127-1128): pull it straight out, with the cable supported. Before buying, check the cable's length and contact side against both connectors.
+Take it out of the dock, switch it off and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. The main board then lifts out on its wires. On the trackpad, the pad stays on the lid, joined by its seven wires: lay the lid beside the tray.
 
 ## Resetting a closed half
 
@@ -241,6 +254,9 @@ Press straight down into the cone above the thumbs with a fingertip (the pad, no
 
 - **Base:** floor-down, no supports (the wall over the USB recess and the roofs of the pad slots, 8.6 mm wide, bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.
 - **Plate:** **top face down**: the STL is already oriented that way, with the pillars and screw bosses pointing up. The reset button's cone narrows upwards at 45° from the bed (4.2 mm to 2.8 mm over the first 0.7 mm) and needs no support. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change `cut_tol` in `design.py` and regenerate.
-- **Module tray:** floor down, no supports: the rear hood's underside is 45° and prints by itself. Use 4 or more walls: the screw posts and the 1 mm magnet backings carry the load.
-- **Module lids:** top face down, no supports. The trackball's cup grows out of the lid as it prints. Print a small test of a magnet pocket and a screw pilot in your filament first.
+- **Module tray:** floor down; the rear hood's underside is designed at 45° for support-free printing. Use 4 walls: the screw posts and the 0.9 mm magnet backings carry the load.
+- **Module lids:** top face down; the trackball's cup grows out of the lid as it prints. The intended orientation is support-free.
+- Review all module overhangs, particularly the rear hooks, cup and pad ledge, in the actual slicer; support-free printing has not been physically verified. Add removable support if the chosen material and slicer require it, keeping mating surfaces accessible for cleanup.
+- **Dock:** flat side down, with supports inside the pocket.
+- **Fit:** nominal allowances include 0.35 mm round a module in the drawer, 0.3 mm round a half on the dock, 0.25 mm round a lid in its tray and 0.15 mm radially round a magnet. These are not guarantees against cumulative print error, warping or elephant foot. Calibrate shrinkage and elephant-foot compensation, and use the same filament and settings for mating parts. Check fits before installing electronics; careful local cleanup may be needed, and a successful first print is not guaranteed.
 - **Nylon:** dry the filament before printing. It's tough enough to take the self-tapping threads without cracking, and its softness damps key noise.

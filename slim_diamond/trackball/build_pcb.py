@@ -190,9 +190,11 @@ def prerouted(board, nets, fps):
     # Front-face path round both socket families' drills at the 270-degree placement, from the
     # left wire row to the power switch. The autorouter strands this power net.
     bat = pad_at(fps["BAT+"], "1")
-    track(board, nets, "BAT+", [bat, (-8.85, bat[1] - 1.15), (-8.85, 45.4), (-4.2, 40.75),
-          (-2.55, 40.75), (-2.1, 40.45), (-.6, 36.1), (.9, 34.6),
-          (2.1, 28.15), pad_at(fps["SW3"], "1")], F)
+    dy = -D["keys"][0][1] - 47.5287      # the path follows the keys
+    track(board, nets, "BAT+", [bat, (-8.85, bat[1] - 1.15)] +
+          [(x, y + dy) for x, y in ((-8.85, 45.4), (-4.2, 40.75), (-2.55, 40.75), (-2.1, 40.45),
+                                    (-.6, 36.1), (.9, 34.6), (2.1, 28.15))] +
+          [pad_at(fps["SW3"], "1")], F)
     sw = fps["SW3"]
     p2, p3, p1 = pad_at(sw, "2"), pad_at(sw, "3"), pad_at(sw, "1")
     track(board, nets, "VBAT", [p2, p3], F)              # both switch contacts share VBAT
@@ -272,7 +274,7 @@ def build():
         fps[name if name == "BAT+" else "BAT-"] = fp
         text(board, "+" if name == "BAT+" else "-", (p[0] + 1.8, p[1]), pcbnew.F_SilkS, 1.0)
     for i, h in enumerate(D["main_holes"], 1):
-        add_fp(board, "MountingHole_M3", f"H{i}", tuple(h), 0, "M3")
+        add_fp(board, "PostHole", f"H{i}", tuple(h), 0, "post")
     text(board, "SD TRACKBALL", (0.0, back + 4.4), pcbnew.F_SilkS, 1.0)
 
     # --- the sensor board (its parts on the back face)

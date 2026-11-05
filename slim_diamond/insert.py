@@ -20,7 +20,6 @@ H = M.FLUSH
 def build():
     body = M.bevel(M.extrude(M.OUTLINE, 0.0, H) + M.rear_hood(), H)
     body -= M.magnet_pockets()
-    body -= M.pull_recess().translate((0, 0, -M.FEET))
     art, scale = K.relief(M.OUTLINE, H)
     return body - art, scale
 

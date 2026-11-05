@@ -1,0 +1,10 @@
+(footprint "PostHole"
+  (version 20241229)
+  (generator "slim_diamond")
+  (layer "F.Cu")
+  (descr "Hole for a printed post")
+  (property "Reference" "REF**" (at 0 0 0) (layer "F.SilkS") hide (effects (font (size 1 1) (thickness 0.15))))
+  (property "Value" "PostHole" (at 0 0 0) (layer "F.Fab") hide (effects (font (size 1 1) (thickness 0.15))))
+  (attr exclude_from_pos_files exclude_from_bom)
+  (pad "" np_thru_hole circle (at 0 0) (size 4.8 4.8) (drill 4.8) (layers "*.Cu" "*.Mask"))
+)

@@ -174,8 +174,8 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   drawer is open at both the top and the front. Its sides are straight and uninterrupted: no
   raised ends at the mouth, no ribs or matching grooves. The insert's front is shaped in 3D by
   the halves' exact front facet planes, rather than set back to a vertical wall, so the assembled
-  front reads as one element. Pull the hidden underside woven ribbon horizontally;
-  do not pull the ball, keycaps or cable. Lifting is not necessary.
+  front reads as one element. To take one out, push the tip of its rear hood forwards through the
+  rear passage, then pull it out of the front. Lifting is not necessary.
 - **Six side magnets per half:** the dock's continuous walls are 2.4 mm thick at their
   thinnest and house six of the common **8 × 1.5 mm N52 magnets per side**, matching all six
   half seam magnets. The gap between the halves is widened by 1.25 mm to preserve insert space.
@@ -196,7 +196,7 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   their surrounding plastic without losing alignment with the case's magnet.
 - **Feet:** the underside is cut 0.5 mm (`FOOT_LIFT`) off the desk, and three 8 × 2 mm bump-ons
   under each wing, spread to the largest triangle, make that up.
-- 195.1 × 111.0 × 30.2 mm, about 83 cm³. `python3 dock.py` prints the fit check: each half, its pads, the
+- 199.0 × 111.3 × 29.8 mm, about 83 cm³. `python3 dock.py` prints the fit check: each half, its pads, the
   base and the hinge against the dock, all 0 mm³, and the plastic round every magnet and foot.
 
 | **With the phone** | **From the front** |
@@ -219,8 +219,6 @@ module; only the lid changes.
   power slider, the USB-C port and the reset hole are in the same spot on every module.
 - **Retention:** three common magnets a side where the halves' inner-wall magnets are (the 2nd, 4th and
   6th), at the same height over the plane both stand on, plus one in the floor over its mate in the drawer.
-- **Pull tab:** the small dark tongue at the module's front is an 8 mm woven ribbon bonded under the floor,
-  to pull the module out of the drawer without touching the ball, keycaps or cable.
 
 | **Trackball** | **The parts** |
 |---|---|
@@ -236,11 +234,11 @@ module; only the lid changes.
 
 ### USB-C
 
-The rear of each module has a USB-C opening below the power slider. The dock has a **12.8 mm wide rear
-passage all the way down through the underside**. With the drawer empty, feed the plug through from the
-rear, connect the module and slide the module in while feeding the cable. A 12.35 × 6.5 mm overmold fits.
-If yours doesn't, charge with the module out. At the rear the module's top extends over the dock's sloped
-support: the common underside and its mating support are 45°, with 0.25 mm clearance.
+The USB-C port is flush with the module's back, under the power slider, with no wall or floor beneath it,
+so a plug goes straight in. The dock has a **12.8 mm wide rear passage all the way down through the
+underside**: the nominal model allows a 12.35 × 6.5 mm overmold; check the actual plug and print. At the rear the module's top
+extends over the dock's sloped support: the common underside and its mating support are 45°, with 0.4 mm
+clearance.
 
 | Trackball: rear connection | Cutaway to the receptacle |
 |---|---|
@@ -253,7 +251,7 @@ support: the common underside and its mating support are 45°, with 0.25 mm clea
 ### Slim Diamond Trackball (`trackball/trackball.py`)
 
 A 34 mm ball and two MX or Choc v1 hot-swap keys on one shared PCB. The MX lid stands 4 mm over the
-halves; the Choc lid 1.2 mm. Both bevel up at 45°.
+halves; the Choc lid 1.2 mm. Their side facets run from the halves' top height to the lid top and can be steeper than 45°.
 
 - The ball sits in a cup in the lid on three 3 mm Si3N4 balls and lifts straight out. Under it, a PMW3610
   on its own board looks up through an LM18-LSI lens (circuit after siderakb's pmw3610-pcb, CERN-OHL-P-2.0,
@@ -261,30 +259,30 @@ halves; the Choc lid 1.2 mm. Both bevel up at 45°.
 - The main board accepts **MX or Choc v1 hot-swap sockets**, not both populated together. Choc sockets
   face 180° opposite the MX sockets. MX uses `trackball/case/lid.stl` (1.5 mm plate), Choc uses
   `trackball/case/lid_choc.stl` (1.2 mm plate). Choc v2 is not supported.
-- The nice!nano hangs face down under the main board on two printed piers, wired to labelled pads: GND,
+- The nice!nano (or a clone) hangs face down under the main board on two printed piers, its USB-C port
+  flush with the back wall, wired to labelled pads: GND,
   VCC, RST, VBAT → B+, and the six GPIO signals below. Secure it with kapton without covering its antenna
   or USB opening.
 - Controller wiring: sensor SCLK P0.11, SDIO P1.00 (SPI2, 3-wire), NCS P0.24, MOTION P0.22; key 1 P1.04,
   key 2 P0.17 (other legs to GND).
-- One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 35.6 × 99.5 mm: the main board and the
+- One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 39.2 × 99.5 mm: the main board and the
   sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
-- Unconfirmed, measure before printing: `LENS_ABOVE` (the lens's base over the sensor board, sets the
-  ball's height) and `NANO_ROW1` (the nice!nano's first pin row from its USB end).
+- The sensor's posts print 0.4 mm low. Equal shims can adjust the optical gap, but the real ball-to-board
+  distance and lens reference-plane height must be measured; see `BUILD.md` for the calculation and limits.
 
 ### Slim Diamond Trackpad (`trackpad/trackpad.py`)
 
 The same module with a 40 mm Cirque (TM040040, SPI) in the lid instead of the ball. It uses the Choc
 sockets on the shared main board and stands at the Choc lid's height, 1.2 mm over the halves.
 
-- The pad sits in the lid on a ledge, open at the back for its cable. The cable's adapter tapes onto the
-  sensor board, which carries only the reset button here.
-- Unconfirmed: the pad's thickness and the parts on its back (`PAD`), the adapter's size.
+- The intended pad mounting uses a ledge and seven direct wires to the nice!nano, without a ribbon cable.
+  Verify the exact pad's support ring, test-pad pin mapping, solderability and wired closure before assembly.
 
 | Wire | nice!nano pin |
 |---|---|
-| Pad SCK (FFC 1), SO (2), SS (3), DR (4), SI (5) | D3 (P0.20), D4 (P0.22), D6 (P1.00), D7 (P0.11), D5 (P0.24) |
-| Pad GND (FFC 11), VDD (FFC 12) | GND, VCC (3.3 V) |
+| Pad SCK, SO, SS, DR, SI | D3 (P0.20), D4 (P0.22), D6 (P1.00), D7 (P0.11), D5 (P0.24) |
+| Pad GND, VDD | GND, VCC (3.3 V) |
 | Main board K1, K2 | D8 (P1.04), D9 (P1.06) |
 | Main board GND, VBAT, RST | GND, B+, RST |
 

@@ -21,7 +21,7 @@ class StlExportTest(unittest.TestCase):
                   "cover": insert.build()[0]}
         layout = B.place()
         solids["tray"] = B.tray(layout).translate((0, 0, -B.M.FEET))
-        for name, lid, height in (("mx", B.lid(layout, "mx"), B.H), ("choc", B.lid(layout, "choc"), B.M.HEAD_Z),
+        for name, lid, height in (("mx", B.lid(layout, "mx"), B.H), ("choc", B.lid(layout, "choc"), B.M.CHOC_TOP),
                                   ("trackpad", T.lid(T.place()), T.H)):
             solids[name] = lid.mirror((0, 0, 1)).translate((0, 0, height))
         record = np.dtype([("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attribute", "<u2")])

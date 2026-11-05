@@ -14,8 +14,9 @@ they meet the halves directly.
 
 A module is built like a half: a tray (floor, walls, posts) printed floor down, and a lid printed
 top down. The tray ends at the halves' top edges (FLUSH) and is the same print for every module; the
-lids differ. Four of the halves' M3 x 8 flat-head screws go in from the top: two through the lid
-into the tray's front posts, two through the lid and the main board into its side posts.
+lids differ. Four of the halves' M3 x 8 flat-head screws go in from the top, into countersinks in
+the lid and on into the tray's four posts. The two side posts come up through the main board, which
+rests on their shoulders, so the screw length doesn't depend on the lid's height.
 """
 import math
 from functools import lru_cache
@@ -35,7 +36,7 @@ BOTTOM_T = 2.2                     # foot roofs are reinforced locally to 1.1 mm
 PCB_T = 1.6
 BEVEL_WALL = 1.0                   # the wall under the bevel, square to it (2.5 perimeters at 0.4 mm)
 UPPER_BEVEL = 1.5                  # maximum 45-degree rim width; retain material round rear switch holes
-LID_CLR = 0.15                     # round the lid's locating lip, inside the walls
+LID_CLR = 0.25                     # round the lid's locating lip, inside the walls
 MAG_D, MAG_H = K.D["magnet_side_size"]          # common disc pocket, with fit clearance
 MAG_Z = K.D["magnet_side_z"] + K.PAD_DROP       # over the standing plane: a half's, on its pads
 BOSS = (MAG_D + 1.0, MAG_H + 0.1 + 0.9)         # 0.9 mm backing, glue-clearance installation
@@ -49,7 +50,7 @@ SPINE_TOP = K.spine_height(P)
 FLOOR_Z = K.drawer_floor(P)        # the drawer's floor over the desk
 FLUSH = SPINE_TOP - FLOOR_Z        # the tray's top: level with the halves' top edges
 PCB_TOP = FLUSH - 1.0              # main board's top: 1.0 mm under the lid, as a half's plate gap
-HEAD_Z = PCB_TOP + 2.2             # where every screw's head sits, on every lid
+CHOC_TOP = PCB_TOP + 2.2           # the Choc and trackpad lids' top
 
 
 def lid_screws():
@@ -154,8 +155,8 @@ def tray():
         body -= Manifold.cylinder(h - FEET + 0.01, d / 2 + 0.2, circular_segments=40).translate((x, y, FEET - 0.01))
     x, y = K.DRAWER_FLOOR_MAG
     body += Manifold.cylinder(2.5, 4.8, circular_segments=48).translate((x, y, FEET))
-    body -= Manifold.cylinder(1.61, 4.1, circular_segments=48).translate((x, y, FEET - .01))
-    return body - pull_recess() - magnet_pockets() - finger_pockets()
+    body -= Manifold.cylinder(1.61, 4.15, circular_segments=48).translate((x, y, FEET - .01))
+    return body - magnet_pockets() - finger_pockets()
 
 
 FINGERS = (-5.0, 5.0)              # the lid's rear hooks: no screw head fits behind the keys
@@ -167,8 +168,8 @@ def finger_pockets():
     back = OUTLINE.bounds[3] - WALL
     out = Manifold()
     for x in FINGERS:
-        out += Manifold.cube((2.8, 1.0, 3)).translate((x - 1.4, back - .05, FLUSH - 2.3))
-        out += Manifold.cube((2.8, 2.15, 1.2)).translate((x - 1.4, back - .05, FLUSH - 2.3))
+        out += Manifold.cube((3.0, 1.3, 3)).translate((x - 1.5, back - .05, FLUSH - 2.3))
+        out += Manifold.cube((3.0, 2.15, 1.2)).translate((x - 1.5, back - .05, FLUSH - 2.3))
     return out
 
 
@@ -178,15 +179,19 @@ def lid_blank(height, top_t):
     are cut by its script; finish with `lid_holes`."""
     body = K.module_front(extrude(OUTLINE, FLUSH, height) ^ bevel_hull(OUTLINE, height), P)
     if height - top_t > FLUSH + .01:
-        # the inside follows the bevel, its wall BEVEL_WALL thick square to it
-        bevel_start = max(FLUSH, height - UPPER_BEVEL)
-        cavity = extrude(inner(), FLUSH - 1, height - top_t) ^ bevel_hull(
-            inner(), height - top_t, bevel_start + WALL - BEVEL_WALL * math.sqrt(2),
+        # the inside follows the facet, keeping BEVEL_WALL of wall under it
+        under = height - top_t
+        outer = min(height - FLUSH, UPPER_BEVEL) * (under - FLUSH) / (height - FLUSH)
+        cavity = extrude(inner(), FLUSH - 1, under) ^ bevel_hull(
+            inner(), under, FLUSH, inset=max(outer + BEVEL_WALL - WALL, .01),
             rear_start=FLUSH + WALL - BEVEL_WALL * math.sqrt(2))
         body -= K.module_front(cavity, P, WALL)
     lip = inner().buffer(-LID_CLR, join_style=2).difference(inner().buffer(-1.0, join_style=2))
     lip = lip.intersection(box(-99, -200, 99, -22))
     body += K.module_front(extrude(lip, PCB_TOP + .2, FLUSH + .01), P, WALL + LID_CLR)
+    if height - top_t > FLUSH + .01:         # a tall lid's walls stand off the lip: tie them together
+        flange = inner().buffer(.05, join_style=2).difference(inner().buffer(-1.0, join_style=2))
+        body += K.module_front(extrude(flange.intersection(box(-99, -200, 99, -22)), FLUSH, FLUSH + .6), P, WALL - .05)
     back = OUTLINE.bounds[3] - WALL
     for x in FINGERS:
         body += Manifold.cube((2.4, .75, 2.1)).translate((x - 1.2, back + .05, FLUSH - 2.08))
@@ -199,15 +204,13 @@ def lid_blank(height, top_t):
 
 
 def lid_holes(m, height):
-    """Clearance holes and countersinks: every head sits at HEAD_Z, so a screw bites the same
-    length on every lid. On a taller lid that is down a well, flush with nothing to catch."""
+    """Clearance holes and countersinks, as on the halves' plates: a plain 90-degree cone in the
+    lid's top, the head flush."""
     for x, y in lid_screws():
         r = SCREW["head"] / 2
         m -= Manifold.cylinder(height + 1, SCREW["hole"] / 2, circular_segments=32).translate((x, y, PCB_TOP - .5))
         cone = Manifold.cylinder(SCREW["cone"] + .01, SCREW["hole"] / 2, r + .01, circular_segments=48)
-        m -= cone.translate((x, y, HEAD_Z - SCREW["cone"]))
-        if height > HEAD_Z + .01:
-            m -= Manifold.cylinder(height - HEAD_Z + 1, r + .1, circular_segments=48).translate((x, y, HEAD_Z))
+        m -= cone.translate((x, y, height - SCREW["cone"]))
     return m
 
 
@@ -221,11 +224,12 @@ def rear_hood():
     return blank.trim_by_plane(normal, K.rear_hood_datum(P) / math.sqrt(2))
 
 
-def bevel_hull(poly, top, start=None, rear_start=None):
-    """Over `start` (the halves' top edges, FLUSH), the outline drawn in at 45 degrees up to `top`:
-    a module taller than the halves meets them with a bevel, not a step. Below it, the outline."""
-    start = max(FLUSH, top - UPPER_BEVEL) if start is None else start
-    b = top - start
+def bevel_hull(poly, top, start=None, rear_start=None, inset=None):
+    """From `start` (the halves' top edges, FLUSH) up to `top`, the outline drawn in by at most
+    UPPER_BEVEL: one flat facet all the way, 45 degrees on a low lid, steeper on a tall one, so the
+    keys and screw heads keep their rim. Below it, the outline."""
+    start = FLUSH if start is None else start
+    b = min(top - start, UPPER_BEVEL) if inset is None else inset
     ring = lambda p, z: [(x, y, z) for x, y in p.exterior.coords[:-1]]
     solid = (extrude(poly, -1, top + 1) if b <= 0 else
              Manifold.hull_points(ring(poly, -1) + ring(poly, start) + ring(poly.buffer(-b, join_style=2), top)))
@@ -240,24 +244,9 @@ def bevel(m, height):
     return K.module_front(m ^ (bevel_hull(OUTLINE, height) + rear_hood()), P)
 
 
-def pull_recess():
-    return Manifold.cube((8.6, 27, .35)).translate((-4.3, OUTLINE.bounds[1] - 1, FEET - .01))
-
-
 def floor_magnet():
     x, y = K.DRAWER_FLOOR_MAG
     return Manifold.cylinder(1.5, 4, circular_segments=48).translate((x, y, FEET + .05))
-
-
-def pull_ribbon():
-    """Illustrative removable 0.25 mm woven ribbon, not an extra rigid print."""
-    y = OUTLINE.bounds[1]
-    nodes = [(y - 6, .14), (y + 6, .14), (y + 8, FEET + .04), (y + 26, FEET + .04)]
-    ribbon = Manifold()
-    for a, b in zip(nodes, nodes[1:]):
-        ribbon += Manifold.hull_points([(x, yy, zz + dz) for x in (-4, 4)
-                                        for yy, zz in (a, b) for dz in (0, .25)])
-    return ribbon
 
 
 def bumpons():
@@ -279,10 +268,10 @@ def flat_screw(x, y, head_z):
     return ((head + shank) - cross).translate((x, y, head_z))
 
 
-def lid_fasteners(lift=0.0):
+def lid_fasteners(height, lift=0.0):
     out = Manifold()
     for x, y in lid_screws():
-        out += flat_screw(x, y, HEAD_Z + lift)
+        out += flat_screw(x, y, height + lift)
     return out
 
 

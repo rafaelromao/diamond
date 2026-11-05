@@ -62,9 +62,10 @@ SCREW = {"name": "M3", "pcb_hole": 3.4, "head_d": 6.4, "boss_d": 7.6, "pilot_d":
 PLATE = {"thick": 1.2, "gap": 1.0, "cut": 13.8, "cut_tol": 0.1, "blob_pocket": 0.5, "chamfer": 0.6}
 # Common 8 x 1.5 mm N52 discs: floor (stacking / stand) and seam (unibody / dock).
 # Relocating the 500 mAh battery frees the full seam for six evenly spaced magnets.
-# Pockets get 0.1 mm of axial clearance and 0.2 mm diametral clearance.
+# Pockets get 0.1 mm of axial clearance and 0.3 mm diametral clearance: printed holes come out
+# small, and these are glued in, never pressed.
 MAGNET_SIZE = (8.0, 1.5)           # one N52 disc size for every connection in the system
-MAG = (MAGNET_SIZE[0] + 0.2, MAGNET_SIZE[1] + 0.1)
+MAG = (MAGNET_SIZE[0] + 0.3, MAGNET_SIZE[1] + 0.1)
 MAG_FLOOR = MAG_SIDE = MAG
 # magnets.py finds both sets by measuring the solid base, 0.5 mm of plastic round every pocket:
 # Seven floor magnets include the three-contact stand ring; seam pockets remain separated.
