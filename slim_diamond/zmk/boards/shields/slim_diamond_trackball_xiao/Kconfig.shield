@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+
+config SHIELD_SLIM_DIAMOND_TRACKBALL_XIAO
+    def_bool $(shields_list_contains,slim_diamond_trackball_xiao)

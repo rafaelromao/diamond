@@ -627,6 +627,10 @@
       "sha256": "da369a1dbbd72a14d858134f0799b2a463e96d3c7a2994da0649243e394e2f74"
     },
     {
+      "path": "test_xiao_option.py",
+      "sha256": "d0d3a57e3fed600ba36b3e13add0cac08c2daf5dfe5d0bbc339522594a56c2ee"
+    },
+    {
       "path": "trackball/pcb/trackball.kicad_pcb",
       "sha256": "3e057b9ee192325c52f512340b5975ee994b8fdf852f1d9c1d79401cfe47fa1b"
     },

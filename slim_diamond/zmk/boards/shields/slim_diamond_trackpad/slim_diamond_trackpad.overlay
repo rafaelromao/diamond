@@ -68,10 +68,10 @@
         reg = <0>;
         spi-max-frequency = <1000000>;
         status = "okay";
-        dr-gpios = <&gpio0 11 (GPIO_ACTIVE_HIGH)>;
+        data-ready-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
         sensitivity = "4x";
-        sleep;
-        no-secondary-tap;
+        sleep-mode-enable;
+        primary-tap-enable;
         /* The pad lies flat, its cable towards the keys: if the pointer runs the wrong way,
          * toggle x-invert / y-invert, or add rotate-90. */
     };

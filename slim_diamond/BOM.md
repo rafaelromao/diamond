@@ -55,6 +55,7 @@ buy for the halves.
 | Slide switch MSK-12C02 | 1 | same as item 8 | On the main board, lever out of the back wall |
 | Reset button TS-1187A | 1 | same as item 9 | On the sensor board, facing down |
 | nice!nano v2 or clone | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, USB-C flush with the back, wired to labelled pads |
+| **Alternative** to nice!nano: XIAO nRF52840 or Super52840 | 1 | same as item 2 | Wired controller; XIAO-labelled panel `trackball/fab/trackball_xiao_jlcpcb.zip`. Firmware compiles, but real controller fit and operation remain unverified; Super52840 support is experimental |
 | LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell |
 | 30 AWG stranded wire | 80 to 100 mm per wire | `30 AWG silicone wire` | |
 

@@ -268,6 +268,9 @@ halves; the Choc lid 1.2 mm. Their side facets run from the halves' top height t
 - One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 39.2 × 99.5 mm: the main board and the
   sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
+- A separately labelled wired XIAO/Super52840 option is available as `trackball/fab/trackball_xiao_jlcpcb.zip`.
+  Its copper and breakaway panel are identical; the controller pin mapping and firmware differ. It is intended
+  to reuse the tray; the firmware compiles, but real-controller fit, wiring and operation remain unverified; see `BUILD.md`.
 - The sensor's posts print 0.4 mm low. Equal shims can adjust the optical gap, but the real ball-to-board
   distance and lens reference-plane height must be measured; see `BUILD.md` for the calculation and limits.
 
@@ -287,13 +290,24 @@ sockets on the shared main board and stands at the Choc lid's height, 1.2 mm ove
 | Main board GND, VBAT, RST | GND, B+, RST |
 
 **Firmware** (`zmk/`): a ZMK config with both shields, `slim_diamond_trackball` (the PMW3610 through
-badjeff's zmk-pmw3610-driver) and `slim_diamond_trackpad` (the Cirque through petejohanson's
-cirque-input-module), pinned in `zmk/config/west.yml`. Key 1 clicks left; key 2 clicks right, and
+badjeff's zmk-pmw3610-driver) and `slim_diamond_trackpad` (the Cirque through Zephyr's in-tree
+Pinnacle driver), pinned in `zmk/config/west.yml`. Key 1 clicks left; key 2 clicks right, and
 held turns pointing into scrolling; both together click middle. If the pointer runs the wrong way,
 toggle `invert-x` / `invert-y` (trackball) or `x-invert` / `y-invert` (trackpad) in the overlay.
 
 `python3 -m unittest test_stl_export test_half_battery test_drawer test_module_assembly trackball.test_layout`
 runs the checks.
+
+For the XIAO shields, initialize a west workspace from `zmk/config/west.yml`, then build ZMK's `app`
+for `xiao_ble//zmk` with `SHIELD=slim_diamond_trackball_xiao` or `slim_diamond_trackpad_xiao` and
+`ZMK_EXTRA_MODULES` set to this directory's absolute `zmk/` path. For example, from that workspace:
+
+```sh
+west build -s zmk/app -d build-trackball -b xiao_ble//zmk -- -DSHIELD=slim_diamond_trackball_xiao -DZMK_EXTRA_MODULES=/absolute/path/to/slim_diamond/zmk
+west build -s zmk/app -d build-trackpad -b xiao_ble//zmk -- -DSHIELD=slim_diamond_trackpad_xiao -DZMK_EXTRA_MODULES=/absolute/path/to/slim_diamond/zmk
+```
+
+The generated `zephyr/zmk.uf2` is controller-specific. Compilation is not a physical sensor, charging or Bluetooth test.
 
 ## How a reversible board makes two halves
 
@@ -355,7 +369,7 @@ python3 check_fit.py     # parts, plate, solder blobs, the reset button and its 
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
 ./kicad.sh python3 check_pcb.py   # every net against its intent, and the firmware's pin lists: ALL CLEAR
 python3 dock.py          # the cyberdeck dock's STL, and its fit check: all 0 mm³
-python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # trackball module: case, board, gerbers
+python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # both labelled panels and gerbers; DRC the XIAO variant
 python3 trackpad/trackpad.py                       # trackpad module: case and fit check
 python3 insert.py                                  # the drawer's placeholder
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh

@@ -1,0 +1,77 @@
+/* XIAO nRF52840 pin assignments; validate on the selected controller. SPDX-License-Identifier: MIT */
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors.dtsi>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+    };
+
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-direct";
+        wakeup-source;
+        input-gpios
+            = <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ;
+    };
+
+    trackball_listener: trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+
+        /* layer 1 (the right key held): the ball scrolls */
+        scroller {
+            layers = <1>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 12>;
+        };
+    };
+};
+
+/* D4/P0.04 is a key input, not the XIAO board's default I2C SDA. */
+&i2c1 { status = "disabled"; };
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 1, 15)>,
+                    <NRF_PSEL(SPIM_MISO, 1, 15)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
+                    <NRF_PSEL(SPIM_MOSI, 1, 15)>,
+                    <NRF_PSEL(SPIM_MISO, 1, 15)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi2 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>;
+
+    trackball: trackball@0 {
+        status = "okay";
+        compatible = "pixart,pmw3610-alt";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 28 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <800>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+        /* The sensor looks up at the ball from below, its pin rows across the module: if the
+         * pointer runs the wrong way, toggle these (and swap-xy if it moves sideways). */
+        invert-x;
+        force-awake;
+    };
+};

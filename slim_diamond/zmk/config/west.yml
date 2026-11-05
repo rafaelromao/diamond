@@ -1,13 +1,11 @@
 # ZMK and the sensor drivers the modules need, pinned: ZMK as in rafaelromao/keyboards' scripts/zmk.sh,
-# the drivers at the revisions these shields were written against.
+# the PMW3610 driver at the revision this shield was written against. Cirque uses Zephyr's driver.
 manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
     - name: badjeff
       url-base: https://github.com/badjeff
-    - name: petejohanson
-      url-base: https://github.com/petejohanson
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -15,9 +13,6 @@ manifest:
       import: app/west.yml
     - name: zmk-pmw3610-driver
       remote: badjeff
-      revision: 44b4a76
-    - name: cirque-input-module
-      remote: petejohanson
-      revision: 0de55f3
+      revision: 44b4a76b74d293a93cec4ccb7e04cb8d29c10f93
   self:
     path: config

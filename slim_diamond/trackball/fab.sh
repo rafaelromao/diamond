@@ -18,3 +18,4 @@ for face in F B; do
         $( [ $face = B ] && echo --mirror ) --layers $face.Silkscreen,$face.Fab,Edge.Cuts \
         -o trackball/fab/print_1to1_${face}_face.pdf trackball/pcb/trackball.kicad_pcb >/dev/null
 done
+sh ./trackball/fab_xiao.sh
