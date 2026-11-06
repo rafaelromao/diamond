@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name "trackball")(type "KiCad")(uri "${KIPRJMOD}/../pcb/trackball.pretty")(options "")(descr ""))
-)

@@ -1,8 +1,6 @@
 /*
- * Slim Diamond Trackpad: a 40 mm Cirque (TM040040, SPI), two Choc keys, hand-wired to a nice!nano.
- * Wiring from trackpad/trackpad.py: pad SCK P0.20 (D3), SO/MISO P0.22 (D4), SI/MOSI P0.24 (D5),
- * SS P1.00 (D6), DR P0.11 (D7); key 1 P1.04 (D8), key 2 P1.06 (D9). SPI2: the nice!nano board
- * doesn't claim it.
+ * Cirque I2C breakout: SDA D2/P0.17, SCL D3/P0.20, power and ground through FFC.
+ * Separate direct DR wire D7/P0.11; keys D8/P1.04 and D9/P1.06.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -37,42 +35,38 @@
 };
 
 &pinctrl {
-    spi2_default: spi2_default {
+    i2c0_default: i2c0_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 22)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 24)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
         };
     };
 
-    spi2_sleep: spi2_sleep {
+    i2c0_sleep: i2c0_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 22)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 24)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
             low-power-enable;
         };
     };
 };
 
-&spi2 {
+&i2c0 {
     status = "okay";
-    compatible = "nordic,nrf-spim";
-    pinctrl-0 = <&spi2_default>;
-    pinctrl-1 = <&spi2_sleep>;
+    compatible = "nordic,nrf-twim";
+    clock-frequency = <100000>;
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
 
-    glidepoint: glidepoint@0 {
+    glidepoint: glidepoint@2a {
         compatible = "cirque,pinnacle";
-        reg = <0>;
-        spi-max-frequency = <1000000>;
+        reg = <0x2a>;
         status = "okay";
         data-ready-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
         sensitivity = "4x";
         sleep-mode-enable;
         primary-tap-enable;
-        /* The pad lies flat, its cable towards the keys: if the pointer runs the wrong way,
-         * toggle x-invert / y-invert, or add rotate-90. */
+        /* Validate orientation and tap/sleep behaviour on the actual pad. */
     };
 };

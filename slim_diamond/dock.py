@@ -54,7 +54,7 @@ FOOT_LIFT = 0.5               # the dock's underside, cut this far off the desk:
 FEET = 3                      # bump-ons under each wing (the case's 8 x 2 mm ones)
 FOOT_SKIN = 0.6               # plastic over each foot's recess
 RELIEF = (0.6, 1.0, 2.5)      # the diamond cut in the spine's top: depth, line width, margin round it
-BASE_MAGS = 5                 # magnets between the dock and the base, at most (as many as fit)
+BASE_MAGS = 5                 # candidate stand contacts; discard the one too close to the drawer magnet
 BASE_MAG = D["magnet_floor_size"]  # the same 8 x 1.5 mm discs used everywhere else
 DRAWER = True                 # the spine's middle is a drawer for a module, pulled out through the front
 DRAWER_MAGS = (1, 3, 5)       # three evenly spaced mates across the insert's side walls
@@ -64,7 +64,8 @@ DRAWER_WALL = 2.4             # continuous walls house the common magnets and th
 DRAWER_SKIN = 0.6             # dock wall between the drawer and the dock's own side magnets' pockets
 DRAWER_BACK = -14.0           # the drawer's back (y): both modules end there
 DRAWER_CLR = 0.35             # round a module in the drawer: both parts print once, no sanding
-DRAWER_FLOOR_MAG = (0.0, -48.3)   # on the centreline, midway between the stand magnets under the spine
+DRAWER_FLOOR_MAG = (0.0, -48.3)   # top-facing drawer retention; underside pockets keep a solid web from it
+DRAWER_MAG_WEB = 1.4             # nominal plastic between its pocket and an underside base pocket: 1.0 mm left if each is 0.2 mm out
 MODULE_FEET = 0.5             # a module's bump-ons stand this far below it
 BASE_MAG_SLOP = 0.3           # round the base's magnets, which are glued on by hand
 MAG_COST = 1.0                # most extra tent (degrees) a floor magnet may add to get its pocket
@@ -306,6 +307,11 @@ def base_magnet_spots(dock, pocket):
         if min(math.dist(q, s) for s in spots) < 2 * r:
             break                                   # no room for another
         spots += [q] if q[0] == 0 else [(-q[0], q[1]), q]
+    if DRAWER:
+        # Both faces of this floor are machined by the model. Keep the top retention disc;
+        # remove the nearest underside contact rather than weakening the web between pockets.
+        separation = 4.15 + BASE_MAG[0] / 2 + BASE_MAG_SLOP + DRAWER_MAG_WEB
+        spots = [s for s in spots if math.dist(s, DRAWER_FLOOR_MAG) >= separation]
     return spots
 
 

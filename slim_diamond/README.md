@@ -154,8 +154,8 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   desk and carries the phone. Behind the spine the base is left bare, its hinge (`HINGE`,
   30 × 28 mm, estimated from photos: measure yours) 0.5 mm (`HINGE_CLR`) off the halves, the
   wings and the spine, as far forward as their back corners let it. The pocket's fit holds the
-  dock on the base, together with five pairs of the common **8 × 1.5 mm magnets**: five pressed
-  into the pocket's roof and five glued on the aluminium base. The tent also keeps room for
+  dock on the base, together with three pairs of the common **8 × 1.5 mm magnets**: three pressed
+  into the pocket's roof and three glued on the aluminium base. The tent also keeps room for
   both discs and their backing below the drawer floor.
 - **The board's lower half:** under each half's girdle, its widest line, every wall of the dock
   carries on the case's own 45° bottom chamfer down to the desk, one flat plane with it, front,
@@ -165,7 +165,7 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   desk, and each pad recess is shaped to its bump-on's dome so none breaks out of a wall.
 - **The halves on wings** the shape of their floors, inner side up, outer pad on the desk, splayed
   12° (`SPLAY`). The extra tent is the least that keeps 1.6 mm of plastic over the base and room
-  under the magnets: 5.96°, about 12.5° in all. Every pad slot has a recess, both ends.
+  under the magnets: 5.70°, about 12.3° in all. Every pad slot has a recess, both ends.
 - **A spine** between the halves, level with their seam walls' top edges, its front and back
   carrying on both halves' walls, its point cut to a flat as wide as the joined board's front
   flat (about 20 mm). Its middle is a **drawer** (`DRAWER`), pulled out through the front, for a module
@@ -186,8 +186,8 @@ stand it is a tented, splayed unibody, sturdier than the magnets at the seam alo
   6, every other magnet in the six-position row). The same insert magnets meet either half directly on the desk.
   Check magnetic holding force with real magnets before relying on it to carry the assembly.
 - **A magnet under each pointing module:** one more 8 × 1.5 mm N52 disc in the module's floor and its
-  mate in the drawer floor, on the centreline at y = −48.3 mm, midway between the two stand magnets
-  under the spine. The rear stays free for USB-C and the power switch.
+  mate in the drawer floor, on the centreline at y = −48.3 mm. Only three underside stand contacts are used, so at least 1 mm of plastic remains between opposing pocket envelopes, even with each pocket 0.2 mm off.
+  The rear stays free for USB-C and the power switch.
 - **Lap use:** the rear hood recess and USB passage remove material from the dock spine, and an
   insert is not bonded to it. Test a printed dock under load before relying on it for lap use.
 - **Magnets in the wings** under six of each half's seven floor magnets. `MAG_COST` rejects
@@ -214,7 +214,7 @@ either half's inner wall on the desk, or sits on its own on its bump-ons. They a
 tray, a lid, and the same M3 × 8 flat-head screws from the top. The tray is one print, shared by every
 module; only the lid changes.
 
-- **Shared by both:** the tray, the main board (keys, hot-swap sockets, power switch), the nice!nano,
+- **Shared by both:** the tray, the main board (keys, hot-swap sockets, power switch), a wired controller,
   a 752025 (250 mAh) battery, and a sensor board holding the reset button. All in the same places, so the
   power slider, the USB-C port and the reset hole are in the same spot on every module.
 - **Retention:** three common magnets a side where the halves' inner-wall magnets are (the 2nd, 4th and
@@ -251,7 +251,7 @@ clearance.
 ### Slim Diamond Trackball (`trackball/trackball.py`)
 
 A 34 mm ball and two MX or Choc v1 hot-swap keys on one shared PCB. The MX lid stands 4 mm over the
-halves; the Choc lid 1.2 mm. Their side facets run from the halves' top height to the lid top and can be steeper than 45°.
+halves; the Choc lid 1.2 mm. Their front and side upper facets run from the halves' top height to the lid top. The front facet is steeper to preserve the 40 mm trackpad rim and key/power-switch clearance; the lower front remains matched to the drawer.
 
 - The ball sits in a cup in the lid on three 3 mm Si3N4 balls and lifts straight out. Under it, a PMW3610
   on its own board looks up through an LM18-LSI lens (circuit after siderakb's pmw3610-pcb, CERN-OHL-P-2.0,
@@ -268,34 +268,45 @@ halves; the Choc lid 1.2 mm. Their side facets run from the halves' top height t
 - One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 39.2 × 99.5 mm: the main board and the
   sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
-- A separately labelled wired XIAO/Super52840 option is available as `trackball/fab/trackball_xiao_jlcpcb.zip`.
-  Its copper and breakaway panel are identical; the controller pin mapping and firmware differ. It is intended
-  to reuse the tray; the firmware compiles, but real-controller fit, wiring and operation remain unverified; see `BUILD.md`.
+- **One orderable PCB for nice!nano v2 or plain XIAO nRF52840:** both controllers connect by wires to
+  the same carrier's signal pads, with different GPIO assignments and firmware. No different copper,
+  jumpers or second panel is needed. The `XIAO / WIRED BELOW` silkscreen is a projected placement outline,
+  not a direct-solder footprint. Complete signal, supply, battery and reset mappings are in `BUILD.md`.
+  The reference XIAO's USB overhang is about 1.53 mm, so its PCB sits 0.93 mm farther forward than
+  the nice!nano envelope to place both receptacle mouths at the same rear plane. The tray's shared
+  supports clear the Seeed STEP reference, but actual revisions, clones, wiring and retention still need checking.
 - The sensor's posts print 0.4 mm low. Equal shims can adjust the optical gap, but the real ball-to-board
   distance and lens reference-plane height must be measured; see `BUILD.md` for the calculation and limits.
 
 ### Slim Diamond Trackpad (`trackpad/trackpad.py`)
 
-The same module with a 40 mm Cirque (TM040040, SPI) in the lid instead of the ball. It uses the Choc
+The same module with a 40 mm Cirque (TM040040, I²C) in the lid instead of the ball. It uses the Choc
 sockets on the shared main board and stands at the Choc lid's height, 1.2 mm over the halves.
 
-- The intended pad mounting uses a ledge and seven direct wires to the nice!nano, without a ribbon cable.
-  Verify the exact pad's support ring, test-pad pin mapping, solderability and wired closure before assembly.
+- Retain the supplied I²C breakout with its pull-up resistors and original 12-pin flat cable.
+  Four wires connect the MCU to the breakout; one separate DR wire connects the MCU directly to the
+  Cirque underside. The sensor/reset board area reserves a 24 × 18 × 4.5 mm breakout envelope on a
+  2.5 mm insulating spacer, plus cable-bend room, with no printed holder. Verify actual kit dimensions.
 
-| Wire | nice!nano pin |
-|---|---|
-| Pad SCK, SO, SS, DR, SI | D3 (P0.20), D4 (P0.22), D6 (P1.00), D7 (P0.11), D5 (P0.24) |
-| Pad GND, VDD | GND, VCC (3.3 V) |
-| Main board K1, K2 | D8 (P1.04), D9 (P1.06) |
-| Main board GND, VBAT, RST | GND, B+, RST |
+| Wire | nice!nano v2 | Plain XIAO nRF52840 |
+|---|---|---|
+| Breakout SDA | D2 (P0.17) | D4 (P0.04) |
+| Breakout SCL | D3 (P0.20) | D5 (P0.05) |
+| Cirque DR, separate underside wire | D7 (P0.11) | D2 (P0.28) |
+| Breakout GND, VDD | GND, VCC (3.3 V) | GND, 3V3 |
+| Main board K1, K2 | D8 (P1.04), D9 (P1.06) | D3 (P0.29), D1 (P0.03) |
+| Main board GND, VBAT, RST | GND, B+, RST | GND, BAT+, reset pad |
+
+Use I²C at address `0x2A`; confirm R1 is absent on an SPI-labelled kit and leave R7/R8 fitted for
+3.3 V operation. The XIAO trackpad's K2 uses D1, not the trackball's D4, which is now I²C SDA.
 
 **Firmware** (`zmk/`): a ZMK config with both shields, `slim_diamond_trackball` (the PMW3610 through
 badjeff's zmk-pmw3610-driver) and `slim_diamond_trackpad` (the Cirque through Zephyr's in-tree
 Pinnacle driver), pinned in `zmk/config/west.yml`. Key 1 clicks left; key 2 clicks right, and
 held turns pointing into scrolling; both together click middle. If the pointer runs the wrong way,
-toggle `invert-x` / `invert-y` (trackball) or `x-invert` / `y-invert` (trackpad) in the overlay.
+check the selected driver's orientation settings against its binding before changing the overlay.
 
-`python3 -m unittest test_stl_export test_half_battery test_drawer test_module_assembly trackball.test_layout`
+`python3 -m unittest test_stl_export test_half_battery test_drawer test_module_assembly test_xiao_option trackball.test_layout`
 runs the checks.
 
 For the XIAO shields, initialize a west workspace from `zmk/config/west.yml`, then build ZMK's `app`
@@ -355,6 +366,8 @@ b slim_diamond -c   # central left, peripheral left/right, dongle
 
 ## Regenerating
 
+For a mechanical blind review or print-readiness review, apply [REVIEW_CHECKLIST.md](REVIEW_CHECKLIST.md), including opposing pockets in the populated assembly.
+
 Requires Python 3 with `requirements.txt`, podman (KiCad 9 runs in the
 `docker.io/kicad/kicad:9.0` image through `kicad.sh`), and Freerouting 2.x with
 Java 25.
@@ -369,7 +382,8 @@ python3 check_fit.py     # parts, plate, solder blobs, the reset button and its 
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
 ./kicad.sh python3 check_pcb.py   # every net against its intent, and the firmware's pin lists: ALL CLEAR
 python3 dock.py          # the cyberdeck dock's STL, and its fit check: all 0 mm³
-python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # both labelled panels and gerbers; DRC the XIAO variant
+python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # common wired-controller panel and gerbers
+./kicad.sh python3 trackball/check_controller_pcb.py   # actual carrier pads: signals, power, battery and reset
 python3 trackpad/trackpad.py                       # trackpad module: case and fit check
 python3 insert.py                                  # the drawer's placeholder
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh

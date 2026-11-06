@@ -3,8 +3,8 @@
 It is the trackball's module with a different lid. The tray, the main board (keys, sockets, power
 switch), the nice!nano, the battery and a sensor board are all the same, in the same places: the
 power switch and USB-C at the back, the reset button pressed from below. Only the lid differs: it
-carries the pad, on a ledge. The sensor board carries nothing but its reset button. No ribbon cable:
-seven wires go straight from the pad's labelled test pads to the nice!nano.
+carries the pad, on a ledge. The sensor board carries only reset. The supplied I2C breakout and
+flat cable are retained; four wires go to the breakout and a separate DR wire to the pad.
 
 Writes trackpad/design.json (placement, wiring), case/lid.stl, and prints the fit check.
 """
@@ -23,12 +23,15 @@ from shapely.geometry import Point, box
 import case as C
 import module_shell as M
 from trackball import trackball as B
+from trackball.controller_pinout import SIGNALS, GPIO
 
 H = M.PCB_TOP + B.CHOC["below_plate"]   # the Choc trackball's height
 TOP_T = 1.2                    # the top: a Choc plate (the switches clip into 1.2 to 1.3 mm)
 # TM040040 spec: 0.99 mm PCB + overlay, 5.15 +/- 0.2 mm with components, none in the outer 2 mm ring.
 # The seat is 1.2 deep: the difference is the adhesive dots. The ledge sits under that free ring.
 PAD = dict(d=40.0, t=1.2, back=4.4, clr=0.3, rim=1.0, ledge=1.8, gap=12.0)
+BREAKOUT = (24.0, 18.0, 4.5)   # reserved maximum envelope, including parts/connector, not a measured kit
+BREAKOUT_LIFT = 2.5            # insulating spacer clears the sensor-board screw heads; no holder
 NANO = B.NANO
 box3 = B.box3
 usb_z = B.usb_z
@@ -37,7 +40,7 @@ PLATE_TOP = B.PLATE_TOP
 
 def place():
     L = dict(B.place())
-    top = M.profile(H)
+    top = M.lid_top_plan(H)
     r = PAD["d"] / 2 + PAD["clr"]
     # the pad: as far forward as fits with PAD['rim'] of top round it
     L["pad"] = (0.0, next(y for y in np.arange(top.bounds[1] + r, -30, 0.1)
@@ -54,7 +57,48 @@ def parts(L, main_plan, sensor_plan):
     pz = H - PAD["t"]
     out.append(("pad", Manifold.cylinder(PAD["t"], PAD["d"] / 2, circular_segments=96).translate((px, py, pz))))
     out.append(("pad's back parts", Manifold.cylinder(PAD["back"], PAD["d"] / 2 - PAD["ledge"] - 0.3,
-                                                      circular_segments=96).translate((px, py, pz - PAD["back"]))))
+                                                       circular_segments=96).translate((px, py, pz - PAD["back"]))))
+    out.append(("I2C breakout envelope", breakout_envelope(L)))
+    out.append(("FFC bend envelope", ffc_envelope(L)))
+    return out
+
+
+def breakout_envelope(L):
+    """Reserved insulated packing space, not a printed holder or exact supplied PCB model."""
+    x, y = L['ball']
+    z = B.PLATE_TOP + B.SENSOR_BELOW + B.PCB_T + BREAKOUT_LIFT
+    w, length, height = BREAKOUT
+    return box3(x - w / 2, y - length / 2, z, x + w / 2, y + length / 2, z + height)
+
+
+def ffc_envelope(L):
+    """Space for a 6 mm-wide 12-pin FFC and its bend above the breakout."""
+    top = breakout_envelope(L).bounding_box()[5]
+    return box3(-3.5, L['ball'][1] - 2, top + .3,
+                3.5, L['pad'][1] + 18, H - PAD['t'] - PAD['back'] - .3)
+
+
+def breakout_visual(L):
+    """Illustrative supplied breakout within its reserved envelope, not a measured PCB."""
+    x, y = L['ball']
+    z = breakout_envelope(L).bounding_box()[2]
+    w, length, h = BREAKOUT
+    board = box3(x - w / 2, y - length / 2, z, x + w / 2, y + length / 2, z + 1.6)
+    board += box3(-4.5, y + 4, z + 1.6, 4.5, y + 8, z + h)
+    return board
+
+
+def ffc_visual(L):
+    """Illustrative 6 mm-wide flat cable, kept inside the tested bend envelope."""
+    bounds = ffc_envelope(L).bounding_box()
+    z0, z1 = bounds[2], bounds[5]
+    py, by = L['pad'][1], L['ball'][1]
+    path = [(py + 15, z1 - .15), (py + 17, (z0 + z1) / 2),
+            (py + 15, z0 + .2), (by + 6, z0 + .15)]
+    strips = [box3(-3, y - .1, z - .1, 3, y + .1, z + .1) for y, z in path]
+    out = Manifold()
+    for a, b in zip(strips, strips[1:]):
+        out += (a + b).hull()
     return out
 
 
@@ -80,11 +124,10 @@ def lid(L):
 
 
 def wiring():
-    """nice!nano pins (Pro Micro names, nRF52840 port.pin) for each wire, from the pad's labelled test
-    pads. The keys, reset and power go through the main board's pads, as on the trackball."""
+    """nice!nano I2C breakout wiring, plus the separate underside DR wire."""
     return {
-        "pad SCK": ("D3", "P0.20"), "pad SO": ("D4", "P0.22"), "pad SS": ("D6", "P1.00"), "pad DR": ("D7", "P0.11"),
-        "pad SI": ("D5", "P0.24"), "pad GND": ("GND", ""), "pad VDD": ("VCC", "3.3 V"),
+        "breakout SDA": ("D2", "P0.17"), "breakout SCL": ("D3", "P0.20"), "pad DR": ("D7", "P0.11"),
+        "breakout GND": ("GND", ""), "breakout VDD": ("VCC", "3.3 V"),
         "main board K1": ("D8", "P1.04"), "main board K2": ("D9", "P1.06"),
         "main board GND": ("GND", ""), "main board VBAT": ("B+", ""), "main board RST": ("RST", ""),
     }
@@ -103,7 +146,8 @@ def main():
     B.stl_lid(lid_m, H, os.path.join(HERE, "case", "lid.stl"))
     shutil.copyfile(os.path.join(HERE, "case", "lid.stl"), os.path.join(HERE, "..", C.STLS, "trackpad_lid.stl"))
     json.dump(dict(layout={k: v for k, v in L.items()}, height=H, screws=M.lid_screws(), feet=M.feet_spots(),
-                   wiring=wiring()), open(os.path.join(HERE, "design.json"), "w"), indent=1,
+                    wiring=wiring(), controllers=SIGNALS['trackpad'], gpio=GPIO,
+                    breakout_envelope=BREAKOUT, breakout_lift=BREAKOUT_LIFT), open(os.path.join(HERE, "design.json"), "w"), indent=1,
               default=lambda o: [float(v) for v in o])
     return L, lid_m, tray_m, ps
 

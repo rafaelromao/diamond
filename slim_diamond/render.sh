@@ -63,6 +63,8 @@ for kind in trackball trackball_choc trackpad; do
 done
 
 # the routed trackball board (when generated)
+r --rotate '-40,0,-25' --zoom 0.0017 -o renders/trackball_xiao_stack.png .render/trackball_xiao_stack.kicad_pcb
+r --rotate '-25,0,-130' --zoom 0.0013 -o renders/trackball_xiao_usb_open.png .render/trackball_xiao_usb_open.kicad_pcb
 if [ -f trackball/pcb/trackball.kicad_pcb ]; then
     r --side top    --zoom 0.85 -o renders/trackball_board_top.png    trackball/pcb/trackball.kicad_pcb
     r --side bottom --zoom 0.85 -o renders/trackball_board_bottom.png trackball/pcb/trackball.kicad_pcb

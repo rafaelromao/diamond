@@ -1,5 +1,6 @@
 """Front continuity, retention and standing-plane checks. Run: python3 -m unittest test_drawer."""
 import unittest
+import math
 
 from manifold3d import Manifold
 from shapely.geometry import LineString, Polygon
@@ -72,6 +73,18 @@ class DrawerTest(unittest.TestCase):
         self.assertLess(abs((backing - self.dock.solid).volume()), 1e-3)
         mate = M.floor_magnet().translate((0, 0, z))
         self.assertAlmostEqual(mate.bounding_box()[2] - magnet.bounding_box()[5], .55)
+
+    def test_underside_stand_magnets_leave_the_top_retention_pocket_a_web(self):
+        self.assertEqual(len(self.dock.base_spots), 3)
+        for x, y in self.dock.base_spots:
+            # pocket envelopes, each 0.2 mm out towards the other: still 1.0 mm of web
+            web = math.dist((x, y), K.DRAWER_FLOOR_MAG) - 4.15 - (K.BASE_MAG[0] / 2 + K.BASE_MAG_SLOP) - .4
+            self.assertGreaterEqual(web, 1.0 - 1e-6)
+        # The deleted underside centre contacts are filled with plastic, not left as empty holes.
+        for y in (-57.15, -38.65):
+            probe, _ = K.base_magnet_pocket(0.0, y)
+            probe = probe.trim_by_plane((0, 0, 1), K.POCKET_TOP + .05)
+            self.assertLess(abs((probe - self.dock.solid).volume()), 1e-3)
 
     def test_seated_usb_plugs_clear_shell_plate_and_dock(self):
         for mod in (trackball, trackpad):

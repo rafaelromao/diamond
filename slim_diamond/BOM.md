@@ -22,12 +22,12 @@ packs come in round numbers anyway.
 
 **Cyberdeck dock (optional):** `case/dock.stl` (about 83 cm³, 95 g of Nylon), for a Ugreen folding phone
 stand with an 85 × 105 × 4 mm base, or on its own as a tented unibody. Print it flat side down, with
-supports inside the pocket (its roof spans 85 mm). It takes **35 common 8 × 1.5 mm discs**:
-12 under the halves (six per half), 12 in the drawer walls (six per side), 10 for the five base-magnet
+supports inside the pocket (its roof spans 85 mm). It takes **31 common 8 × 1.5 mm discs**:
+12 under the halves (six per half), 12 in the drawer walls (six per side), 6 for the three base-magnet
 pairs and one in the drawer floor. The side magnets face all six seam magnets outside; positions 2, 4
 and 6 also face the insert through a 0.6 mm inner skin. Load them from outside, flush, then glue in
-place. A magnet chain must attract throughout: half → dock → insert. Five base discs go in the dock
-and five are glued on the aluminium Ugreen base, paired with opposite poles facing. Add **6 more
+place. A magnet chain must attract throughout: half → dock → insert. Three base discs go in the dock
+and three are glued on the aluminium Ugreen base, paired with opposite poles facing. Add **6 more
 8 × 2 mm bump-ons**, three under each wing.
 
 **Independent tenting (optional):** two Ugreen stands and **6 common discs**, three glued to each
@@ -37,8 +37,8 @@ tilting phone platform, using the mirrored 1:1 SVG templates in `case/`. The pla
 **Drawer placeholder:** `case/insert.stl` (71.5 cm³, solid), for when neither module is in the drawer:
 **6 common discs**, three a side.
 
-**Magnet total:** both halves 26 + dock and base 35 + stands 6 + placeholder 6 + both pointing modules 14
-= **87 discs**, before spares.
+**Magnet total:** both halves 26 + dock and base 31 + stands 6 + placeholder 6 + both pointing modules 14
+= **83 discs**, before spares.
 
 **Drawer modules (optional).** Either slides into the dock's drawer from the front, or snaps onto either
 half's inner wall on the desk. Everything below is per module, and most of it is the same part you already
@@ -48,14 +48,14 @@ buy for the halves.
 |---|---|---|---|
 | Printed tray, `case/module_tray.stl` | 1 | | The same print for every module |
 | Printed lid | 1 | | `trackball/case/lid.stl` (MX), `trackball/case/lid_choc.stl` (Choc v1) or `trackpad/case/lid.stl` |
-| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm. One panel: main board and sensor board. The same board for trackball and trackpad |
+| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm. One breakaway main/sensor panel for both pointing modules and either wired controller: nice!nano v2 or plain XIAO nRF52840 |
 | M3 × 8 flat-head screws | 6 | same as item 11 | Four through the lid, two intended for the sensor board; check sensor screw depth before installing the battery |
 | Disc magnets 8 × 1.5 mm, N52 | 7 | same as item 10 | Three a side, one in the floor |
 | Silicone bump-ons 8 × 2 mm | 3 | same as item 12 | |
 | Slide switch MSK-12C02 | 1 | same as item 8 | On the main board, lever out of the back wall |
 | Reset button TS-1187A | 1 | same as item 9 | On the sensor board, facing down |
 | nice!nano v2 or clone | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, USB-C flush with the back, wired to labelled pads |
-| **Alternative** to nice!nano: XIAO nRF52840 or Super52840 | 1 | same as item 2 | Wired controller; XIAO-labelled panel `trackball/fab/trackball_xiao_jlcpcb.zip`. Firmware compiles, but real controller fit and operation remain unverified; Super52840 support is experimental |
+| **Alternative** to nice!nano: plain XIAO nRF52840 or Super52840 | 1 | same as item 2 | Same PCB, different wires and firmware. XIAO placement is marked on its silkscreen; this is not a direct-solder footprint. Real fit and operation remain unverified; Super52840 support is experimental |
 | LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell |
 | 30 AWG stranded wire | 80 to 100 mm per wire | `30 AWG silicone wire` | |
 
@@ -69,11 +69,12 @@ buy for the halves.
 
 | Trackpad | Qty | Search for | Notes |
 |---|---|---|---|
-| Cirque TM040040-2024-302 | 1 | `TM040040-2024-302` (Mouser) | SPI, flat overlay. Direct test-pad wiring and clearance remain to be verified on the actual part; no ribbon cable or adapter |
+| Cirque TM040040-2023-302 or I²C-configured kit | 1 | `Cirque 40mm I2C flat overlay` | Use the supplied I²C breakout and flat cable; on SPI-labelled kits remove R1 for I²C, keeping R7/R8 for 3.3 V |
+| Supplied I²C breakout with pull-ups + 12-pin FFC | 1 + 1 | supplied with the kit | Reserved maximum breakout envelope 24 × 18 × 4.5 mm; confirm actual size and FFC contact orientation. Four MCU wires to breakout, separate DR wire directly to Cirque underside |
 | Choc v1 switches, sockets and keycaps | 2 + 2 + 2 | same as items 3, 4, 5 | |
 
 Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, CA glue
-or epoxy for the magnets, removable adhesive dots for the trackpad, and thin card for the sensor's
-shims.
+or epoxy for the magnets, removable adhesive dots for the trackpad, thin card for the sensor's
+shims, and a 2.5 mm insulating spacer/tape stack for the I²C breakout (no printed holder).
 
 Soldering, assembly and printing: see [BUILD.md](BUILD.md).

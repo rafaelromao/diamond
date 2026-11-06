@@ -10,7 +10,8 @@ def main():
     root = Path(".")
     sources = sorted({*root.glob("*.py"), *root.glob("*.json"), root / "render.sh",
                       root / "trackball/trackball.py", root / "trackpad/trackpad.py",
-                      root / "trackball/pcb/trackball.kicad_pcb", root / ".render/scenes.json"})
+                      root / "trackball/pcb/trackball.kicad_pcb", root / ".render/scenes.json",
+                      *root.glob('trackball/models/*'), root / 'trackball/controllers.py'})
     # Test/doc helper edits do not invalidate unchanged imagery. The rendered
     # scene and both final boards do; every PNG is regenerated after these.
     scene_stamp = (root / ".render/scenes.json").stat().st_mtime
@@ -26,6 +27,7 @@ def main():
                 for v in ("structure", "seam", "tray", "stack", "reset")]
     required += [f"{k}_{v}.png" for k in ("trackball", "trackpad")
                  for v in ("rear", "assembly", "under", "usb", "usb_open", "usb_dock")]
+    required += ['trackball_xiao_stack.png', 'trackball_xiao_usb_open.png']
     assert all((root / "renders" / n).is_file() for n in required)
     font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationSans-Regular.ttf", 22)
     sheet = Image.new("RGB", (1800, ((len(required) + 2) // 3) * 500), "white")

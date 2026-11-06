@@ -3,7 +3,7 @@ import math
 import unittest
 
 from manifold3d import Manifold
-from shapely.geometry import Point
+from shapely.geometry import Point, box
 
 import module_shell as M
 from trackball import trackball as B
@@ -97,6 +97,18 @@ class ModuleAssemblyTest(unittest.TestCase):
             self.assertGreater(tip, .95 - 1e-6)     # no shim at all
             skin = Manifold.cylinder(.4, 2.0, circular_segments=40).translate((x, y, M.FEET + .02))
             self.assertLess(abs((skin - self.tray).volume()), TOL)
+
+    def test_front_facet_runs_the_full_height_of_the_upper_bevel(self):
+        from shapely.geometry import LineString
+        base = M.profile(M.FLUSH).intersection(LineString([(0, -200), (0, 0)])).bounds[1]
+        for name, lid, _, height in self.modules:
+            inset = min(height - M.FLUSH, M.UPPER_BEVEL, M.FRONT_BEVEL)
+            for fraction in (.1, .5, .9):
+                z = M.FLUSH + fraction * (height - M.FLUSH)
+                section = lid ^ B.box3(-.01, -110, z - .001, .01, -90, z + .001)
+                with self.subTest(module=name, fraction=fraction):
+                    self.assertFalse(section.is_empty())
+                    self.assertAlmostEqual(section.bounding_box()[1], base + fraction * inset, delta=.02)
 
     def test_a_driver_reaches_every_screw_from_above(self):
         for name, lid, parts, height in self.modules:
@@ -234,10 +246,45 @@ class ModuleAssemblyTest(unittest.TestCase):
             self.assertLess(hit(over, self.tray), TOL)
 
     def test_pad_wires_have_a_way_down(self):
-        wires = Manifold.cylinder(6.2, 1.2, circular_segments=32).translate((0, -60.2, 10.8))
+        # The separate DR lead passes beside, not through, the retained FFC bend envelope.
+        wires = Manifold.cylinder(6.2, .45, circular_segments=32).translate((4.8, -60.2, 10.8))
         for label, solid in self.modules[2][2]:
             if label not in ("pad's back parts", "pad"):
                 self.assertLess(hit(wires, solid), TOL, label)
+
+    def test_i2c_breakout_and_ffc_have_reserved_space_without_a_holder(self):
+        parts = dict(self.modules[2][2])
+        board = parts['I2C breakout envelope']
+        cable = parts['FFC bend envelope']
+        self.assertEqual(T.BREAKOUT, (24.0, 18.0, 4.5))
+        for name, part in parts.items():
+            if name not in ('I2C breakout envelope', 'FFC bend envelope'):
+                with self.subTest(part=name):
+                    self.assertLess(hit(board, part), TOL)
+                    self.assertLess(hit(cable, part), TOL)
+        for part in (self.tray, self.modules[2][1]):
+            self.assertLess(hit(board + cable, part), TOL)
+        for x, y in B.sensor_holes(self.L):
+            screw = M.flat_screw(x, y, B.PLATE_TOP + B.SENSOR_BELOW + B.PCB_T + M.SCREW['head_h'])
+            self.assertLess(hit(board + cable, screw), TOL)
+        self.assertLess(abs((T.breakout_visual(self.P) - board).volume()), TOL)
+        self.assertLess(abs((T.ffc_visual(self.P) - cable).volume()), TOL)
+        self.assertGreater(cable.bounding_box()[5] - cable.bounding_box()[2], 1.5)
+
+    def test_countersinks_keep_a_printable_web_from_the_pad_seat(self):
+        px, py = self.P['pad']
+        seat = T.PAD['d'] / 2 + T.PAD['clr']
+        for x, y in M.lid_screws():
+            web = math.dist((x, y), (px, py)) - seat - M.SCREW['head'] / 2
+            with self.subTest(screw=(x, y)):
+                self.assertGreaterEqual(web, .8)       # two 0.4 mm perimeters at least
+
+    def test_trackpad_is_clear_of_both_keys_after_front_bevel(self):
+        px, py = self.P['pad']
+        pad = Point(px, py).buffer(T.PAD['d'] / 2)
+        for x, y in self.P['keys']:
+            cap = box(x - 9, y - 9, x + 9, y + 9)
+            self.assertGreater(pad.distance(cap), .2)
 
 
 if __name__ == "__main__":

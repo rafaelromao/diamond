@@ -18,6 +18,8 @@ import os
 import sys
 
 import pcbnew
+from controller_marks import annotate
+from controller_pinout import write_pinout
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PCB_DIR = os.path.join(HERE, "pcb")
@@ -310,10 +312,10 @@ def build():
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, tab_box(), layer, rule={"tracks", "vias", "pour"})
         zone(board, nano_antenna(), layer, rule={"vias", "pour"})       # thin tracks may cross
+    annotate(board, D)
     pcbnew.SaveBoard(BOARD, board)
     pcbnew.ExportSpecctraDSN(board, os.path.join(PCB_DIR, "trackball.dsn"))
-    json.dump({"pins": PINS, "wires_main": WIRES_MAIN, "wires_sensor": WIRES_SENSOR},
-              open(os.path.join(PCB_DIR, "pinout.json"), "w"), indent=1)
+    write_pinout(os.path.join(PCB_DIR, "pinout.json"))
     print("pins:", PINS)
 
 

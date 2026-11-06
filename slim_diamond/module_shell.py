@@ -24,6 +24,7 @@ from functools import lru_cache
 import numpy as np
 from manifold3d import CrossSection, FillRule, Manifold
 from shapely.geometry import LineString, Point, Polygon, box
+from shapely import affinity
 from shapely.ops import unary_union
 
 import dock as K
@@ -36,6 +37,7 @@ BOTTOM_T = 2.2                     # foot roofs are reinforced locally to 1.1 mm
 PCB_T = 1.6
 BEVEL_WALL = 1.0                   # the wall under the bevel, square to it (2.5 perimeters at 0.4 mm)
 UPPER_BEVEL = 1.5                  # maximum 45-degree rim width; retain material round rear switch holes
+FRONT_BEVEL = .6                   # steeper front facet retains the 40 mm pad's rim and key/power clearance
 LID_CLR = 0.25                     # round the lid's locating lip, inside the walls
 MAG_D, MAG_H = K.D["magnet_side_size"]          # common disc pocket, with fit clearance
 MAG_Z = K.D["magnet_side_z"] + K.PAD_DROP       # over the standing plane: a half's, on its pads
@@ -44,7 +46,7 @@ _S = K.D["screw"]                  # the halves' M3 x 8 flat head (90-degree cou
 SCREW = dict(pilot=_S["pilot_d"], post=5.8, head=_S["head_d"], hole=_S["pcb_hole"],
              boss=_S["boss_d"], length=_S["length"], cone=1.5, head_h=1.65)
 FRONT_SCREW = (19.5, -91.5)        # into the tray's front posts, clear of the ball and the pad
-PCB_SCREW = (12.3, -56.5)          # through the main board, beside the first key
+PCB_SCREW = (12.3, -54.0)          # through the main board, beside the first key; far enough back to leave the trackpad's seat a web
 BUMPON = (8.0, 2.0)                # the case's 8 x 2 mm bump-ons, recessed to stand FEET proud
 SPINE_TOP = K.spine_height(P)
 FLOOR_Z = K.drawer_floor(P)        # the drawer's floor over the desk
@@ -74,6 +76,20 @@ def inner():
 def profile(height):
     """The actual outer plan at height above the module's standing plane."""
     return K.module_plan(P, FLOOR_Z + height)
+
+
+def lid_top_plan(height):
+    """Upper rim drawn in from the actual halves-height front, not its lower envelope."""
+    return upper_inset(profile(FLUSH), min(height - FLUSH, UPPER_BEVEL))
+
+
+def upper_inset(poly, inset):
+    """Side inset, with a shallower horizontal setback at the front (same full-height facet)."""
+    top = poly.buffer(-inset, join_style=2)
+    front = min(inset, FRONT_BEVEL)
+    if front < inset:
+        top = unary_union([top, affinity.translate(top, yoff=front - inset)]).convex_hull
+    return top
 
 
 def magnets():
@@ -184,7 +200,7 @@ def lid_blank(height, top_t):
         outer = min(height - FLUSH, UPPER_BEVEL) * (under - FLUSH) / (height - FLUSH)
         cavity = extrude(inner(), FLUSH - 1, under) ^ bevel_hull(
             inner(), under, FLUSH, inset=max(outer + BEVEL_WALL - WALL, .01),
-            rear_start=FLUSH + WALL - BEVEL_WALL * math.sqrt(2))
+            rear_start=FLUSH + WALL - BEVEL_WALL * math.sqrt(2), front_inset=WALL)
         body -= K.module_front(cavity, P, WALL)
     lip = inner().buffer(-LID_CLR, join_style=2).difference(inner().buffer(-1.0, join_style=2))
     lip = lip.intersection(box(-99, -200, 99, -22))
@@ -224,15 +240,17 @@ def rear_hood():
     return blank.trim_by_plane(normal, K.rear_hood_datum(P) / math.sqrt(2))
 
 
-def bevel_hull(poly, top, start=None, rear_start=None, inset=None):
+def bevel_hull(poly, top, start=None, rear_start=None, inset=None, front_inset=0.0):
     """From `start` (the halves' top edges, FLUSH) up to `top`, the outline drawn in by at most
     UPPER_BEVEL: one flat facet all the way, 45 degrees on a low lid, steeper on a tall one, so the
     keys and screw heads keep their rim. Below it, the outline."""
     start = FLUSH if start is None else start
     b = min(top - start, UPPER_BEVEL) if inset is None else inset
     ring = lambda p, z: [(x, y, z) for x, y in p.exterior.coords[:-1]]
+    # A small outward allowance avoids coincident hull/front-plane faces on STL quantization.
+    base = poly.intersection(profile(start).buffer(-front_inset + .005, join_style=2))
     solid = (extrude(poly, -1, top + 1) if b <= 0 else
-             Manifold.hull_points(ring(poly, -1) + ring(poly, start) + ring(poly.buffer(-b, join_style=2), top)))
+             Manifold.hull_points(ring(poly, -1) + ring(base, start) + ring(upper_inset(base, b), top)))
     # The raised rear shoulder meets the common hood at 45 degrees too. Unlike
     # the narrow side bevel, this slope spans the full height difference.
     datum = poly.bounds[3] + (FLUSH if rear_start is None else rear_start)

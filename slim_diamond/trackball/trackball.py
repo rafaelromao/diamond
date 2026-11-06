@@ -41,7 +41,7 @@ TOP_T = 1.5                    # the top: an MX plate (1.5 mm)
 MX_CUT = 14.0 + 0.2            # plate cutout: printed holes come out small
 MX_PITCH = 19.05
 SWITCH_ANGLE = 270             # sockets face the wider side of the rearward key's offset centre
-KEYS_REAR_SHIFT = 3.8          # rearward, retaining assembly clearance to the power switch
+KEYS_REAR_SHIFT = 4.2          # clears the trackpad front facet without crowding the power-switch pads
 KEYS_X = -0.45                 # common centres for both socket families and case variants
 MX = dict(cap=18.0, below_plate=5.0, socket=1.85, cap_top=8.0 + 7.6)   # cap_top: over the plate (DSA)
 CHOC = dict(cap=18.0, below_plate=2.2, socket=1.8, cap_top=7.5)
@@ -75,7 +75,7 @@ SENSOR_PARTS = {
 }
 NANO = (18.0, 33.3, 1.0, 3.2)  # w, l, PCB, USB-C receptacle
 NANO_ROW1 = 4.0                # first pin row from the USB end (for the footprint only)
-NANO_GAP = 0.3                 # its back under the sockets
+NANO_GAP = 0.6                 # also leaves 0.35 mm for the XIAO reference's thicker PCB
 BAT = (20.0, 25.0, 7.5)        # 752025 lengthwise: w (x), l (y), thickness
 CRADLE = (1.2, 3.0, 0.3)
 CUP_WALL = 1.6
@@ -257,7 +257,8 @@ def tray(L):
     ny = L["nano"][1]
     support_y = max(L["battery"][1] + BAT[1] + 1.5, ny + NANO[1] - 8.0)
     for sx in (-1, 1):
-        pad = box(sx * 7.4 - 1.5, support_y - 1, sx * 7.4 + 1.5, support_y + 4)
+        # Narrow outer-edge seats clear the XIAO reference model's underside parts too.
+        pad = box(sx * 8.3 - .8, support_y - 1, sx * 8.3 + .8, support_y + 4)
         sh += M.extrude(pad, PLATE_TOP - .01, nano_floor)
     sh += M.extrude(box(-8.9, support_y + 3, 8.9, support_y + 5), PLATE_TOP - .01, usb_z(L) - NANO[3] / 2 - .3)
     # the sensor board's posts: M3 x 8 down through the board
@@ -303,7 +304,7 @@ def tray(L):
     # the nano's board slides back into two blind pockets in the back wall, either side of the port
     for sx in (-1, 1):
         pocket = box(min(sx * 6.3, sx * 9.25), back - M.WALL - .1, max(sx * 6.3, sx * 9.25), back - .45)
-        sh -= M.extrude(pocket, nano_floor - .3, nano_floor + NANO[2] + .3)
+        sh -= M.extrude(pocket, nano_floor - .3, nano_floor + 1.25 + .3)
     sh -= box3(-2.5, back - M.WALL - 1.5, PCB_TOP - .3, 2.5, back + 1.5, M.FLUSH + 1)
     return sh
 
