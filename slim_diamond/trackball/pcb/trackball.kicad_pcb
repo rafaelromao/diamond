@@ -5149,7 +5149,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "7feaaf5e-f76e-4007-871d-1704e60a2873")
+		(uuid "53db2b19-3b39-426a-80dc-f3a7b609cb7f")
 	)
 	(gr_line
 		(start 91.11 136.832)
@@ -5159,7 +5159,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "5ef83be5-4564-4142-bc32-882bcb7aeedd")
+		(uuid "fa20bf73-358f-4503-964c-12838a21f243")
 	)
 	(gr_line
 		(start 101.125953 136.832)
@@ -5169,7 +5169,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "341bb94c-6426-40e0-9f42-e3a9b2874936")
+		(uuid "d90f4f74-ffcc-4591-98cb-af44814e9bc7")
 	)
 	(gr_line
 		(start 104.125953 136.832)
@@ -5179,7 +5179,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "20cd7d1a-e6f5-4005-8a99-26607c9447fa")
+		(uuid "076d0c6c-9b28-4cbe-8c10-188d5cbb9cc9")
 	)
 	(gr_line
 		(start 107.430715 136.832)
@@ -5189,7 +5189,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "d00c4c0f-6295-4ab0-8989-abf9fa88cf3e")
+		(uuid "7726b87c-78e4-4fd0-b58e-5ceb79773f5d")
 	)
 	(gr_line
 		(start 108.89 118.598343)
@@ -5199,7 +5199,7 @@
 			(type default)
 		)
 		(layer "F.SilkS")
-		(uuid "fdeeca9f-916c-4c26-b25e-0b348a34d1e6")
+		(uuid "9288ce97-06a0-4852-b290-60823aa55ea8")
 	)
 	(gr_line
 		(start 80.4215 167.5436)
@@ -6535,10 +6535,10 @@
 			)
 		)
 	)
-	(gr_text "XIAO"
-		(at 100 140 0)
+	(gr_text "MCU WIRED BELOW"
+		(at 100 156.5 0)
 		(layer "F.SilkS")
-		(uuid "5fecb815-04bf-472e-bca5-e185b39aeb2f")
+		(uuid "af254bdb-0806-40bc-ae9d-86856e469345")
 		(effects
 			(font
 				(size 1 1)
@@ -6546,10 +6546,21 @@
 			)
 		)
 	)
-	(gr_text "WIRED BELOW"
-		(at 100 156.5 0)
+	(gr_text "XIAO"
+		(at 92.8 132.832 90)
 		(layer "F.SilkS")
-		(uuid "af254bdb-0806-40bc-ae9d-86856e469345")
+		(uuid "d3ad438d-da99-4322-94c0-13c15dd0d929")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(gr_text "USB: REAR"
+		(at 108 128.332 90)
+		(layer "F.SilkS")
+		(uuid "84df74cc-641c-4ed0-bcdc-565af31e1495")
 		(effects
 			(font
 				(size 1 1)
@@ -13483,11 +13494,11 @@
 		)
 	)
 	(group "Wired XIAO placement guide"
-		(uuid "e88f153d-b93f-4323-9263-f86c7905eadb")
-		(members "20cd7d1a-e6f5-4005-8a99-26607c9447fa" "341bb94c-6426-40e0-9f42-e3a9b2874936"
-			"5ef83be5-4564-4142-bc32-882bcb7aeedd" "5fecb815-04bf-472e-bca5-e185b39aeb2f"
-			"7feaaf5e-f76e-4007-871d-1704e60a2873" "d00c4c0f-6295-4ab0-8989-abf9fa88cf3e"
-			"fdeeca9f-916c-4c26-b25e-0b348a34d1e6"
+		(uuid "df921014-51d0-493d-9b6f-42f4c42f4ccc")
+		(members "076d0c6c-9b28-4cbe-8c10-188d5cbb9cc9" "53db2b19-3b39-426a-80dc-f3a7b609cb7f"
+			"7726b87c-78e4-4fd0-b58e-5ceb79773f5d" "84df74cc-641c-4ed0-bcdc-565af31e1495"
+			"9288ce97-06a0-4852-b290-60823aa55ea8" "d3ad438d-da99-4322-94c0-13c15dd0d929"
+			"d90f4f74-ffcc-4591-98cb-af44814e9bc7" "fa20bf73-358f-4503-964c-12838a21f243"
 		)
 	)
 	(embedded_fonts no)

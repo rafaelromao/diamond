@@ -84,6 +84,9 @@ for f in xiao_left_half xiao_right_half; do
     magick .render/$f.png -modulate 55,300 -level 0%,90% renders/$f.png
 done
 
+# Wiring diagrams, from the pin table the tests check.
+${PY:-python3} trackball/controller_diagram.py
+
 # All views on one sheet.
 ${PY:-python3} render_notes.py
 magick montage \

@@ -40,7 +40,7 @@ def annotate(board, design):
     for item in drawings:
         if isinstance(item, pcbnew.PCB_TEXT) and item.GetLayer() == pcbnew.F_SilkS:
             if item.GetText() in ('SD TRACKBALL', 'WIRED BELOW'):
-                item.SetText('WIRED BELOW')
+                item.SetText('MCU WIRED BELOW')
                 item.SetPosition(point(0, 56.5))
             box = item.GetBoundingBox()
             blocked.append((pcbnew.ToMM(box.GetLeft()) - 100 - .2,
@@ -120,10 +120,12 @@ def annotate(board, design):
         segment((x, max(y0, edge)), (x, y1))
     segment((-WIDTH / 2, y1), (WIDTH / 2, y1))
     # The open end of the U faces rearwards, towards the overhanging USB connector.
-    for label, y in (("XIAO", 40),):
+    # Labels lie along the outline's two side strips, rotated, so they read as part of the box.
+    for label, x, y in (("XIAO", -7.2, y1 - 4.0), ("USB: REAR", 8.0, y1 - 8.5)):
         text = pcbnew.PCB_TEXT(board)
         text.SetText(label)
-        text.SetPosition(point(0, y))
+        text.SetPosition(point(x, y))
+        text.SetTextAngleDegrees(90)
         text.SetLayer(pcbnew.F_SilkS)
         text.SetTextSize(pcbnew.VECTOR2I(mm(1), mm(1)))
         text.SetTextThickness(mm(.15))

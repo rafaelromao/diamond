@@ -270,7 +270,7 @@ halves; the Choc lid 1.2 mm. Their front and side upper facets run from the halv
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
 - **One orderable PCB for nice!nano v2 or plain XIAO nRF52840:** both controllers connect by wires to
   the same carrier's signal pads, with different GPIO assignments and firmware. No different copper,
-  jumpers or second panel is needed. The `XIAO / WIRED BELOW` silkscreen is a projected placement outline,
+  jumpers or second panel is needed. The `XIAO` / `USB: REAR` box and `MCU WIRED BELOW` on the silkscreen mark a projected position,
   not a direct-solder footprint. Complete signal, supply, battery and reset mappings are in `BUILD.md`.
   The reference XIAO's USB overhang is about 1.53 mm, so its PCB sits 0.93 mm farther forward than
   the nice!nano envelope to place both receptacle mouths at the same rear plane. The tray's shared

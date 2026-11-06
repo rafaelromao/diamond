@@ -173,14 +173,14 @@ The same main board holds the two keys and the power switch on both modules. A b
 
 **One PCB, either controller:** order `trackball/fab/trackball_jlcpcb.zip` for a nice!nano v2 **or** a plain Seeed XIAO nRF52840, for either pointing module. The controller is wired to the carrier's signal pads, not soldered directly onto a pin-compatible footprint. No different copper routing, jumpers or alternative panel is needed; use the correct column in the wiring tables and its matching firmware shield. Super52840 remains experimental until its actual revision is checked.
 
-The front silkscreen's `XIAO / WIRED BELOW` outline shows the projected XIAO position underneath the main board, with USB towards the rear edge. It is a placement guide, **not solder lands**: solder the wires to the labelled carrier pads. The shared tray has outer-edge controller supports; its XIAO reference placement uses Seeed's published STEP model rather than the nice!nano's dimensions. Real boards, insulation, wires and retention still require checking.
+The controller is **not soldered to the carrier's pins**: it hangs under it and is wired to the labelled round pads (`CK`, `IO`, `CS`, `MO`, `K1`, `K2`, `RST`, `VBAT`, `3V`, `G`). The thin box on the front silkscreen, marked `XIAO` and `USB: REAR`, shows where a XIAO lies underneath, with its USB-C at the rear edge; it is a position guide, **not solder lands**, and the nice!nano lies in the same place, longer towards the front. The two wiring diagrams below show which controller pin goes to which pad. The shared tray has outer-edge controller supports; its XIAO reference placement uses Seeed's published STEP model rather than the nice!nano's dimensions. Real boards, insulation, wires and retention still require checking.
 
 USB always plugs directly into the chosen MCU's **onboard USB-C receptacle**. There is no external USB connector, extension or soldered USB wiring.
 
 ### Boards
 
 1. **Snap the panel.** The main board and sensor board are joined by one long bridge with a row of holes at each end. Hold a board in one hand and the bridge in the other (pliers help) and bend at the row of holes until it snaps, then do the other end. File off the stubs. Do this before soldering anything.
-2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side with the `XIAO` placement guide and `WIRED BELOW`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
+2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side with the `XIAO` box and `MCU WIRED BELOW`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
 3. **Sensor board, trackball.** Solder the regulator, capacitors, resistor and TS-1187A reset button on the back face, the PMW3610 in its cut-out, and clip on the lens.
 4. **Sensor board, trackpad.** Solder only the TS-1187A reset button, on the back face.
 
@@ -204,7 +204,12 @@ Use flexible 30 AWG stranded wire, about 80 mm per wire, so the main board can l
 | `3V` / VCC (regulated supply) | VCC, 3.3 V output | 3V3 output |
 | `RST` | RST | Reset pad, P0.18 |
 
-Do not connect `VBAT` to 3V3/VCC or use either controller's USB 5 V pin as the sensor supply. The same D-number refers to **different GPIOs** on these controllers. The tables below give both D-names and nRF port numbers; confirm the actual module's markings before soldering.
+Do not connect `VBAT` to 3V3/VCC or use either controller's USB 5 V pin as the sensor supply.
+
+| Plain XIAO nRF52840 | nice!nano v2 |
+|---|---|
+| ![](renders/wiring_xiao.png) | ![](renders/wiring_nice_nano.png) |
+ The same D-number refers to **different GPIOs** on these controllers. The tables below give both D-names and nRF port numbers; confirm the actual module's markings before soldering.
 
 On the **trackball**, also wire `SCLK`, `SDIO`, `NCS` and `MOTION` from the sensor board to the main board's matching pads and on to the selected controller:
 
