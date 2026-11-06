@@ -5,21 +5,23 @@ XIAO nRF52840 (plain): https://wiki.seeedstudio.com/XIAO_BLE/#hardware-overview
 """
 
 GPIO = {
-    "nice_nano": {"D2": (0, 17), "D3": (0, 20), "D4": (0, 22),
-                  "D5": (0, 24), "D6": (1, 0), "D7": (0, 11),
-                  "D8": (1, 4), "D9": (1, 6)},
-    "xiao": {"D1": (0, 3), "D2": (0, 28), "D3": (0, 29),
-             "D4": (0, 4), "D5": (0, 5), "D8": (1, 13), "D9": (1, 14), "D10": (1, 15)},
+    "nice_nano": {"D2": (0, 17), "D3": (0, 20), "D4": (0, 22), "D19": (0, 2), "D20": (0, 29), "D21": (0, 31)},
+    "xiao": {"D3": (0, 29), "D4": (0, 4), "D5": (0, 5), "D8": (1, 13), "D9": (1, 14), "D10": (1, 15)},
 }
+# Carrier pad -> controller pin. The same on both modules: only what lands on the pad differs.
+# The nano's clock and data stay on its high-frequency pins (D2-D4).
+PADS = {
+    "nice_nano": dict(MO="D2", CK="D3", IO="D4", CS="D21", K1="D19", K2="D20"),
+    "xiao": dict(MO="D3", CK="D4", IO="D5", CS="D10", K1="D8", K2="D9"),
+}
+# XIAO pin rows, 1 at the USB end, on each side of the carrier (the board hangs face down, so its
+# D0-D6 column is on the carrier's right). Pads sit level with the pin of the same row.
+ROWS = {"left": dict(VBAT=1, GND=2, VCC=3, NCS=4, K2=5, K1=6, RST=7), "right": dict(MOTION=4, SCLK=5, SDIO=6)}
+TRACKPAD = dict(SCL="CK", SDA="IO", DR="MO", K1="K1", K2="K2")     # module signal -> carrier pad
+_ball = dict(SCLK="CK", SDIO="IO", NCS="CS", MOTION="MO", K1="K1", K2="K2")
 SIGNALS = {
-    "trackball": {
-        "nice_nano": dict(SCLK="D7", SDIO="D6", NCS="D5", MOTION="D4", K1="D8", K2="D2"),
-        "xiao": dict(SCLK="D8", SDIO="D10", NCS="D1", MOTION="D2", K1="D3", K2="D4"),
-    },
-    "trackpad": {
-        "nice_nano": dict(SDA="D2", SCL="D3", DR="D7", K1="D8", K2="D9"),
-        "xiao": dict(SDA="D4", SCL="D5", DR="D2", K1="D3", K2="D1"),
-    },
+    "trackball": {c: {s: PADS[c][p] for s, p in _ball.items()} for c in PADS},
+    "trackpad": {c: {s: PADS[c][p] for s, p in TRACKPAD.items()} for c in PADS},
 }
 POWER = {
     "nice_nano": dict(VBAT="B+", VCC="VCC (3.3 V)", GND="GND / B-", RST="RST"),

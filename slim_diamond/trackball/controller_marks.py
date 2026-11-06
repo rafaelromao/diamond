@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pcbnew
 from controllers import XIAO_WIDTH, XIAO_LENGTH, XIAO_USB_OVERHANG
+from controller_pinout import PADS
 
 GROUP = "Wired XIAO placement guide"
 WIDTH, LENGTH = XIAO_WIDTH, XIAO_LENGTH
@@ -120,17 +121,28 @@ def annotate(board, design):
         segment((x, max(y0, edge)), (x, y1))
     segment((-WIDTH / 2, y1), (WIDTH / 2, y1))
     # The open end of the U faces rearwards, towards the overhanging USB connector.
-    # Labels lie along the outline's two side strips, rotated, so they read as part of the box.
-    for label, x, y in (("XIAO", -7.2, y1 - 4.0), ("USB: REAR", 8.0, y1 - 8.5)):
+    def label(string, x, y, angle=0, left=False):
         text = pcbnew.PCB_TEXT(board)
-        text.SetText(label)
+        text.SetText(string)
         text.SetPosition(point(x, y))
-        text.SetTextAngleDegrees(90)
+        text.SetTextAngleDegrees(angle)
         text.SetLayer(pcbnew.F_SilkS)
-        text.SetTextSize(pcbnew.VECTOR2I(mm(1), mm(1)))
+        text.SetTextSize(pcbnew.VECTOR2I(mm(.8), mm(.8)))
         text.SetTextThickness(mm(.15))
+        if left:
+            text.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
         board.Add(text)
         group.AddItem(text)
+
+    label("XIAO: USB REAR", -3.4, y1 + .9)
+    # Which controller pin each pad takes, in the free space beside the first key.
+    for i, name in enumerate(("MO", "CK", "IO", "CS", "K1", "K2")):
+        y = 43.0 + i * 1.25
+        label(name, 7.1, y, left=True)
+        label(PADS["xiao"][name], 9.2, y, left=True)
+        label(PADS["nice_nano"][name], 12.4, y, left=True)
+    label("XIAO", 9.2, 50.5, left=True)
+    label("NANO", 12.4, 50.5, left=True)
 
 
 if __name__ == "__main__":

@@ -45,7 +45,8 @@ class XiaoOptionTest(unittest.TestCase):
     def test_build_tables_match_both_complete_signal_maps(self):
         guide = Path('BUILD.md').read_text()
         for kind, controllers in SIGNALS.items():
-            table = guide.split(f'| {kind.capitalize()} signal |', 1)[1].split('\n\n', 1)[0]
+            head = '| Carrier pad |' if kind == 'trackball' else '| Trackpad signal |'
+            table = guide.split(head, 1)[1].split('\n\n', 1)[0]
             for signal in controllers['nice_nano']:
                 nice = pin_description(kind, 'nice_nano', signal)
                 xiao_pin = pin_description(kind, 'xiao', signal)
@@ -59,14 +60,13 @@ class XiaoOptionTest(unittest.TestCase):
             with self.subTest(shield=name):
                 if kind == 'trackball':
                     self.assertIn('&i2c1 { status = "disabled"; };', overlay)
-                    self.assertIn('<&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>', overlay)
+                    self.assertIn('NRF_PSEL(SPIM_SCK, 0, 4)', overlay)
                 else:
                     self.assertNotIn('&i2c1 { status = "disabled"; };', overlay)
-                    self.assertIn('<&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>', overlay)
                     self.assertIn('reg = <0x2a>;', overlay)
 
     def test_trackpads_enable_active_high_data_ready_and_primary_tap(self):
-        for suffix, gpio in (('', 11), ('_xiao', 28)):
+        for suffix, gpio in (('', 17), ('_xiao', 29)):
             name = 'slim_diamond_trackpad' + suffix
             overlay = (Path('zmk/boards/shields') / name / (name + '.overlay')).read_text()
             with self.subTest(shield=name):
@@ -81,7 +81,7 @@ class XiaoOptionTest(unittest.TestCase):
         controller = xiao(back, floor)
         self.assertAlmostEqual(controller.bounding_box()[4], back, places=5)
         self.assertAlmostEqual(xiao_usb_z(floor), B.usb_z(layout), delta=.01)
-        self.assertGreaterEqual(B.SOCKET_BOT - controller.bounding_box()[5], .35 - 1e-5)
+        self.assertGreaterEqual(B.SOCKET_BOT - controller.bounding_box()[5], 1.3)    # a soldered wire fits
         self.assertLess(abs((controller ^ tray).volume()), 1e-3)
         main, sensor = B.main_board_plan(layout), B.sensor_board_plan(layout)
         for kind in ('mx', 'choc', 'trackpad'):
@@ -101,6 +101,17 @@ class XiaoOptionTest(unittest.TestCase):
             probe = B.box3(side * 8.2 - .3, back - 8.0, floor - .2,
                            side * 8.2 + .3, back - 7.0, floor)
             self.assertGreater((probe ^ tray).volume(), .1)
+
+    def test_both_controllers_rest_on_supports_either_side_of_their_middle(self):
+        layout = B.place()
+        tray = B.tray(layout)
+        floor = B.SOCKET_BOT - B.NANO_GAP - B.NANO[2]
+        for side in (-1, 1):
+            probe = B.box3(side * 8.2 - .3, -32, floor - .2, side * 8.2 + .3, -30, floor)
+            self.assertGreater((probe ^ tray).volume(), .2)
+            self.assertLess(abs((probe.translate((0, 0, .2)) ^ tray).volume()), 1e-3)
+        middle = layout['back'] - 1.527 - 10.4775
+        self.assertLess(B.PIER_FRONT[1], middle)
 
     def test_xiao_reference_can_be_inserted(self):
         layout = B.place()

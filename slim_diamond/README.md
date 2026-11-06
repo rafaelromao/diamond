@@ -259,19 +259,19 @@ halves; the Choc lid 1.2 mm. Their front and side upper facets run from the halv
 - The main board accepts **MX or Choc v1 hot-swap sockets**, not both populated together. Choc sockets
   face 180° opposite the MX sockets. MX uses `trackball/case/lid.stl` (1.5 mm plate), Choc uses
   `trackball/case/lid_choc.stl` (1.2 mm plate). Choc v2 is not supported.
-- The nice!nano (or a clone) hangs face down under the main board on two printed piers, its USB-C port
+- The nice!nano (or a clone) hangs face down under the main board on four printed piers, its USB-C port
   flush with the back wall, wired to labelled pads: GND,
-  VCC, RST, VBAT → B+, and the six GPIO signals below. Secure it with kapton without covering its antenna
+  VCC, RST, VBAT → B+, and the six GPIO signals below. Tape it to the piers without covering its antenna
   or USB opening.
-- Controller wiring: sensor SCLK P0.11, SDIO P1.00 (SPI2, 3-wire), NCS P0.24, MOTION P0.22; key 1 P1.04,
-  key 2 P0.17 (other legs to GND).
+- Controller wiring: the sensor's SCLK, SDIO (3-wire SPI), NCS and MOTION go to pads `CK`, `IO`, `CS` and `MO`. Each pad takes one
+  controller pin, on both modules; the table is in `BUILD.md`, and in `trackball/controller_pinout.py`.
 - One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 39.2 × 99.5 mm: the main board and the
   sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
 - **One orderable PCB for nice!nano v2 or plain XIAO nRF52840:** both controllers connect by wires to
-  the same carrier's signal pads, with different GPIO assignments and firmware. No different copper,
-  jumpers or second panel is needed. The `XIAO` / `USB: REAR` box and `MCU WIRED BELOW` on the silkscreen mark a projected position,
-  not a direct-solder footprint. Complete signal, supply, battery and reset mappings are in `BUILD.md`.
+  the same pads, which sit beside a XIAO's pins along the board's edges; a nice!nano takes the same pads
+  with its own pin names. The firmware differs, not the copper. The silkscreen's `XIAO: USB REAR` box marks a position,
+  not a direct-solder footprint, and its small table gives each pad's pin on both controllers. Complete signal, supply, battery and reset mappings are in `BUILD.md`.
   The reference XIAO's USB overhang is about 1.53 mm, so its PCB sits 0.93 mm farther forward than
   the nice!nano envelope to place both receptacle mouths at the same rear plane. The tray's shared
   supports clear the Seeed STEP reference, but actual revisions, clones, wiring and retention still need checking.
@@ -290,15 +290,15 @@ sockets on the shared main board and stands at the Choc lid's height, 1.2 mm ove
 
 | Wire | nice!nano v2 | Plain XIAO nRF52840 |
 |---|---|---|
-| Breakout SDA | D2 (P0.17) | D4 (P0.04) |
-| Breakout SCL | D3 (P0.20) | D5 (P0.05) |
-| Cirque DR, separate underside wire | D7 (P0.11) | D2 (P0.28) |
+| Breakout SDA, on pad `IO` | D4 (P0.22) | D5 (P0.05) |
+| Breakout SCL, on pad `CK` | D3 (P0.20) | D4 (P0.04) |
+| Cirque DR, separate underside wire, on pad `MO` | D2 (P0.17) | D3 (P0.29) |
 | Breakout GND, VDD | GND, VCC (3.3 V) | GND, 3V3 |
-| Main board K1, K2 | D8 (P1.04), D9 (P1.06) | D3 (P0.29), D1 (P0.03) |
+| Main board K1, K2 | D19 (P0.02), D20 (P0.29) | D8 (P1.13), D9 (P1.14) |
 | Main board GND, VBAT, RST | GND, B+, RST | GND, BAT+, reset pad |
 
 Use I²C at address `0x2A`; confirm R1 is absent on an SPI-labelled kit and leave R7/R8 fitted for
-3.3 V operation. The XIAO trackpad's K2 uses D1, not the trackball's D4, which is now I²C SDA.
+3.3 V operation.
 
 **Firmware** (`zmk/`): a ZMK config with both shields, `slim_diamond_trackball` (the PMW3610 through
 badjeff's zmk-pmw3610-driver) and `slim_diamond_trackpad` (the Cirque through Zephyr's in-tree

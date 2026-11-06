@@ -35,6 +35,9 @@ from shapely.ops import unary_union
 
 import case as C
 import module_shell as M
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))     # last: this file is itself "trackball"
+from controller_pinout import ROWS
+from controllers import XIAO_LENGTH, XIAO_USB_OVERHANG
 
 H = M.FLUSH + 4.0
 TOP_T = 1.5                    # the top: an MX plate (1.5 mm)
@@ -75,10 +78,12 @@ SENSOR_PARTS = {
 }
 NANO = (18.0, 33.3, 1.0, 3.2)  # w, l, PCB, USB-C receptacle
 NANO_ROW1 = 4.0                # first pin row from the USB end (for the footprint only)
-NANO_GAP = 0.6                 # also leaves 0.35 mm for the XIAO reference's thicker PCB
+NANO_GAP = 1.6                 # room for wires soldered to a XIAO's back pads (its PCB is 1.25 thick)
 BAT = (20.0, 25.0, 7.5)        # 752025 lengthwise: w (x), l (y), thickness
 CRADLE = (1.2, 3.0, 0.3)
 CUP_WALL = 1.6
+PIER_FRONT = (-33.0, -29.0)    # y span of the controller's second supports
+PAD_EDGE = 1.5                 # wire pad centre to the board edge: its joint clears the lid's lip
 POST_PIN = 2.2                 # the side posts' pin, up through the main board
 PAD_KEEP = (-77.1, 18.9)       # the trackpad's back parts: centre y, radius
 PANEL_LENGTH = 99.5            # the ordered panel's longest side, within the 100 mm tier
@@ -261,6 +266,10 @@ def tray(L):
         pad = box(sx * 8.3 - .8, support_y - 1, sx * 8.3 + .8, support_y + 4)
         sh += M.extrude(pad, PLATE_TOP - .01, nano_floor)
     sh += M.extrude(box(-8.9, support_y + 3, 8.9, support_y + 5), PLATE_TOP - .01, usb_z(L) - NANO[3] / 2 - .3)
+    # A second pair under the controller's middle, out to the wall: a XIAO's centre is ahead of the first.
+    for sx in (-1, 1):
+        pad = box(min(sx * 7.5, sx * 20), PIER_FRONT[0], max(sx * 7.5, sx * 20), PIER_FRONT[1])
+        sh += M.extrude(pad.intersection(M.inner().buffer(.05)), PLATE_TOP - .01, nano_floor)
     # the sensor board's posts: M3 x 8 down through the board
     for x, y in sensor_holes(L):
         sh += Manifold.cylinder(SENSOR_BELOW - SENSOR_SHIM + 0.01, 2.8, circular_segments=32).translate((x, y, PLATE_TOP - 0.01))
@@ -345,31 +354,18 @@ def sensor_reset(L):
     return (bx + x, by - y)
 
 
-def pad_row(main_plan, L, n, side, avoid=(), preferred_y=None):
-    """A row of n THT pads (2.54 mm apart, along y) on the main board beside the keys, on `side`
-    (-1 left, +1 right): clear of the keys' switch and socket holes and the nano below.
-    Prefer `preferred_y` for the row's front when aligning it with the nano's pins."""
-    keys = unary_union([box(kx - 8.5, ky - 8.0, kx + 8.5, ky + 8.0) for kx, ky in L["keys"]])   # switch + socket
-    nano = box(-NANO[0] / 2 - 0.2, L["nano"][1] - 0.5, NANO[0] / 2 + 0.2, L["nano"][1] + NANO[1] + 0.5)
-    ok = main_plan.buffer(-1.6).difference(keys).difference(nano)
-    for a in avoid:
-        ok = ok.difference(a)
-    length = (n - 1) * 2.54
-    best = None
-    for x in sorted(np.arange(0, 20, 0.25), key=lambda v: v):
-        ys = np.arange(-90, -10, 0.25)
-        if preferred_y is not None:
-            ys = sorted(ys, key=lambda y: abs(y - preferred_y))
-        for y in ys:
-            row = box(side * x - 0.8, y - 0.8, side * x + 0.8, y + length + 0.8)
-            if ok.contains(row):
-                best = (side * x, y)
-                break
-        if best:
-            break
-    if best is None:
-        raise ValueError("no room for %d wire pads on the %s side" % (n, "left" if side < 0 else "right"))
-    return [(best[0], best[1] + i * 2.54) for i in range(n)]
+def xiao_pin_y(L, row):
+    """Plan y of the XIAO's pin row (1 at the USB end), its USB-C mouth at the rear plane."""
+    middle = L["back"] - XIAO_USB_OVERHANG - XIAO_LENGTH / 2
+    return middle + (4 - row) * 2.54
+
+
+def edge_pad(L, main_plan, side, row):
+    """A wire pad level with a XIAO pin, as far out as the board's edge allows."""
+    y = xiao_pin_y(L, row)
+    ok = main_plan.buffer(-PAD_EDGE)
+    x = next(x for x in np.arange(20, 0, -.05) if ok.contains(Point(side * x, y)))
+    return (round(float(side * x), 2), float(y))
 
 
 def panel(L, main_plan, sensor_plan):
@@ -387,14 +383,13 @@ def panel(L, main_plan, sensor_plan):
 
 
 def board_layout(L, main_plan):
-    """The main board's own pads: the sensor board's seven wires (four right of the keys, two left,
-    RST between the keys) and the battery's two (left, in front of them), each near its nano pin."""
-    avoid = [Point(x, y).buffer(M.SCREW["boss"] / 2 + .4) for x, y in board_holes()]
-    left = pad_row(main_plan, L, 4, -1, avoid=avoid, preferred_y=L["keys"][0][1] - 4.0)  # battery -, +, GND, VCC
-    right = pad_row(main_plan, L, 4, +1, avoid=avoid, preferred_y=L["keys"][0][1] - 4.0)
-    mid_y = sum(y for _, y in L["keys"]) / 2
-    wires = right[:4] + [(6.0, mid_y), left[3], left[2]]
-    return dict(wires=wires, bat=[left[1], left[0]], controller=[(-3.0, mid_y - .9), (0.0, mid_y), (3.0, mid_y)])
+    """The carrier's pads: level with the XIAO's pins, beside it, so its wires are short and straight;
+    a nice!nano's rows fall within 0.25 mm of the same lines. The battery's stay by the battery."""
+    pad = {name: edge_pad(L, main_plan, -1 if column == "left" else 1, row)
+           for column, rows in ROWS.items() for name, row in rows.items()}
+    wires = [pad[n] for n in ("SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND")]
+    bat = [(-10.0, -46.71), (-10.0, -49.25)]
+    return dict(wires=wires, bat=bat, controller=[pad["VBAT"], pad["K1"], pad["K2"]])
 
 
 def stl_lid(m, height, path):
@@ -443,7 +438,8 @@ def main():
         height=H, ball=L["ball"], keys=L["keys"], switch_angle=SWITCH_ANGLE, nano=L["nano"], battery=L["battery"],
         main_board=kicad(main_plan.exterior.coords), sensor_board=held(sensor_plan.exterior.coords),
         sensor_shift=shift, main_holes=kicad(board_holes()), sensor_holes=held(sensor_holes(L)), sensor_parts=SENSOR_PARTS,
-        nano_row1=NANO_ROW1, opt=OPT, pcb_top=PCB_TOP, back=L["back"]),
+        nano_row1=NANO_ROW1, opt=OPT, pcb_top=PCB_TOP, back=L["back"],
+        pin_rows=[-xiao_pin_y(L, r) for r in range(1, 8)], xiao_front=-L["back"] + XIAO_USB_OVERHANG + XIAO_LENGTH),
         open(os.path.join(HERE, "design.json"), "w"), indent=1, default=lambda o: [float(v) for v in o])
     return L, lid_m, tray_m, ps
 

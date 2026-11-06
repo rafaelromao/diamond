@@ -1,108 +1,97 @@
-"""Wiring diagrams: which carrier pad goes to which pin of each controller.
+"""Wiring diagrams at true position: the carrier seen from above, the controller under it.
 
-Drawn from controller_pinout.py, the table the tests check against the firmware shields, so the
-pictures cannot drift from the wiring. Run from slim_diamond/: python3 trackball/controller_diagram.py
-Pin order follows the manufacturers' top views (components up, USB up):
+Pads come from design.json and pins from controller_pinout.py, the table the tests check against
+the firmware shields. Run from slim_diamond/: python3 trackball/controller_diagram.py
+Pin order follows the manufacturers' top views, turned over: the controllers hang face down.
   nice!nano v2: https://nicekeyboards.com/docs/nice-nano/pinout-schematic
   XIAO nRF52840: https://wiki.seeedstudio.com/XIAO_BLE/#hardware-overview
 """
+import json
 import os
 import sys
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Rectangle
+from matplotlib.patches import Polygon, Rectangle
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from controller_pinout import GPIO, SIGNALS
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from controller_pinout import PADS
+from controllers import XIAO_LENGTH, XIAO_USB_OVERHANG, XIAO_WIDTH
 
-# The carrier's pad labels (silkscreen), by signal.
-PADS = {
-    "trackball": dict(SCLK="CK", SDIO="IO", NCS="CS", MOTION="MO", K1="K1", K2="K2"),
-    "trackpad": dict(SDA="breakout SDA", SCL="breakout SCL", DR="Cirque DR (underside)", K1="K1", K2="K2"),
-}
-# (left column, right column), top to bottom, USB up, components up.
-LAYOUT = {
+D = json.load(open(os.path.join(HERE, "design.json")))
+BACK = -D["back"] if D["back"] < 0 else D["back"]
+# Top views, USB end first: (column on the pin's left, column on its right). Face down, the first
+# lands on the carrier's +x side.
+PINS = {
     "xiao": (["D0", "D1", "D2", "D3", "D4", "D5", "D6"],
              ["5V", "GND", "3V3", "D10", "D9", "D8", "D7"]),
     "nice_nano": (["GND", "D1", "D0", "GND", "GND", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"],
-                  ["B+", "B+", "GND", "RST", "3V3", "D21", "D20", "D19", "D18", "D15", "D14", "D16", "D10"]),
+                  ["B+", "B+", "GND", "RST", "VCC", "D21", "D20", "D19", "D18", "D15", "D14", "D16", "D10"]),
 }
-POWER = {   # pin label -> text; the same on both modules
-    "xiao": {"GND": "G pad (and breakout GND)", "3V3": "3V pad (and breakout VDD)"},
-    "nice_nano": {"GND": "G pad (and breakout GND)", "3V3": "3V pad (and breakout VDD)",
-                  "B+": "VBAT pad", "RST": "RST pad"},
-}
-VIEW = "Seen from the component side, USB up. The board hangs face down under the carrier, so it is mirrored there: wire by name."
-NOTES = {
-    "xiao": ["Underside pads (see Seeed's back view): BAT+ -> VBAT pad, BAT- (with GND) -> G pad,",
-             "RESET (P0.18) -> RST pad. The battery itself goes to the carrier's + and - pads."],
-    "nice_nano": ["Either B+ pad serves for VBAT, any one GND pin for G; the 3.3 V pin is labelled VCC on the board.",
-                  "The battery itself goes to the carrier's + and - pads."],
-}
-TITLE = {"xiao": "Plain Seeed XIAO nRF52840", "nice_nano": "nice!nano v2"}
-GOLD, GREY = "#e0b020", "#c9ccd0"
+POWER = {"xiao": dict(G="GND", **{"3V": "3V3"}), "nice_nano": dict(VBAT="B+", G="GND", RST="RST", **{"3V": "VCC"})}
+TITLE = {"xiao": "Plain XIAO nRF52840", "nice_nano": "nice!nano v2"}
+# Seeed's footprint pads as they lie here, from the module's centre: already turned over.
+BACK_PADS = dict(VBAT=(4.455, -.315), RST=(1.28, -6.03))
+UNDER = {"xiao": "BAT+ and RST are pads on the XIAO's back, the side facing the carrier: solder those two wires first,\nand keep them flat, not crossing, off to the rear of the sockets. Leave 5V empty.",
+         "nice_nano": "Wire the battery to the carrier's + and - pads, never to B+: that would bypass the power switch.\nExcept VBAT and G, each wire runs one row or more along the board: follow the names, not the rows."}
 
 
-def uses(controller):
-    out = {}
-    for kind, controllers in SIGNALS.items():
-        for signal, pin in controllers[controller].items():
-            out.setdefault(pin, []).append((kind, PADS[kind][signal]))
+def geometry(controller):
+    if controller == "xiao":
+        rear = BACK + XIAO_USB_OVERHANG
+        return rear, rear + XIAO_LENGTH, XIAO_WIDTH, rear + XIAO_LENGTH / 2 - 7.62, 8.89
+    rear = BACK + .6
+    return rear, rear + 33.3, 18.0, rear + 4.0 - 2.54, 7.62    # the first row is the extra GND / B+ pair
+
+
+def pad_names():
+    names = ["CK", "IO", "CS", "MO", "RST", "3V", "G"]
+    out = dict(zip(names, D["wire_pads"]))
+    out.update(zip(["VBAT", "K1", "K2"], D["controller_pads"]))
     return out
 
 
-def label(pin, controller):
-    if pin in GPIO[controller]:
-        port, n = GPIO[controller][pin]
-        return f"{pin}  P{port}.{n:02d}"
-    return pin
-
-
 def draw(controller, path):
-    left, right = LAYOUT[controller]
-    rows = max(len(left), len(right))
-    used = uses(controller)
-    pitch = 1.0
-    width = 7.0
-    fig_h = 1.25 * rows * 0.5 + 3.0
-    fig, ax = plt.subplots(figsize=(13, fig_h), dpi=130)
-    top = rows * pitch
-    ax.add_patch(FancyBboxPatch((-width / 2, -0.8), width, top + 1.9, boxstyle="round,pad=0.1,rounding_size=0.5",
-                                fc="#27313a", ec="#111", zorder=1))
-    ax.add_patch(Rectangle((-1.5, top + 0.3), 3.0, 1.0, fc="#aab0b6", ec="#555", zorder=2))
-    ax.text(0, top + 0.8, "USB-C", ha="center", va="center", fontsize=9, zorder=3)
-
-    seen = set()
-
-    def column(names, x, side):
+    rear, front, width, first, column_x = geometry(controller)
+    fig, ax = plt.subplots(figsize=(9, 11), dpi=120)
+    ax.add_patch(Polygon(D["main_board"], fc="#d9dfd2", ec="#46604f", lw=1.2, zorder=1))
+    ax.add_patch(Rectangle((-width / 2, rear), width, front - rear, fc="#27313a", ec="#111", alpha=.92, zorder=2))
+    ax.add_patch(Rectangle((-4.5, BACK), 9, 7.3, fc="#aab0b6", ec="#444", zorder=3))
+    ax.text(0, BACK + 3.6, "USB-C", ha="center", va="center", fontsize=8, zorder=4)
+    plus, minus = D["battery_pads"]
+    pins = {}
+    for sign, names in ((1, PINS[controller][0]), (-1, PINS[controller][1])):
         for i, name in enumerate(names):
-            y = top - i * pitch - 0.5
-            connections = []
-            if name in used:
-                connections = [f"{kind}: {pad}" for kind, pad in used[name]]
-            elif name in POWER[controller] and name != "5V" and name not in seen:
-                connections = [POWER[controller][name]]    # a repeated pin (GND, B+) is wired once
-                seen.add(name)
-            hot = bool(connections)
-            ax.add_patch(Rectangle((x - 0.2, y - 0.2), 0.4, 0.4, fc=GOLD if hot else GREY, ec="#222", zorder=3))
-            inner = x + (0.45 if side < 0 else -0.45)
-            ax.text(inner, y, label(name, controller), ha="left" if side < 0 else "right", va="center",
-                    fontsize=8.5, color="#f2f2f2" if hot else "#8e979f", zorder=3)
-            if connections:
-                outer = x + side * 0.4
-                ax.plot([outer, x + side * 1.2], [y, y], color="#333", lw=0.8, zorder=2)
-                ax.text(x + side * 1.3, y, "   |   ".join(connections), ha="left" if side > 0 else "right",
-                        va="center", fontsize=9.5, fontweight="bold", color="#14301f")
-
-    column(left, -width / 2 + 0.5, -1)
-    column(right, width / 2 - 0.5, +1)
-    for i, line in enumerate([VIEW] + NOTES[controller]):
-        ax.text(0, -1.5 - 0.55 * i, line, ha="center", va="center", fontsize=9)
-    ax.set_title(f"{TITLE[controller]}: which pin goes to which carrier pad (gold = wired)", fontsize=12, pad=12)
-    ax.set_xlim(-12.5, 12.5)
-    ax.set_ylim(-3.4, top + 2.0)
+            y = first + i * 2.54
+            pins.setdefault(name, []).append((sign * column_x, y))
+            ax.plot([sign * column_x], [y], "o", ms=4.5, color="#c9ccd0", zorder=4)
+            ax.text(sign * (column_x - (2.3 if controller == "xiao" else 1.0)), y, name, ha="left" if sign < 0 else "right", va="center",
+                    fontsize=7, color="#f2f2f2", zorder=4)
+    links = dict(PADS[controller], **POWER[controller])
+    middle = rear + (front - rear) / 2
+    if controller == "xiao":
+        for pad, (x, y) in BACK_PADS.items():
+            pins[pad] = [(x, middle + y)]
+            links[pad] = pad
+            ax.text(x, middle + y + .9, "BAT+" if pad == "VBAT" else "RST", ha="center", fontsize=7, color="#ffd27a", zorder=8)
+    for pad, (x, y) in pad_names().items():
+        ax.plot([x], [y], "o", ms=9, mfc="#e0b020", mec="#6b5200", zorder=6)
+        ax.text(x + (1.1 if x > 0 else -1.1), y, pad, ha="left" if x > 0 else "right", va="center", fontsize=8.5,
+                fontweight="bold", zorder=7)
+        if pad in links:
+            name = links[pad]
+            px, py = min(pins[name], key=lambda q: (q[0] - x) ** 2 + (q[1] - y) ** 2)
+            ax.plot([x, px], [y, py], color="#c8102e", lw=1.6, zorder=5)
+            ax.plot([px], [py], "o", ms=5, color="#e0b020", zorder=5)
+    for (x, y), name in ((plus, "+ battery"), (minus, "- battery")):
+        ax.plot([x], [y], "o", ms=9, mfc="#e0b020", mec="#6b5200", zorder=6)
+        ax.text(x - 1.1, y, name, ha="right", va="center", fontsize=8.5, fontweight="bold")
+    ax.set_title(TITLE[controller] + " under the carrier, seen from above through the board.\n"
+                 "Rear at the top. Red: the wire from each pad to its pin.\n" + UNDER[controller], fontsize=10)
+    ax.set_xlim(-23, 23)
+    ax.set_ylim(70, 12)
     ax.set_aspect("equal")
     ax.axis("off")
     fig.savefig(path, bbox_inches="tight", facecolor="white")
@@ -110,7 +99,7 @@ def draw(controller, path):
 
 
 if __name__ == "__main__":
-    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "renders")
+    root = os.path.join(HERE, "..", "renders")
     draw("xiao", os.path.join(root, "wiring_xiao.png"))
     draw("nice_nano", os.path.join(root, "wiring_nice_nano.png"))
     print("wiring_xiao.png, wiring_nice_nano.png")

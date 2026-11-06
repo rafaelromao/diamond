@@ -9,8 +9,8 @@ towards you); the sensor board is moved sensor_shift away along y for the panel.
 Seven wires join them once snapped apart: VCC, GND, RST, SCLK, SDIO, NCS, MOTION. The sensor
 board's nets carry an S_ prefix: the wires join them, not copper, so the router mustn't try.
 
-nice!nano pins (PINS): MOTION P0.22 (D4), NCS P0.24 (D5), SDIO P1.00 (D6), SCLK P0.11 (D7), key 1
-P1.04 (D8), key 2 P0.17 (D2); the battery through the power switch to B+.
+The controller hangs under the main board, wired to pads level with a XIAO's pins; which pin each
+pad takes on either controller is in controller_pinout.py. The battery goes through the power switch to B+.
 """
 import json
 import math
@@ -29,12 +29,7 @@ OFF = (100.0, 100.0)
 D = json.load(open(os.path.join(HERE, "design.json")))
 NANO_L = 33.3
 
-# each on the nano's right-column pin level with its wire pad or socket pad, so the tracks run
-# short and straight, none crossing
-PINS = {"MOTION": "P0.22", "NCS": "P0.24", "SDIO": "P1.00", "SCLK": "P0.11", "K1": "P1.04", "K2": "P0.17"}
-NANO_LEFT = ["B+", "GND", "RST", "VCC", "P0.31", "P0.29", "P0.02", "P1.15", "P1.13", "P1.11", "P0.10", "P0.09"]
-NANO_RIGHT = ["P0.06", "P0.08", "GND", "GND", "P0.17", "P0.20", "P0.22", "P0.24", "P1.00", "P0.11", "P1.04", "P1.06"]
-WIRES_MAIN = ["SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND"]     # right four, then left three
+WIRES_MAIN = ["SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND"]     # in design.json wire_pads order
 PAD_LABELS = {"SCLK": "CK", "SDIO": "IO", "NCS": "CS", "MOTION": "MO", "VCC": "3V", "GND": "G"}
 WIRES_SENSOR = ["VCC", "GND", "RST", "SCLK", "SDIO", "NCS", "MOTION"]   # trackball.py SENSOR_PARTS J1 order
 SENSOR_NETS = {   # PMW3610 pins (siderakb's 3.3 V logic configuration)
@@ -126,15 +121,27 @@ def zone(board, pts, layer, netitem=None, rule=None, hole=None):
     return z
 
 
-def text(board, s, c, layer, size=1.0, mirror=False):
+def text(board, s, c, layer, size=1.0, mirror=False, angle=0):
     t = pcbnew.PCB_TEXT(board)
     t.SetText(s)
+    t.SetTextAngleDegrees(angle)
     t.SetPosition(pt(*c))
     t.SetLayer(layer)
     t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
     t.SetTextThickness(mm(0.15))
     t.SetMirrored(mirror)
     board.Add(t)
+
+
+def pad_label(board, label, p):
+    """A wire pad's label, on the board side of it; the rearmost row has no room there."""
+    if abs(p[1] - D["pin_rows"][0]) < .1:
+        at = (p[0] + 1.1, p[1] - 1.5)
+    elif label == "CS":                  # a switch hole leaves room only for it turned
+        at = (p[0] + 1.5, p[1])
+    else:
+        at = (p[0] - (1 if p[0] > 0 else -1) * (1.15 + len(label) * .42), p[1])
+    text(board, label, at, pcbnew.F_SilkS, 0.8, angle=90 if label == "CS" else 0)
 
 
 def pad_at(fp, number):
@@ -170,25 +177,25 @@ def prerouted(board, nets, fps):
     F, B = pcbnew.F_Cu, pcbnew.B_Cu
     # Socket orientation and wire rows follow the generated placement. Route these
     # nets afresh rather than retaining escapes tied to the previous 90-degree layout.
-    # The forward K1 socket contact needs an outboard via: the router otherwise
-    # puts it over the controller antenna. Derive the escape from the actual pad.
-    p = max((p for p in fps["SW1"].Pads() if p.GetNumber() == "2"),
-            key=lambda p: p.GetPosition().y)
-    start = (pcbnew.ToMM(p.GetPosition().x) - OFF[0], pcbnew.ToMM(p.GetPosition().y) - OFF[1])
-    # Between the right wire row and the main board's screw hole.
-    escape = (12.5, max(p[1] for p in D["wire_pads"] if p[0] > 0) + 1.75)
-    track(board, nets, "K1", [start, (start[0] + 3.4, start[1]), (start[0] + 5.2, escape[1]), escape], B)
-    via(board, nets, "K1", escape)
-    # Back to its wire pad on the front face, inside the right wire row, between the keys.
-    k1 = pad_at(fps["K1"], "1")
-    track(board, nets, "K1", [escape, (8.3, escape[1]), (8.3, k1[1] + 2.2), (7.1, k1[1] + 1.6),
-                              (k1[0] + 1.5, k1[1] + 1.6), k1], F)
     ground = max((p for p in fps["SW1"].Pads() if p.GetNumber() == "1"),
                  key=lambda p: p.GetPosition().y)
     start = (pcbnew.ToMM(ground.GetPosition().x) - OFF[0], pcbnew.ToMM(ground.GetPosition().y) - OFF[1])
     escape = (-8.0, -D["nano"][1] - 6.6)
     track(board, nets, "GND", [start, (-8.0, start[1]), escape], B)
     via(board, nets, "GND", escape)
+    # The first key's other ground contact lies in the nice!nano's antenna zone: bring it out.
+    ground = min((p for p in fps["SW1"].Pads() if p.GetNumber() == "1"), key=lambda p: p.GetPosition().y)
+    start = (pcbnew.ToMM(ground.GetPosition().x) - OFF[0], pcbnew.ToMM(ground.GetPosition().y) - OFF[1])
+    track(board, nets, "GND", [start, (8.4, start[1])], B)
+    via(board, nets, "GND", (8.4, start[1]))
+    # The keys' MX contacts to their edge pads, by hand: past the wire pads the router gives up.
+    k1, k2 = pad_at(fps["K1"], "1"), pad_at(fps["K2"], "1")
+    s1 = min((p for p in fps["SW1"].Pads() if p.GetNumber() == "2"), key=lambda p: p.GetPosition().x)
+    s2 = min((p for p in fps["SW2"].Pads() if p.GetNumber() == "2"), key=lambda p: p.GetPosition().x)
+    xy = lambda p: (pcbnew.ToMM(p.GetPosition().x) - OFF[0], pcbnew.ToMM(p.GetPosition().y) - OFF[1])
+    a1, a2 = xy(s1), xy(s2)
+    track(board, nets, "K1", [a1, (-9.6, a1[1] - 4.07), (-9.6, k1[1] + .75), k1], B)
+    track(board, nets, "K2", [a2, (-7.5, a2[1] + .35), (-7.5, k2[1] - 1.6), k2], B)
     # Front-face path round both socket families' drills at the 270-degree placement, from the
     # left wire row to the power switch. The autorouter strands this power net.
     bat = pad_at(fps["BAT+"], "1")
@@ -216,12 +223,16 @@ def tab_box():
     return [(-2.8, ys[0] - 0.4), (2.8, ys[0] - 0.4), (2.8, ys[-1] + 0.4), (-2.8, ys[-1] + 0.4)]
 
 
-def nano_antenna():
-    """The nice!nano's antenna end (away from the USB): no pour or vias over it."""
+def antennas():
+    """Each controller's antenna end, away from the USB: no pour or vias over them."""
     nx, ny = D["nano"]
-    y0 = -(ny + 6.0)
-    y1 = -ny + 0.5
-    return [(-9.5, y0), (9.5, y0), (9.5, y1), (-9.5, y1)]
+    rows = [(-(ny + 6.0), -ny + 0.5), (D["xiao_front"] - 4.0, D["xiao_front"] + .5)]
+    return [[(-7.0, y0), (7.0, y0), (7.0, y1), (-7.0, y1)] for y0, y1 in rows]
+
+
+def antenna_rule(i):
+    """The XIAO's zone only drops the pour: the keys' tracks and vias have to get past it."""
+    return {"vias", "pour"} if i == 0 else {"pour"}
 
 
 def build():
@@ -255,7 +266,7 @@ def build():
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
         fps[name] = fp
-        text(board, name, (p[0] - 1.3, p[1] + 1.6) if p[0] < 0 else (p[0], p[1] - 1.6), pcbnew.F_SilkS, 0.8)
+        pad_label(board, name, p)
     back = min(y for _, y in D["main_board"])
     pw = add_fp(board, "SW_MSK12C02", "SW3", (0.0, back + 1.8), 180, "MSK-12C02 power")
     set_pads(pw, {"1": "BAT+", "2": "VBAT", "3": "VBAT", "SH": "GND"}, board, nets)
@@ -264,12 +275,7 @@ def build():
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
         fps["wires"][name] = fp
-        side = 1 if p[0] > 0 else -1
-        label = PAD_LABELS.get(name, name)      # short: the keys' drills sit close to these rows
-        if abs(p[0]) < 8:
-            text(board, label, (p[0], p[1] - 1.6), pcbnew.F_SilkS, 0.8)
-        else:
-            text(board, label, (p[0] - side * 1.15 - side * len(label) * 0.42, p[1]), pcbnew.F_SilkS, 0.8)
+        pad_label(board, PAD_LABELS.get(name, name), p)
     for i, (p, name) in enumerate(zip(D["battery_pads"], ["BAT+", "GND"]), 8):
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
@@ -311,12 +317,12 @@ def build():
     # no copper on the tab; none over the nano's antenna
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, tab_box(), layer, rule={"tracks", "vias", "pour"})
-        zone(board, nano_antenna(), layer, rule={"vias", "pour"})       # thin tracks may cross
+        for i, area in enumerate(antennas()):
+            zone(board, area, layer, rule=antenna_rule(i))              # thin tracks may cross
     annotate(board, D)
     pcbnew.SaveBoard(BOARD, board)
     pcbnew.ExportSpecctraDSN(board, os.path.join(PCB_DIR, "trackball.dsn"))
     write_pinout(os.path.join(PCB_DIR, "pinout.json"))
-    print("pins:", PINS)
 
 
 def stitch(board, name, pitch=3.0):
@@ -393,7 +399,8 @@ def import_ses(fill=True):
             fp.SetOrientationDegrees(angle)
     if not any(z.GetIsRuleArea() and z.GetDoNotAllowVias() and not z.GetDoNotAllowTracks() for z in board.Zones()):
         for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-            zone(board, nano_antenna(), layer, rule={"vias", "pour"})
+            for i, area in enumerate(antennas()):
+                zone(board, area, layer, rule=antenna_rule(i))
     if fill:
         finish(board)
     else:

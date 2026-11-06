@@ -12,8 +12,8 @@
         compatible = "zmk,kscan-gpio-direct";
         wakeup-source;
         input-gpios
-            = <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-            , <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            = <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio1 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             ;
     };
 
@@ -29,20 +29,23 @@
     };
 };
 
-/* Native I2C on D4/D5; K2 uses D1/P0.03 instead, so there is no SDA/key conflict. */
+/* I2C on D4 and D5, as the board has it, with SCL and SDA swapped to land on the CK and IO pads. */
+
+/* K1 and K2 are on the board's default SPI pins. */
+&spi2 { status = "disabled"; };
 
 &pinctrl {
     i2c1_default: i2c1_default {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 4)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 5)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 5)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 4)>;
         };
     };
 
     i2c1_sleep: i2c1_sleep {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 4)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 5)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 5)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 4)>;
             low-power-enable;
         };
     };
@@ -60,7 +63,7 @@
         compatible = "cirque,pinnacle";
         reg = <0x2a>;
         status = "okay";
-        data-ready-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+        data-ready-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
         sensitivity = "4x";
         sleep-mode-enable;
         primary-tap-enable;

@@ -46,7 +46,29 @@ class LayoutTest(unittest.TestCase):
             for px, py in pads["wires"] + pads["bat"] + pads["controller"]:
                 self.assertGreater(Point(x, y).distance(Point(px, py)), T.M.SCREW["boss"] / 2 + .4)
         for x, y in pads["wires"] + pads["bat"] + pads["controller"]:
-            self.assertTrue(main_plan.contains(Point(x, y).buffer(1.6)))
+            self.assertTrue(main_plan.contains(Point(x, y).buffer(1.5)))
+
+    def test_wire_pads_sit_beside_the_xiao_pins_and_clear_everything(self):
+        layout = T.place()
+        main_plan = T.main_board_plan(layout)
+        pads = T.board_layout(layout, main_plan)
+        rows = [T.xiao_pin_y(layout, r) for r in range(1, 8)]
+        close = pads["wires"] + pads["controller"]
+        self.assertEqual(len(close), 10)
+        for _, y in close:
+            self.assertLess(min(abs(y - r) for r in rows), 1e-6)
+        for x, _ in close:
+            self.assertLess(abs(abs(x) - 8.89), 2.1)   # within reach of the XIAO's edge pins
+        for spec_name in ("mx", "choc"):
+            parts = dict(T.parts(layout, main_plan, T.sensor_board_plan(layout), spec_name))
+            for x, y in close + pads["bat"]:
+                ring = T.M.extrude(Point(x, y).buffer(.85), T.PCB_TOP - T.PCB_T - 1.2, T.PCB_TOP - T.PCB_T)
+                for name in ("socket 1", "socket 2"):
+                    with self.subTest(switch=spec_name, pad=(x, y), part=name):
+                        self.assertLess(abs((ring ^ parts[name]).volume()), 1e-3)
+                joint = T.M.extrude(Point(x, y).buffer(.8), T.PCB_TOP, T.PCB_TOP + .5)
+                with self.subTest(switch=spec_name, joint=(x, y)):
+                    self.assertLess(abs((joint ^ T.lid(layout, spec_name)).volume()), 1e-3)
 
     def test_mx_and_choc_share_the_boards_and_the_tray(self):
         layout = T.place()

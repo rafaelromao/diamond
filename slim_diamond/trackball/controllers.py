@@ -28,9 +28,9 @@ def reference_model():
 
 
 def xiao(back, component_face_z):
-    """Face down; exact STEP mouth at rear plane, centred on the USB passage."""
+    """Face down (turned over, not mirrored); STEP mouth at the rear plane, on the USB passage."""
     return reference_model().transform([
-        [0, 0, 1, -XIAO_MOUTH_Z],
+        [0, 0, -1, XIAO_MOUTH_Z],
         [1, 0, 0, back - XIAO_MOUTH_X],
         [0, -1, 0, component_face_z + XIAO_COMPONENT_FACE_Y],
     ])
