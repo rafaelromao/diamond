@@ -52,4 +52,23 @@ middle = next(p for p in jumper.Pads() if p.GetNumber() == '2').GetPosition()
 xiao_side = next(p for p in jumper.Pads() if p.GetNumber() == '1').GetPosition()
 # The board lies a quarter turn round on the panel: its left, the XIAO's X pad, is downwards.
 assert xiao_side.y > middle.y and xiao_side.x == middle.x, (xiao_side, middle)
+# Both boards' stacking holes, taken back from the panel into the module's plan: they must coincide.
+# The controller board lies a quarter turn round on the panel: KiCad (X, Y) = (-py + ox, -(px + oy)).
+ox, oy = design['controller_offset']
+def plan_of(ref):
+    c = footprints[ref].GetPosition()
+    X, Y = pcbnew.ToMM(c.x) - 100, pcbnew.ToMM(c.y) - 100
+    return (-Y - oy, ox - X) if ref.startswith('M') else (X, -Y)
+pairs = {}
+for i, (name, link) in enumerate(design['main_links'].items(), 1):
+    main_xy, ctrl_xy = plan_of(f'L{i}'), plan_of(f'ML{i}')
+    off = ((main_xy[0] - ctrl_xy[0]) ** 2 + (main_xy[1] - ctrl_xy[1]) ** 2) ** .5
+    pairs[name] = dict(net=link['net'], main=[round(v, 4) for v in main_xy], controller=[round(v, 4) for v in ctrl_xy],
+                       offset=round(off, 5), main_net=next(iter(footprints[f'L{i}'].Pads())).GetNetname(),
+                       controller_net=next(iter(footprints[f'ML{i}'].Pads())).GetNetname())
+    assert off < 1e-3, (name, main_xy, ctrl_xy)
+header = {fp.GetValue(): [round(v, 4) for v in plan_of(fp.GetReference())] for fp in footprints.values()
+          if fp.GetReference().startswith('MP')}
+(root / 'pcb/stack_alignment.json').write_text(json.dumps(dict(pairs=pairs, header=header), indent=1) + '\n')
+print('Stacking holes: all %d pairs coincide in the module, worst %.4f mm' % (len(pairs), max(p['offset'] for p in pairs.values())))
 print('All three boards: every pad, header pin, stacking pin and jumper net matches')

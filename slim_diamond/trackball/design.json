@@ -2216,6 +2216,10 @@
  "pcb_top": 20.477321216307725,
  "back": -14.35,
  "xiao_front": 37.0475,
+ "controller_offset": [
+  -4.1,
+  -100.95
+ ],
  "controller_plan": {
   "outline": [
    [

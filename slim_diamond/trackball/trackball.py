@@ -505,6 +505,7 @@ def controller_design(L, main_plan, sensor_plan):
     points = controller_points(L)
     piece, side_tab, bites = controller_panel_piece(ox, oy, sensor_plan.bounds[2])
     return dict(
+        controller_offset=[round(float(ox), 4), round(float(oy), 4)],
         controller_plan=dict(outline=[[round(float(x), 4), round(float(y), 4)] for x, y in controller_board_plan().exterior.coords],
                              pins={k: [round(float(c), 4) for c in v["xy"]] for k, v in points["pins"].items()},
                              links={k: dict(xy=[round(float(c), 4) for c in v["xy"]], net=v["net"]) for k, v in points["links"].items()},

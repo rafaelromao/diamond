@@ -322,6 +322,10 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
   <section class="stack col">
     <h3>One panel, either controller</h3>
     <p>The <a href="trackball/fab/trackball_jlcpcb.zip">same breakaway panel</a> supports a nice!nano v2 or a plain XIAO nRF52840. The controller stands face down on an ordinary 2.54 mm header on its own small board, in two straight columns 15.24 mm apart, and eight stacking pins join that board to the main board above it. The six signal pins are GPIOs on both controllers, so only the firmware differs. One solder jumper picks the 3.3 V pin, and two short wires carry the battery and reset</p>
+    <p>On the panel the controller board lies a quarter turn round. In the module it sits under the main board, and each of its eight stacking holes lines up with one of the main board's. The diagram measures them on the routed board.</p>
+    <figure><img src="renders/trackball_board_stack.png" alt="The controller board with a XIAO on its header, and the main board's rear part over it, the stacking pins coming through its holes" width="1600" height="1200" loading="lazy"><figcaption>The two boards joined by the eight stacking pins, with a XIAO on its header. The main board is cut short here to show what lies under it.</figcaption></figure>
+    <figure><img src="renders/trackball_board_stack_exploded.png" alt="The same stack with the main board lifted 10 mm above the stacking pins' tips" width="1600" height="1200" loading="lazy"><figcaption>The main board lifted off: each pin stands under its hole.</figcaption></figure>
+    <figure><img src="renders/stack_alignment.png" alt="Plan of both boards' stacking holes measured from the routed PCB, all eight 0.000 mm apart, and a scale section across the stack" loading="lazy"><figcaption>Measured from the routed board: every pair 0.000 mm apart.</figcaption></figure>
     <figure><img src="renders/wiring_xiao.png" alt="Top view of the controller board with a XIAO on it: named pins, stacking pins and the jumper setting" loading="lazy"><figcaption>Plain XIAO nRF52840 wiring, for the trackball and the trackpad.</figcaption></figure>
     <figure><img src="renders/wiring_nice_nano.png" alt="Top view of the controller board with a nice!nano on it: named pins, stacking pins and the jumper setting" loading="lazy"><figcaption>nice!nano v2 wiring, for the trackball and the trackpad.</figcaption></figure>
     <p>Both controllers stand on the same pin rows. A XIAO's rows sit 0.2 mm further from its USB-C mouth, so its mouth lies 0.2 mm inside the module's back. The assembly images show nominal models, not a physically tested fit for every controller or clone.</p>
@@ -895,6 +899,22 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li><strong>Flash the controller first,</strong> while its reset is in reach, then <strong>fit it</strong> face down, its USB-C over the notch. Rest it on the plastic, level, and solder the pins on its back. Trim them to 0.6 mm at most above the controller: the sockets are close above it. Power it from USB and check that it connects: its keys and sensor are not joined until the stacking pins are soldered. Solder its two wires now, about 25 mm each: battery and reset, from the table under Wiring. They will not reach the main board yet.</li>
 <li><strong>Fit the stacking pins</strong> last, keeping them square. Use 15 mm extra-long header with a short end of at least 2.35 mm and a long end of at least 6.7 mm: two 3-pin lengths for the columns beside the controller, and one pin each for the two outer holes. Sand the cut ends of the plastic flush, so they sit square. Their plastic belongs near the <strong>main board's underside</strong>, not this board. Fit the short ends up into the main board's eight stacking holes. On the left, three in a line: <code>K2</code>, the outer hole of the joined <code>CS</code> pair, and <code>K1</code>, with <code>GND</code> set further out ahead of them. On the right, the outer holes of the joined <code>CK</code>, <code>IO</code> and <code>MO</code> pairs in a line, and the outer hole of the joined <code>3V</code> pair set further out ahead of them. The stacking <code>GND</code> is not the pad marked <code>G</code>, which takes a wire. Then stand the main board over this board on a 6.75 mm spacer (6.6 to 6.9 mm works), with the long ends down through this board's holes. Solder them to <strong>this board only</strong>, from underneath. Lift the main board off, and trim the tails underneath to about 1 mm.</li>
 </ol>
+<p>How the stacking pins meet the main board, in the module: on the panel the controller board lies a quarter turn round, but each of its eight stacking holes sits exactly under one of the main board's. The diagram is measured from the routed board.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>The main board lifted off the stacking pins</th>
+<th>Assembled, seen from above</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="" src="renders/trackball_board_stack_exploded.png" /></td>
+<td><img alt="" src="renders/trackball_board_stack_top.png" /></td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Stacking holes of both boards, measured from the routed PCB, and a section across the stack" src="renders/stack_alignment.png" /></p>
 <p>For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.</p>
 <p>Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen alone: in the KiCad panel, inspect pad references <code>SJ1</code> through <code>SJ7</code>, whose nets are respectively <code>S_VCC</code>, <code>S_GND</code>, <code>S_RST</code>, <code>S_SCLK</code>, <code>S_SDIO</code>, <code>S_NCS</code>, <code>S_MOTION</code>. Meter each pad to its intended component or reset button before soldering.</p>
 <h3>Wiring</h3>

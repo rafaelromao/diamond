@@ -27,7 +27,8 @@ def main():
                 for v in ("structure", "seam", "tray", "stack", "reset")]
     required += [f"{k}_{v}.png" for k in ("trackball", "trackpad")
                  for v in ("rear", "assembly", "under", "usb", "usb_open", "usb_dock")]
-    required += ['trackball_xiao_stack.png', 'trackball_xiao_usb_open.png']
+    required += ['trackball_xiao_stack.png', 'trackball_xiao_usb_open.png', 'trackball_board_stack.png',
+                 'trackball_board_stack_exploded.png', 'trackball_board_stack_top.png', 'stack_alignment.png']
     assert all((root / "renders" / n).is_file() for n in required)
     font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationSans-Regular.ttf", 22)
     sheet = Image.new("RGB", (1800, ((len(required) + 2) // 3) * 500), "white")

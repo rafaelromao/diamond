@@ -162,6 +162,18 @@ class XiaoOptionTest(unittest.TestCase):
         self.assertNotIn('D["controller_pins"]', source)
         self.assertNotIn('D["controller_board"]', source)
 
+    def test_the_routed_boards_stacking_holes_coincide(self):
+        # Written by check_controller_pcb.py from the routed board, the panel's turn and offset undone.
+        path = Path('trackball/pcb/stack_alignment.json')
+        self.assertGreaterEqual(path.stat().st_mtime, Path('trackball/pcb/trackball.kicad_pcb').stat().st_mtime)
+        pairs = json.loads(path.read_text())['pairs']
+        self.assertEqual(len(pairs), 8)
+        for name, pair in pairs.items():
+            with self.subTest(hole=name):
+                self.assertLess(pair['offset'], 1e-3)
+                self.assertEqual(pair['main_net'], pair['net'])
+                self.assertEqual(pair['controller_net'], 'M_' + dict(NCS='CS', SCLK='CK', SDIO='IO', MOTION='MO', VCC='3V').get(pair['net'], pair['net']))
+
     def test_either_controller_stands_clear_of_its_board_and_header(self):
         layout = B.place()
         top = B.controller_top()

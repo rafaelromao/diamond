@@ -65,6 +65,10 @@ done
 # the routed trackball board (when generated)
 r --rotate '-40,0,-25' --zoom 0.0017 -o renders/trackball_xiao_stack.png .render/trackball_xiao_stack.kicad_pcb
 r --rotate '-25,0,-130' --zoom 0.0013 -o renders/trackball_xiao_usb_open.png .render/trackball_xiao_usb_open.kicad_pcb
+# the controller board's stacking pins meeting the main board: assembled, and with it lifted off them
+r --rotate '-62,0,-35' --zoom 0.0050 -o renders/trackball_board_stack.png .render/trackball_board_stack.kicad_pcb
+r --rotate '-62,0,-35' --zoom 0.0042 -o renders/trackball_board_stack_exploded.png .render/trackball_board_stack_exploded.kicad_pcb
+r --side top --zoom 0.0055 -o renders/trackball_board_stack_top.png .render/trackball_board_stack.kicad_pcb
 if [ -f trackball/pcb/trackball.kicad_pcb ]; then
     r --side top    --zoom 0.85 -o renders/trackball_board_top.png    trackball/pcb/trackball.kicad_pcb
     r --side bottom --zoom 0.85 -o renders/trackball_board_bottom.png trackball/pcb/trackball.kicad_pcb
@@ -86,6 +90,7 @@ done
 
 # Wiring diagrams, from the pin table the tests check.
 ${PY:-python3} trackball/controller_diagram.py
+${PY:-python3} trackball/stack_diagram.py
 
 # All views on one sheet.
 ${PY:-python3} render_notes.py

@@ -341,7 +341,55 @@ def module_scenes(k):
     plug = M.usb_connection(B.xiao_back(L), xiao_usb_z(floor))
     scenes['trackball_xiao_usb_open'] = [(plan(m), rgb) for m, rgb in cut if not m.is_empty()] + [
         (plan(m), rgb) for m, rgb in zip(plug, (vrml.METAL, (.14, .15, .17), (.07, .08, .09)))]
+    scenes.update(board_stack_scenes(L, plan))
     return scenes
+
+
+def board_stack_scenes(L, plan):
+    """The two boards and the stacking pins between them, alone: assembled, and with the main board
+    lifted 10 mm off the pins' tips. Holes and pads at the design's places, which check_controller_pcb.py
+    proves are the routed board's."""
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+    import module_shell as M
+    from trackball import trackball as B
+    from trackball.controllers import xiao
+    kicad = lambda p: (p[0], -p[1])
+    main_plan = B.main_board_plan(L)
+    design = json.load(open("trackball/design.json"))
+    main_pads = [kicad(p) for key in ("wire_pads", "battery_pads", "controller_pads") for p in design[key]]
+    main_pads += [kicad(link["xy"]) for link in design["main_links"].values()]
+    points = B.controller_points(L)
+    ctrl_pads = [p["xy"] for p in points["pins"].values()] + [p["xy"] for p in points["links"].values()]
+    posts = unary_union([Point(x, y).buffer(B.POST_PIN + .2, 32) for x, y in B.board_holes()])
+    def board(outline, pads, z0, z1, extra=None):
+        holes = unary_union([Point(x, y).buffer(.5, 16) for x, y in pads] + ([extra] if extra else []))
+        slab = M.extrude(outline.difference(holes), z0, z1)
+        rings = unary_union([Point(x, y).buffer(.85, 24).difference(Point(x, y).buffer(.5, 16)) for x, y in pads])
+        copper = M.extrude(rings, z1, z1 + .04) + M.extrude(rings, z0 - .04, z0)
+        return slab, copper
+    under = B.PCB_TOP - B.PCB_T
+    top = B.controller_top()
+    # Only the main board's rear part, round the controller: the rest would hide the pins.
+    from shapely.geometry import box as _box
+    near = main_plan.intersection(_box(-99, -43.0, 99, 0))
+    main_pads = [p for p in main_pads if p[1] > -42.0]
+    main_slab, main_cu = board(near, main_pads, under, B.PCB_TOP, posts)
+    ctrl_slab, ctrl_cu = board(B.controller_board_plan(), ctrl_pads, top - B.CB_T, top)
+    floor = B.SOCKET_BOT - B.NANO_GAP - B.NANO[2]
+    parts = dict(B.parts(L, main_plan, B.sensor_board_plan(L)))
+    header_pins = M.extrude(unary_union([Point(x, y).buffer(.32, 4) for x, y in [p["xy"] for p in points["pins"].values()]]),
+                            top - B.CB_T - 1.0, floor + 1.25 + .6)
+    green = (0.1, 0.32, 0.18)
+    lower = [(ctrl_slab, green), (ctrl_cu, vrml.GOLD), (xiao(B.xiao_back(L), floor), vrml.METAL),
+             (parts["controller header"], (.07, .07, .08)), (header_pins, vrml.GOLD),
+             (B.stacking_pins(L), vrml.GOLD), (parts["stacking pins' plastic"], (.07, .07, .08))]
+    upper = [(main_slab, (0.33, 0.37, 0.22)), (main_cu, vrml.GOLD)]
+    return {
+        "trackball_board_stack": [(plan(m), rgb) for m, rgb in lower + upper],
+        "trackball_board_stack_exploded": [(plan(m), rgb) for m, rgb in lower] +
+                                          [(plan(m.translate((0, 0, 10))), rgb) for m, rgb in upper],
+    }
 
 
 def main():
@@ -377,6 +425,10 @@ def main():
         bat_y = -(json.load(open("%s/design.json" % name.split("_")[0]))["battery"][1]
                  if name.startswith("trackball") else json.load(open("trackpad/design.json"))["layout"]["battery"][1])
         scenes[name] = {"speck": [0.0, 55.0], "z": -(M.FEET + M.BOTTOM_T + 4.0), "size": 100.0}
+        if name.startswith("trackball_board_stack"):          # the speck inside the main board
+            from trackball import trackball as B
+            lift = 10.0 if name.endswith("_exploded") else 0.0
+            scenes[name] = {"speck": [-2.0, 38.0], "z": -(B.PCB_TOP - .8 + lift), "size": 60.0}
         if name.endswith("_rear"):
             scenes[name] = {"speck": [0.0, 20.0], "z": -14.0, "size": 80.0}
         if "_usb" in name:
