@@ -313,7 +313,7 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <figure><img src="renders/trackball.png" alt="The trackball module: a red ball at the front, two MX keys stacked behind it" width="1600" height="1200" loading="lazy"><figcaption>The trackball module.</figcaption></figure>
     <figure><img src="renders/trackball_open.png" alt="The trackball module cut open: the sensor board under the ball, the main board under the keys, the nice!nano and the battery under it" width="1600" height="1200" loading="lazy"><figcaption>Cut open: sensor board, main board, nice!nano, battery.</figcaption></figure>
     <figure><img src="renders/trackpad.png" alt="The trackpad module: a round Cirque pad at the front, two Choc keys stacked behind it" width="1600" height="1200" loading="lazy"><figcaption>The trackpad module.</figcaption></figure>
-    <figure><img src="renders/trackpad_open.png" alt="The trackpad module cut open: battery, reset board and the nice!nano beneath the keys" width="1600" height="1200" loading="lazy"><figcaption>Cut open: battery, reset board and wired controller.</figcaption></figure>
+    <figure><img src="renders/trackpad_open.png" alt="The trackpad module cut open: battery, reset board and the nice!nano beneath the keys" width="1600" height="1200" loading="lazy"><figcaption>Cut open: battery, reset board and the controller on its board.</figcaption></figure>
     <figure><img src="renders/trackball_with_half.png" alt="The trackball module snapped onto the left half on the desk" width="1600" height="1200" loading="lazy"><figcaption>On the desk, snapped onto a half.</figcaption></figure>
     <figure><img src="renders/trackpad_with_half.png" alt="The trackpad module snapped onto the left half on the desk" width="1600" height="1200" loading="lazy"><figcaption>The trackpad, on a half.</figcaption></figure>
 
@@ -632,7 +632,7 @@ buy for the halves.</p>
 </tr>
 </tbody>
 </table></div>
-<p>Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, thin double-sided tape (0.25 mm at most) for the controller, CA glue
+<p>Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, thin double-sided tape (0.25 mm at most) for the controller board's seats, CA glue
 or epoxy for the magnets, removable adhesive dots for the trackpad, thin card for the sensor's
 shims, and a 2.5 mm insulating spacer/tape stack for the I²C breakout (no printed holder).</p>
 <p>Soldering, assembly and printing: see <a href="BUILD.md">BUILD.md</a>.</p>
@@ -898,7 +898,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p>For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.</p>
 <p>Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen alone: in the KiCad panel, inspect pad references <code>SJ1</code> through <code>SJ7</code>, whose nets are respectively <code>S_VCC</code>, <code>S_GND</code>, <code>S_RST</code>, <code>S_SCLK</code>, <code>S_SDIO</code>, <code>S_NCS</code>, <code>S_MOTION</code>. Meter each pad to its intended component or reset button before soldering.</p>
 <h3>Wiring</h3>
-<p>Use flexible 30 AWG stranded wire. The main board's pads have short labels: <code>3V</code> is VCC, <code>G</code> is GND, <code>CK</code> SCLK, <code>IO</code> SDIO, <code>CS</code> NCS and <code>MO</code> MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>CS</code> wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are <code>R2</code>, <code>RST</code>, <code>VBAT</code>, <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>3V</code>, and on its left <code>G</code> and <code>CS</code>.</p>
+<p>Use flexible 30 AWG stranded wire. The main board's pads have short labels: <code>3V</code> is VCC, <code>G</code> is GND, <code>CK</code> SCLK, <code>IO</code> SDIO, <code>CS</code> NCS and <code>MO</code> MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>CS</code> wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are <code>R2</code>, <code>RST</code>, <code>VBAT</code>, <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>3V</code>, and on its left <code>G</code> and <code>CS</code>, with <code>K2</code>, <code>K1</code> and <code>GND</code> marking stacking holes.</p>
 <div class="table"><table>
 <thead>
 <tr>

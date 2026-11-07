@@ -75,7 +75,7 @@ buy for the halves.
 | Supplied I²C breakout with pull-ups + 12-pin FFC | 1 + 1 | supplied with the kit | Reserved maximum breakout envelope 24 × 18 × 4.5 mm; confirm actual size and FFC contact orientation. Four MCU wires to breakout, separate DR wire directly to Cirque underside |
 | Choc v1 switches, sockets and keycaps | 2 + 2 + 2 | same as items 3, 4, 5 | |
 
-Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, thin double-sided tape (0.25 mm at most) for the controller, CA glue
+Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, thin double-sided tape (0.25 mm at most) for the controller board's seats, CA glue
 or epoxy for the magnets, removable adhesive dots for the trackpad, thin card for the sensor's
 shims, and a 2.5 mm insulating spacer/tape stack for the I²C breakout (no printed holder).
 

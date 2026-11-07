@@ -198,7 +198,7 @@ Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen
 
 ### Wiring
 
-Use flexible 30 AWG stranded wire. The main board's pads have short labels: `3V` is VCC, `G` is GND, `CK` SCLK, `IO` SDIO, `CS` NCS and `MO` MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the `CK`, `IO`, `MO` and `CS` wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are `R2`, `RST`, `VBAT`, `CK`, `IO`, `MO` and `3V`, and on its left `G` and `CS`.
+Use flexible 30 AWG stranded wire. The main board's pads have short labels: `3V` is VCC, `G` is GND, `CK` SCLK, `IO` SDIO, `CS` NCS and `MO` MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the `CK`, `IO`, `MO` and `CS` wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are `R2`, `RST`, `VBAT`, `CK`, `IO`, `MO` and `3V`, and on its left `G` and `CS`, with `K2`, `K1` and `GND` marking stacking holes.
 
 | From | To |
 |---|---|
