@@ -1,8 +1,8 @@
 /*
  * Slim Diamond Trackball: a PMW3610 under a 34 mm ball, two MX keys, on a nice!nano.
- * Pins from trackball/controller_pinout.py: SCLK P0.20 (D3), SDIO P0.22 (D4, both SPI data
- * lines: the sensor's one-wire data), NCS P0.31 (D21), MOTION P0.17 (D2), key 1 P0.02 (D19), key 2
- * P0.29 (D20). SPI2: the nice!nano board doesn't claim it.
+ * Pins from trackball/controller_pinout.py: SCLK P0.17 (D2), SDIO P0.20 (D3, both SPI data
+ * lines: the sensor's one-wire data), NCS P0.29 (D20), MOTION P0.22 (D4), key 1 P0.02 (D19), key 2
+ * P0.31 (D21). SPI2: the nice!nano board doesn't claim it.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -20,7 +20,7 @@
         wakeup-source;
         input-gpios
             = <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-            , <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 31 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             ;
     };
 
@@ -39,17 +39,17 @@
 &pinctrl {
     spi2_default: spi2_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 22)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 22)>;
+            psels = <NRF_PSEL(SPIM_SCK, 0, 17)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 20)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 20)>;
         };
     };
 
     spi2_sleep: spi2_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 20)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 22)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 22)>;
+            psels = <NRF_PSEL(SPIM_SCK, 0, 17)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 20)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 20)>;
             low-power-enable;
         };
     };
@@ -61,14 +61,14 @@
     pinctrl-0 = <&spi2_default>;
     pinctrl-1 = <&spi2_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;
+    cs-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
 
     trackball: trackball@0 {
         status = "okay";
         compatible = "pixart,pmw3610-alt";
         reg = <0>;
         spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        irq-gpios = <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         cpi = <800>;
         evt-type = <INPUT_EV_REL>;
         x-input-code = <INPUT_REL_X>;

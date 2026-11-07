@@ -122,7 +122,9 @@ def dock_scenes():
 BALL_RGB = (0.62, 0.12, 0.14)
 PAD_RGB = (0.08, 0.08, 0.09)
 PART_RGB = {"ball": BALL_RGB, "pad": PAD_RGB, "pad's back parts": vrml.CHIP, "battery": vrml.BATTERY,
-             "nice!nano": vrml.XIAO_PCB, "I2C breakout envelope": (0.1, 0.32, 0.18),
+             "nice!nano": vrml.XIAO_PCB, "controller board": (0.1, 0.32, 0.18), "controller header": (.07, .07, .08),
+             "stacking pins' plastic": (.07, .07, .08),
+             "I2C breakout envelope": (0.1, 0.32, 0.18),
              "FFC bend envelope": (.85, .85, .8), "main board": (0.1, 0.32, 0.18),
             "sensor board": (0.1, 0.32, 0.18), "sensor's parts": vrml.CHIP, "lens": (0.8, 0.8, 0.85),
             "reset": vrml.BUTTON, "power switch": vrml.METAL}
@@ -226,8 +228,10 @@ def module_instruction_scenes(kind, switch="mx"):
             populated.append((_shown(mod, kind, label, solid, L), _colour(label)))
     empty = [(tray, TRAY_RGB), (_sensor_screws(L), SCREW_RGB)]
     for label, solid in ps:
-        if label in ("battery", "nice!nano", "reset", "sensor board", "lens", "sensor's parts", "I2C breakout envelope", "FFC bend envelope"):
+        if label in ("battery", "nice!nano", "controller board", "controller header", "stacking pins' plastic", "reset", "sensor board", "lens", "sensor's parts", "I2C breakout envelope", "FFC bend envelope"):
             empty.append((_shown(mod, kind, label, solid, L), _colour(label)))
+    from trackball import trackball as _B
+    empty.append((_B.stacking_pins(L), vrml.METAL))
     rx, ry = L["reset"] if kind == "trackpad" else mod.sensor_reset(L)
     reset = dict(ps)["reset"]
     tool = Manifold.cylinder(12, .55, circular_segments=32).translate((rx, ry, reset.bounding_box()[2] - 14))
@@ -324,16 +328,17 @@ def module_scenes(k):
     from trackball.controllers import xiao, xiao_usb_z
     mod, L, lid, tray, ps = _built('trackball', 'choc')
     floor = B.SOCKET_BOT - B.NANO_GAP - B.NANO[2]
-    controller = xiao(L['back'], floor)
+    controller = xiao(B.xiao_back(L), floor)
     stack = [(tray, TRAY_RGB), (controller, vrml.METAL)]
     for label, solid in ps:
-        if label in ('battery', 'sensor board', 'reset', 'lens', "sensor's parts"):
+        if label in ('battery', 'sensor board', 'reset', 'lens', "sensor's parts", 'controller board', 'controller header', "stacking pins' plastic"):
             stack.append((solid, _colour(label)))
+    stack.append((B.stacking_pins(L), vrml.METAL))
     scenes['trackball_xiao_stack'] = [(plan(m), rgb) for m, rgb in stack]
     populated = [(tray, TRAY_RGB), (lid, LID_RGB), (controller, vrml.METAL)] + [
         (solid, _colour(label)) for label, solid in ps if label != 'nice!nano']
     cut = [(m.trim_by_plane((-1, 0, 0), 0), rgb) for m, rgb in populated]
-    plug = M.usb_connection(L['back'], xiao_usb_z(floor))
+    plug = M.usb_connection(B.xiao_back(L), xiao_usb_z(floor))
     scenes['trackball_xiao_usb_open'] = [(plan(m), rgb) for m, rgb in cut if not m.is_empty()] + [
         (plan(m), rgb) for m, rgb in zip(plug, (vrml.METAL, (.14, .15, .17), (.07, .08, .09)))]
     return scenes

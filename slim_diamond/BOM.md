@@ -48,16 +48,18 @@ buy for the halves.
 |---|---|---|---|
 | Printed tray, `case/module_tray.stl` | 1 | | The same print for every module |
 | Printed lid | 1 | | `trackball/case/lid.stl` (MX), `trackball/case/lid_choc.stl` (Choc v1) or `trackpad/case/lid.stl` |
-| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm. One breakaway main/sensor panel for both pointing modules and either wired controller: nice!nano v2 or plain XIAO nRF52840 |
+| PCB, `trackball/fab/trackball_jlcpcb.zip` | 1 (order 5) | (JLCPCB) | 2 layers, 1.6 mm, 53.7 × 99.5 mm. One breakaway panel of three boards (main, sensor, controller), for both pointing modules and either controller: nice!nano v2 or plain XIAO nRF52840. JLCPCB may count this as three designs and add a fee: enter Different Design = 3 and confirm on the quote |
 | M3 × 8 flat-head screws | 6 | same as item 11 | Four through the lid, two intended for the sensor board; check sensor screw depth before installing the battery |
 | Disc magnets 8 × 1.5 mm, N52 | 7 | same as item 10 | Three a side, one in the floor |
 | Silicone bump-ons 8 × 2 mm | 3 | same as item 12 | |
 | Slide switch MSK-12C02 | 1 | same as item 8 | On the main board, lever out of the back wall |
 | Reset button TS-1187A | 1 | same as item 9 | On the sensor board, facing down |
-| nice!nano v2 or clone | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down under the main board, USB-C flush with the back, wired to labelled pads |
-| **Alternative** to nice!nano: plain XIAO nRF52840 or Super52840 | 1 | same as item 2 | Same PCB, different wires and firmware. XIAO placement is marked on its silkscreen; this is not a direct-solder footprint. Real fit and operation remain unverified; Super52840 support is experimental |
-| LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell |
-| 30 AWG stranded wire | 80 to 100 mm per wire | `30 AWG silicone wire` | |
+| nice!nano v2 or clone | 1 | `nice!nano v2` / `SuperMini nRF52840` | Face down on the controller board's header, USB-C flush with the back. Only a genuine nice!nano v2's pin rows have been checked: compare a clone's against the wiring diagram before soldering |
+| **Alternative** to nice!nano: plain XIAO nRF52840 or Super52840 | 1 | same as item 2 | Same panel and header; set its jumper and use its own firmware. Its USB-C mouth sits 0.2 mm inside the back. Real fit and operation remain unverified; Super52840 support is experimental |
+| 2.54 mm pin header | 11 pins | `2.54 mm male header` | Two 5-pin lengths and a loose pin, under the controller. Plastic 2.5 mm thick |
+| Extra-long 2.54 mm pin header, 15 mm | 8 pins | `2.54 mm header 15 mm long` | Stacking pins between the controller board and main board: two 3-pin lengths and two single pins. Check where the plastic sits: short end at least 2.35 mm, long end at least 6.7 mm |
+| LiPo battery 752025, 250 mAh | 1 | `752025 lipo 250mah` | 7.5 × 20 × 25 mm, not the halves' larger cell. Over 20.5 mm wide, it fouls the controller board's arms |
+| 30 AWG stranded wire | 80 to 100 mm per wire | `30 AWG silicone wire` | About 25 mm for the two wires from the controller |
 
 | Trackball | Qty | Search for | Notes |
 |---|---|---|---|

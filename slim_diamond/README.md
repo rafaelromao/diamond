@@ -214,7 +214,7 @@ either half's inner wall on the desk, or sits on its own on its bump-ons. They a
 tray, a lid, and the same M3 × 8 flat-head screws from the top. The tray is one print, shared by every
 module; only the lid changes.
 
-- **Shared by both:** the tray, the main board (keys, hot-swap sockets, power switch), a wired controller,
+- **Shared by both:** the tray, the main board (keys, hot-swap sockets, power switch), a controller on its own small board,
   a 752025 (250 mAh) battery, and a sensor board holding the reset button. All in the same places, so the
   power slider, the USB-C port and the reset hole are in the same spot on every module.
 - **Retention:** three common magnets a side where the halves' inner-wall magnets are (the 2nd, 4th and
@@ -259,22 +259,21 @@ halves; the Choc lid 1.2 mm. Their front and side upper facets run from the halv
 - The main board accepts **MX or Choc v1 hot-swap sockets**, not both populated together. Choc sockets
   face 180° opposite the MX sockets. MX uses `trackball/case/lid.stl` (1.5 mm plate), Choc uses
   `trackball/case/lid_choc.stl` (1.2 mm plate). Choc v2 is not supported.
-- The nice!nano (or a clone) hangs face down under the main board on four printed piers, its USB-C port
-  flush with the back wall, wired to labelled pads: GND,
-  VCC, RST, VBAT → B+, and the six GPIO signals below. Tape it to the piers without covering its antenna
-  or USB opening.
-- Controller wiring: the sensor's SCLK, SDIO (3-wire SPI), NCS and MOTION go to pads `CK`, `IO`, `CS` and `MO`. Each pad takes one
+- The controller stands face down on a standard 2.54 mm header on its own small board, its USB-C port
+  flush with the back wall. That board drops into the tray between printed stops, which take a plug's force.
+- Eight 15 mm stacking pins join the controller board to the main board, beside the controller, and the battery and reset
+  come by wire from the controller's own pads to `VBAT` and `R2`. The main board does not lift out once they are soldered.
+  The sensor's SCLK, SDIO (3-wire SPI), NCS and MOTION go to pads `CK`, `IO`, `CS` and `MO`. Each pad takes one
   controller pin, on both modules; the table is in `BUILD.md`, and in `trackball/controller_pinout.py`.
-- One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 39.2 × 99.5 mm: the main board and the
-  sensor board at opposite ends of a long bridge, with a row of snap holes at each end.
+- One panel to order (`trackball/fab/trackball_jlcpcb.zip`), 53.7 × 99.5 mm: the main board and the
+  sensor board at opposite ends of a long bridge, with a row of snap holes at each end, and the
+  controller board on a short tab off the sensor board's side.
   `trackball/route.sh` builds, routes and checks it (`build_pcb.py`, Freerouting, DRC).
-- **One orderable PCB for nice!nano v2 or plain XIAO nRF52840:** both controllers connect by wires to
-  the same pads, which sit beside a XIAO's pins along the board's edges; a nice!nano takes the same pads
-  with its own pin names. The firmware differs, not the copper. The silkscreen's `XIAO: USB REAR` box marks a position,
-  not a direct-solder footprint, and its small table gives each pad's pin on both controllers. Complete signal, supply, battery and reset mappings are in `BUILD.md`.
-  The reference XIAO's USB overhang is about 1.53 mm, so its PCB sits 0.93 mm farther forward than
-  the nice!nano envelope to place both receptacle mouths at the same rear plane. The tray's shared
-  supports clear the Seeed STEP reference, but actual revisions, clones, wiring and retention still need checking.
+- **One orderable panel for nice!nano v2 or plain XIAO nRF52840:** both stand on the same header. Rows 5 to 7 are
+  GPIOs on both, so the signals differ only in firmware. One solder jumper chooses the 3.3 V pin:
+  a nice!nano has VCC in row 4 where a XIAO has 3V3 in row 3. Its pin rows sit 0.2 mm further back than a
+  nice!nano's, so a XIAO's USB-C mouth lies 0.2 mm inside the rear plane. The tray's seats and stops clear the
+  Seeed STEP reference, but actual revisions, clones, wiring and retention still need checking.
 - The sensor's posts print 0.4 mm low. Equal shims can adjust the optical gap, but the real ball-to-board
   distance and lens reference-plane height must be measured; see `BUILD.md` for the calculation and limits.
 
@@ -290,12 +289,13 @@ sockets on the shared main board and stands at the Choc lid's height, 1.2 mm ove
 
 | Wire | nice!nano v2 | Plain XIAO nRF52840 |
 |---|---|---|
-| Breakout SDA, on pad `IO` | D4 (P0.22) | D5 (P0.05) |
-| Breakout SCL, on pad `CK` | D3 (P0.20) | D4 (P0.04) |
-| Cirque DR, separate underside wire, on pad `MO` | D2 (P0.17) | D3 (P0.29) |
+| Breakout SDA, on pad `IO` | D3 (P0.20) | D5 (P0.05) |
+| Breakout SCL, on pad `CK` | D2 (P0.17) | D4 (P0.04) |
+| Cirque DR, separate underside wire, on pad `MO` | D4 (P0.22) | D6 (P1.11) |
 | Breakout GND, VDD | GND, VCC (3.3 V) | GND, 3V3 |
-| Main board K1, K2 | D19 (P0.02), D20 (P0.29) | D8 (P1.13), D9 (P1.14) |
-| Main board GND, VBAT, RST | GND, B+, RST | GND, BAT+, reset pad |
+| Main board K1, K2 | D19 (P0.02), D21 (P0.31) | D7 (P1.12), D9 (P1.14) |
+| Main board `G`, by stacking pin | GND | GND |
+| Main board `VBAT`, `R2`, by wire | B+, RST | BAT+, reset pad |
 
 Use I²C at address `0x2A`; confirm R1 is absent on an SPI-labelled kit and leave R7/R8 fitted for
 3.3 V operation.
@@ -382,8 +382,8 @@ python3 check_fit.py     # parts, plate, solder blobs, the reset button and its 
                          # the case, the pads stacked, and the pads' balance: all 0 mm³, ALL CLEAR
 ./kicad.sh python3 check_pcb.py   # every net against its intent, and the firmware's pin lists: ALL CLEAR
 python3 dock.py          # the cyberdeck dock's STL, and its fit check: all 0 mm³
-python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # common wired-controller panel and gerbers
-./kicad.sh python3 trackball/check_controller_pcb.py   # actual carrier pads: signals, power, battery and reset
+python3 trackball/trackball.py && ./trackball/route.sh && ./trackball/fab.sh   # the three-board panel and gerbers
+./kicad.sh python3 trackball/check_controller_pcb.py   # every pad, header pin and jumper net
 python3 trackpad/trackpad.py                       # trackpad module: case and fit check
 python3 insert.py                                  # the drawer's placeholder
 python3 vrml.py && python3 scene.py && ./kicad.sh python3 render_boards.py && ./render.sh

@@ -141,13 +141,6 @@ class ModuleAssemblyTest(unittest.TestCase):
                     with self.subTest(module=name, group=sorted(group)[0], lift=step):
                         self.assertLess(hit(solid.translate((0, 0, step)), self.tray), TOL)
 
-    def test_nano_lowers_in_then_slides_back_into_the_wall(self):
-        nano = dict(self.modules[1][2])["nice!nano"]
-        path = [(-3.2, z * .5) for z in range(80, -1, -1)] + [(-3.2 + i * .1, 0) for i in range(33)]
-        for dy, dz in path:
-            with self.subTest(offset=(dy, dz)):
-                self.assertLess(hit(nano.translate((0, dy, dz)), self.tray), TOL)
-
     def test_usb_c_is_flush_with_the_back(self):
         nano = dict(self.modules[1][2])["nice!nano"]
         self.assertAlmostEqual(nano.bounding_box()[4], self.L["back"], places=4)

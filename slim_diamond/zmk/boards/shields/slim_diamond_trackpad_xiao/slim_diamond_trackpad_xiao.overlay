@@ -12,7 +12,7 @@
         compatible = "zmk,kscan-gpio-direct";
         wakeup-source;
         input-gpios
-            = <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            = <&gpio1 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             , <&gpio1 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             ;
     };
@@ -31,8 +31,9 @@
 
 /* I2C on D4 and D5, as the board has it, with SCL and SDA swapped to land on the CK and IO pads. */
 
-/* K1 and K2 are on the board's default SPI pins. */
+/* DR and K1 are on the board's serial pins, K2 on its default SPI. */
 &spi2 { status = "disabled"; };
+&uart0 { status = "disabled"; };
 
 &pinctrl {
     i2c1_default: i2c1_default {
@@ -63,7 +64,7 @@
         compatible = "cirque,pinnacle";
         reg = <0x2a>;
         status = "okay";
-        data-ready-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+        data-ready-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
         sensitivity = "4x";
         sleep-mode-enable;
         primary-tap-enable;

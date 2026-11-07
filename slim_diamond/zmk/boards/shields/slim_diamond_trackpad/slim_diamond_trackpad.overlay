@@ -1,6 +1,6 @@
 /*
- * Cirque I2C breakout: SDA D4/P0.22, SCL D3/P0.20, power and ground through FFC.
- * Separate direct DR wire D2/P0.17; keys D19/P0.02 and D20/P0.29.
+ * Cirque I2C breakout: SDA D3/P0.20, SCL D2/P0.17, power and ground through FFC.
+ * Separate direct DR wire D4/P0.22; keys D19/P0.02 and D21/P0.31.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -18,7 +18,7 @@
         wakeup-source;
         input-gpios
             = <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-            , <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 31 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             ;
     };
 
@@ -37,15 +37,15 @@
 &pinctrl {
     i2c0_default: i2c0_default {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 22)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 20)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 17)>;
         };
     };
 
     i2c0_sleep: i2c0_sleep {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 22)>,
-                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 20)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 17)>;
             low-power-enable;
         };
     };
@@ -63,7 +63,7 @@
         compatible = "cirque,pinnacle";
         reg = <0x2a>;
         status = "okay";
-        data-ready-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
+        data-ready-gpios = <&gpio0 22 GPIO_ACTIVE_HIGH>;
         sensitivity = "4x";
         sleep-mode-enable;
         primary-tap-enable;

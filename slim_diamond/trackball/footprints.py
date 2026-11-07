@@ -1,7 +1,7 @@
 """Writes trackball.pretty: the Slim Diamond Trackball's footprints (one board, two parts).
 
 The main board carries MX / Choc v1 alternative hot-swap sockets and a power switch. The
-nice!nano is mounted separately and wired to labelled pads. The sensor board's parts all sit
+controller stands on its own small board, on pin headers. The sensor board's parts all sit
 on its back face, which faces the plate, so the PMW3610's lens looks up at the ball: those
 footprints are drawn already on the back face (x mirrored, B layers).
 
@@ -23,9 +23,6 @@ FR = ["F.Cu", "F.Mask", "F.Paste"]
 
 NANO_ROW1 = 4.0              # first pin row from the USB end (trackball.py's NANO_ROW1)
 NANO_L, NANO_W = 33.3, 18.0
-# Seen from above the main board, the nice!nano hangs face down: its two columns swap sides.
-NANO_LEFT = ["B+", "GND", "RST", "VCC", "P0.31", "P0.29", "P0.02", "P1.15", "P1.13", "P1.11", "P0.10", "P0.09"]
-NANO_RIGHT = ["P0.06", "P0.08", "GND", "GND", "P0.17", "P0.20", "P0.22", "P0.24", "P1.00", "P0.11", "P1.04", "P1.06"]
 
 PMW_TOP = [(1, 6.168), (2, 4.388), (3, 2.608), (4, 0.828), (5, -0.952), (6, -2.732), (7, -4.512), (8, -6.292)]
 PMW_BOT = [(9, -7.182), (10, -5.402), (11, -3.622), (12, -1.842), (13, -0.062), (14, 1.718), (15, 3.498), (16, 5.278)]
@@ -67,22 +64,12 @@ def mx_choc_hotswap():
     F.write("SW_MX_Choc_V1_Hotswap", L)
 
 
-def nice_nano():
-    """nice!nano hanging face down under the board on bare pins, USB end at -y."""
-    L = F.header("NiceNano_FaceDown", "nice!nano v2 face down under the board, USB end at -y", attr="through_hole")
-    # pads numbered 1-12 down the left column, 13-24 down the right (seen from above), so the
-    # router reads them: names like "B+" or "P0.17" trip its parser. NANO_LEFT / NANO_RIGHT name them.
-    for i in range(12):
-        y = -NANO_L / 2 + NANO_ROW1 + i * 2.54
-        L.append(F.tht(str(i + 1), -7.62, y, 1.7, 1.0, shape="rect" if i == 0 else "circle"))
-        L.append(F.tht(str(i + 13), 7.62, y, 1.7, 1.0))
-    # no courtyard: it hangs below the sockets, so it can't meet the parts over it
-    L += F.rect_lines(-NANO_W / 2, -NANO_L / 2, NANO_W / 2, NANO_L / 2, "B.Fab", 0.1)
-    L.append(F.text("USB", 0, -NANO_L / 2 + 1.5, "B.SilkS", 1.0, mirror=True))
-    for i, n in enumerate(NANO_LEFT):
-        if n in ("B+", "RST", "VCC"):
-            L.append(F.text(n, -4.9, -NANO_L / 2 + NANO_ROW1 + i * 2.54, "F.SilkS", 1.0))
-    F.write("NiceNano_FaceDown", L)
+def selector():
+    """A 3-pad solder jumper on the back face: bridge the middle to either side with the iron."""
+    L = F.header("SolderJumper3_Back", "3-pad solder jumper, open, on the back face")
+    for num, x in (("1", -1.3), ("2", 0.0), ("3", 1.3)):
+        L.append(F.smd(num, x, 0, 1.0, 1.6, B))
+    F.write("SolderJumper3_Back", L)
 
 
 def pmw3610_back():
@@ -148,7 +135,7 @@ def reset_back():
         L.append(F.smd("2", sx * 3.15, 1.9, 1.7, 1.0, B, shape="rect"))
     L += F.rect_lines(-2.55, -2.55, 2.55, 2.55, "B.Fab", 0.1)
     L += F.rect_lines(-4.25, -3.0, 4.25, 3.0, "B.CrtYd", 0.05)
-    L.append(F.text("RST", 0, -3.85, "B.SilkS", 1.0, mirror=True))
+    L.append(F.text("RST", 0, 3.85, "B.SilkS", 1.0, mirror=True))
     F.write("SW_TS1187A_Back", L)
 
 
@@ -177,7 +164,7 @@ if __name__ == "__main__":
     os.makedirs(F.OUT, exist_ok=True)
     mx_hotswap()
     mx_choc_hotswap()
-    nice_nano()
+    selector()
     pmw3610_back()
     c0805("C_0805_Back", B, True)
     sot23_5_back()

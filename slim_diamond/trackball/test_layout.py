@@ -40,7 +40,7 @@ class LayoutTest(unittest.TestCase):
         pads = T.board_layout(layout, main_plan)
         self.assertEqual(len(pads["wires"]), 7)
         self.assertEqual(len(pads["bat"]), 2)
-        self.assertEqual(len(pads["controller"]), 3)
+        self.assertEqual(len(pads["controller"]), 2)
         for x, y in T.board_holes():
             self.assertTrue(main_plan.contains(Point(x, y).buffer(T.POST_PIN + .2 + .6)))
             for px, py in pads["wires"] + pads["bat"] + pads["controller"]:
@@ -48,24 +48,20 @@ class LayoutTest(unittest.TestCase):
         for x, y in pads["wires"] + pads["bat"] + pads["controller"]:
             self.assertTrue(main_plan.contains(Point(x, y).buffer(1.5)))
 
-    def test_wire_pads_sit_beside_the_xiao_pins_and_clear_everything(self):
+    def test_wire_pads_stand_in_straight_columns_on_header_rows(self):
         layout = T.place()
         main_plan = T.main_board_plan(layout)
         pads = T.board_layout(layout, main_plan)
-        rows = [T.xiao_pin_y(layout, r) for r in range(1, 8)]
+        rows = [T.pin_y(layout, r) for r in range(2, 8)] + [T.link_y(layout, 8)]
         close = pads["wires"] + pads["controller"]
-        self.assertEqual(len(close), 10)
-        for _, y in close:
+        self.assertEqual(len(close), 9)
+        for x, y in close:
             self.assertLess(min(abs(y - r) for r in rows), 1e-6)
-        for x, _ in close:
-            self.assertLess(abs(abs(x) - 8.89), 2.1)   # within reach of the XIAO's edge pins
+            self.assertIn(round(abs(float(x)), 3), (T.PAD_X, T.LINK_PAD))
+        self.assertEqual(len({p for p in close}), 9)
         for spec_name in ("mx", "choc"):
             parts = dict(T.parts(layout, main_plan, T.sensor_board_plan(layout), spec_name))
             for x, y in close + pads["bat"]:
-                ring = T.M.extrude(Point(x, y).buffer(.85), T.PCB_TOP - T.PCB_T - 1.2, T.PCB_TOP - T.PCB_T)
-                for name in ("socket 1", "socket 2"):
-                    with self.subTest(switch=spec_name, pad=(x, y), part=name):
-                        self.assertLess(abs((ring ^ parts[name]).volume()), 1e-3)
                 joint = T.M.extrude(Point(x, y).buffer(.8), T.PCB_TOP, T.PCB_TOP + .5)
                 with self.subTest(switch=spec_name, joint=(x, y)):
                     self.assertLess(abs((joint ^ T.lid(layout, spec_name)).volume()), 1e-3)
@@ -88,6 +84,12 @@ class LayoutTest(unittest.TestCase):
         self.assertLessEqual(max(x1 - x0, y1 - y0), 100.0)
         self.assertGreater(shift, 15.0)
         self.assertEqual(outline.geom_type, "Polygon")
+        ox, oy = T.controller_offset(main_plan, sensor_plan)
+        piece = T.controller_panel_piece(ox, oy, sensor_plan.bounds[2])[0]
+        moved = box(sensor_plan.bounds[0], sensor_plan.bounds[1] - shift, sensor_plan.bounds[2], sensor_plan.bounds[3] - shift)
+        self.assertTrue(outline.buffer(.01).contains(piece))
+        self.assertGreater(piece.distance(main_plan), 1.0)
+        self.assertGreater(piece.distance(moved), 1.9)
         rows = sorted({y for _, y in bites})
         self.assertGreater(rows[1] - rows[0], 15.0)
 

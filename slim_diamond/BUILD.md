@@ -169,63 +169,71 @@ The raised lid has upper facets on its **front and both sides**, starting at the
 | ![](renders/trackball_choc_structure.png) | ![](renders/trackball_choc_seam.png) |
 | ![](renders/trackpad_structure.png) | ![](renders/trackpad_seam.png) |
 
-The same main board holds the two keys and the power switch on both modules. A battery and wired controller sit under it. The same sensor board holds the reset button at the front; on the trackpad it carries nothing else. Everything is hand-soldered with an iron: no paste or hot air. The trackpad retains its supplied I²C breakout and flat cable, plus a separate DR wire.
+The same main board holds the two keys and the power switch on both modules. A battery and the controller, on its own small board, sit under it. The same sensor board holds the reset button at the front; on the trackpad it carries nothing else. Everything is hand-soldered with an iron: no paste or hot air. The trackpad retains its supplied I²C breakout and flat cable, plus a separate DR wire.
 
-**One PCB, either controller:** order `trackball/fab/trackball_jlcpcb.zip` for a nice!nano v2 **or** a plain Seeed XIAO nRF52840, for either pointing module. The controller is wired to the carrier's signal pads, not soldered directly onto a pin-compatible footprint. No different copper routing, jumpers or alternative panel is needed; use the correct column in the wiring tables and its matching firmware shield. Super52840 remains experimental until its actual revision is checked.
+**One panel, either controller:** order `trackball/fab/trackball_jlcpcb.zip` for a nice!nano v2 **or** a plain Seeed XIAO nRF52840, for either pointing module. The panel has three boards: the main board, the sensor board and the **controller board**.
 
-The controller is **not soldered onto the carrier**: it hangs face down under it and is wired to the round pads along the board's two edges. The pads sit beside a XIAO's pins: `CK`, `IO`, `MO`, `CS`, `K1`, `K2`, `G` and `3V` are level with their pins, while `VBAT` and `RST` run across its back. A nice!nano uses the same pads with its own pin names, mostly one row or more along the board. The small table on the front silkscreen gives the pin for each pad on both controllers, and the two diagrams below show every wire. The thin box marked `XIAO: USB REAR` shows where a XIAO lies underneath; it is a position guide, **not solder lands**. The shared tray has outer-edge controller supports; its XIAO reference placement uses Seeed's published STEP model rather than the nice!nano's dimensions. Real boards, insulation, wires and retention still require checking.
+The controller stands face down on the controller board on an ordinary 2.54 mm pin header, its pins in two straight columns 15.24 mm apart. Eight stacking pins then join the controller board to the main board above it, beside the controller. The six signal pins land on GPIOs on both controllers, so they need only the right firmware. One solder jumper chooses the 3.3 V pin. Two wires of about 25 mm, the same on both controllers, carry the battery and reset.
+
+**The main board does not lift out afterwards:** removing it means desoldering the eight stacking pins. Solder and test everything beneath it first.
 
 USB always plugs directly into the chosen MCU's **onboard USB-C receptacle**. There is no external USB connector, extension or soldered USB wiring.
 
 ### Boards
 
-1. **Snap the panel.** The main board and sensor board are joined by one long bridge with a row of holes at each end. Hold a board in one hand and the bridge in the other (pliers help) and bend at the row of holes until it snaps, then do the other end. File off the stubs. Do this before soldering anything.
-2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side with the `XIAO: USB REAR` box and `MCU WIRED BELOW`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
+1. **Snap the panel.** The main board and sensor board are joined by one long bridge with a row of holes at each end, and the controller board hangs off the sensor board's side, a quarter turn round, on a short tab with a row of holes at each end of its own. The tab meets it in its USB notch. Snap the controller board's tab first, then the bridge: hold a board in one hand and the bridge in the other (pliers help) and bend at the row of holes until it snaps. File off the stubs.
+2. **Main board.** Solder the MSK-12C02 power switch on the front face (the side marked `MCU BOARD BELOW`), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.
 3. **Sensor board, trackball.** Solder the regulator, capacitors, resistor and TS-1187A reset button on the back face, the PMW3610 in its cut-out, and clip on the lens.
 4. **Sensor board, trackpad.** Solder only the TS-1187A reset button, on the back face.
 
+5. **Controller board.**
+   - **Set the jumper,** on the underside, the face without `MCU FACE DOWN`. Bridge the middle `3V` pad to `X` for a XIAO or `N` for a nice!nano. Never bridge all three: on a nice!nano that ties reset to the 3.3 V rail.
+   - **Fit the header.** Cut two 5-pin lengths of standard 2.54 mm header. Before you solder anything, try a pin in the controller's holes: Seeed's model shows them narrower than a square pin's diagonal, so a pin may need a firm press. Set the short ends down through rows 3 to 7 of each column from the top face, so the plastic sits on the top face and the long ends stand up, then solder them from underneath. Pull one loose pin from a spare length and solder it into the left column's row 2, the single hole behind the strip, at the USB end, at the same height: the tray's magnet boss leaves no room for plastic there. Trim the tails underneath to about 1 mm.
+   - **Flash the controller first,** while its reset is in reach, then **fit it** face down, its USB-C over the notch. Rest it on the plastic, level, and solder the pins on its back. Trim them to 0.6 mm at most above the controller: the sockets are close above it. Power it from USB and check that it connects: its keys and sensor are not joined until the stacking pins are soldered. Solder its two wires now, about 25 mm each: battery and reset, from the table under Wiring. They will not reach the main board yet.
+   - **Fit the stacking pins** last, keeping them square. Use 15 mm extra-long header with a short end of at least 2.35 mm and a long end of at least 6.7 mm: two 3-pin lengths for the columns beside the controller, and one pin each for the two outer holes. Sand the cut ends of the plastic flush, so they sit square. Their plastic belongs near the **main board's underside**, not this board. Fit the short ends up into the main board's eight stacking holes. On the left, three in a line: `K2`, the outer hole of the joined `CS` pair, and `K1`, with `GND` set further out ahead of them. On the right, the outer holes of the joined `CK`, `IO` and `MO` pairs in a line, and the outer hole of the joined `3V` pair set further out ahead of them. The stacking `GND` is not the pad marked `G`, which takes a wire. Then stand the main board over this board on a 6.75 mm spacer (6.6 to 6.9 mm works), with the long ends down through this board's holes. Solder them to **this board only**, from underneath. Lift the main board off, and trim the tails underneath to about 1 mm.
+
 For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.
 
-Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen alone: in the KiCad panel, inspect pad references `SJ1` through `SJ7`, whose nets are respectively `S_VCC`, `S_GND`, `S_RST`, `S_SCLK`, `S_SDIO`, `S_NCS`, `S_MOTION`. Meter each pad to its intended component or reset button before soldering. The two unconnected-layer via warnings on K2 and S_RST occur at junctions where both connected tracks are on B.Cu; they are not missing net connections, but the board has not been physically tested.
+Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen alone: in the KiCad panel, inspect pad references `SJ1` through `SJ7`, whose nets are respectively `S_VCC`, `S_GND`, `S_RST`, `S_SCLK`, `S_SDIO`, `S_NCS`, `S_MOTION`. Meter each pad to its intended component or reset button before soldering.
 
 ### Wiring
 
-Use flexible 30 AWG stranded wire, about 80 mm per wire, so the main board can lift out of the tray with its wires attached. The main board's pads have short labels: `3V` is VCC, `G` is GND, `CK` SCLK, `IO` SDIO, `CS` NCS and `MO` MOTION.
+Use flexible 30 AWG stranded wire. The main board's pads have short labels: `3V` is VCC, `G` is GND, `CK` SCLK, `IO` SDIO, `CS` NCS and `MO` MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the `CK`, `IO`, `MO` and `CS` wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are `R2`, `RST`, `VBAT`, `CK`, `IO`, `MO` and `3V`, and on its left `G` and `CS`.
 
 | From | To |
 |---|---|
 | Battery + / − | Main board `+` / `-` pads (the switch is on the board) |
 | Sensor board `VCC`, `GND`, `RST` | Main board `3V`, `G`, `RST` |
 
-| Main-board pad | nice!nano v2 | Plain XIAO nRF52840 |
-|---|---|---|
-| `VBAT` (switched battery +) | B+ | BAT+ pad on its back |
-| `G` | GND | GND pin |
-| `3V` | VCC, 3.3 V output | 3V3 pin |
-| `RST` | RST | Reset pad on its back |
+Two wires of about 25 mm run from the controller to the main board, the same on both controllers. Check that length against your own route before cutting. They go on the controller first, and into the main board last, from above:
 
-Do not connect `VBAT` to 3V3/VCC or use either controller's USB 5 V pin as the sensor supply. The same D-number means **different GPIOs** on these controllers, and pads are not level with the pin they take: follow the names in the diagrams, not the rows, and confirm the actual module's markings before soldering.
+| Controller | To main board `VBAT` | To main board `R2` | Jumper |
+|---|---|---|---|
+| nice!nano v2 | B+ | RST, on its pin | `3V` to `N` |
+| Plain XIAO nRF52840 | BAT+ pad on its back | Reset pad on its back | `3V` to `X` |
+
+Do not connect `VBAT` to 3V3/VCC, and leave a XIAO's 5V pin empty. The header's row 1 does not reach the board at all, so the battery cannot land on that pin by accident. The same D-number means **different GPIOs** on these controllers: follow the names in the diagrams and confirm the actual module's markings before soldering.
 
 | Plain XIAO nRF52840 | nice!nano v2 |
 |---|---|
 | ![](renders/wiring_xiao.png) | ![](renders/wiring_nice_nano.png) |
 
-Each pad takes the same controller pin on both modules, so the controller is wired the same way whichever one you build:
+Each signal takes the same controller pin on both modules. The stacking pins carry them, along with `G`, `3V`, `K1` and `K2`:
 
-| Carrier pad | nice!nano v2 pin | Plain XIAO pin |
+| Pad | nice!nano v2 pin | Plain XIAO pin |
 |---|---|---|
-| `CK` | D3 (P0.20) | D4 (P0.04) |
-| `IO` | D4 (P0.22) | D5 (P0.05) |
-| `CS` | D21 (P0.31) | D10 (P1.15) |
-| `MO` | D2 (P0.17) | D3 (P0.29) |
-| `K1` | D19 (P0.02) | D8 (P1.13) |
-| `K2` | D20 (P0.29) | D9 (P1.14) |
+| `CK` | D2 (P0.17) | D4 (P0.04) |
+| `IO` | D3 (P0.20) | D5 (P0.05) |
+| `CS` | D20 (P0.29) | D8 (P1.13) |
+| `MO` | D4 (P0.22) | D6 (P1.11) |
+| `K1` | D19 (P0.02) | D7 (P1.12) |
+| `K2` | D21 (P0.31) | D9 (P1.14) |
 
-On the **trackball**, also wire the sensor board's `SCLK`, `SDIO`, `NCS` and `MOTION` to the main board's `CK`, `IO`, `CS` and `MO` pads.
+On the **trackball**, also wire the sensor board's `SCLK`, `SDIO`, `NCS` and `MOTION` to the main board's `CK`, `IO`, `CS` and `MO` pads, which sit beside their stacking pins.
 
 Verify the clone's pin labels and USB location against a genuine nice!nano v2 before wiring; clones can differ. The power switch is between the cell positive and B+, not between the controller and its regulated VCC. Insulate the battery leads while wiring, check polarity and continuity with the battery disconnected, and confirm there is no short between supply and ground before connecting it.
 
-Use `slim_diamond_trackball` for nice!nano or `slim_diamond_trackball_xiao` for XIAO. The XIAO shield turns off I²C1 so that the sensor can use D4 and D5.
+Use `slim_diamond_trackball` for nice!nano or `slim_diamond_trackball_xiao` for XIAO. The XIAO shield turns off I²C1 and the serial port, so that the sensor can use D4 and D5 and the other signals D6 and D7.
 
 On the **trackpad**, retain the supplied **I²C breakout PCB and its 12-pin flat cable**. Solder four flexible wires from the breakout's `VDD`/`VCC`, `GND`, `SDA` and `SCL` pads to the main board's `3V`, `G`, `IO` and `CK` pads. Solder one additional wire directly from the Cirque's underside **DR/data-ready** test pad to the `MO` pad; this does not replace the flat cable. Confirm DR by continuity to connector J1 pin 4 before soldering. Use the breakout's two pull-ups to **3.3 V**, not 5 V; verify their population and the kit's pad order with its schematic/meter rather than wire colours. Cable orientation matters: check the supplied FFC contact orientation and the breakout's pin reversal before applying power.
 
@@ -235,17 +243,19 @@ The firmware uses Zephyr's Pinnacle driver and assumes a directly wired, active-
 
 | Trackpad signal | nice!nano v2 pin | Plain XIAO pin |
 |---|---|---|
-| SCL (breakout), on pad `CK` | D3 (P0.20) | D4 (P0.04) |
-| SDA (breakout), on pad `IO` | D4 (P0.22) | D5 (P0.05) |
-| DR (Cirque underside), on pad `MO` | D2 (P0.17) | D3 (P0.29) |
-| K1 | D19 (P0.02) | D8 (P1.13) |
-| K2 | D20 (P0.29) | D9 (P1.14) |
+| SCL (breakout), on pad `CK` | D2 (P0.17) | D4 (P0.04) |
+| SDA (breakout), on pad `IO` | D3 (P0.20) | D5 (P0.05) |
+| DR (Cirque underside), on pad `MO` | D4 (P0.22) | D6 (P1.11) |
+| K1 | D19 (P0.02) | D7 (P1.12) |
+| K2 | D21 (P0.31) | D9 (P1.14) |
 | Breakout GND, on pad `G` | GND | GND |
 | Breakout VDD/VCC, on pad `3V` | VCC (3.3 V) | 3V3 |
 
 Use `slim_diamond_trackpad` for nice!nano or `slim_diamond_trackpad_xiao` for XIAO. Both use I²C at 100 kHz and address `0x2A`. Never connect breakout VDD/VCC to raw battery voltage or USB 5 V. Both I²C firmware variants compile; physical communications, tap, sleep and wake still need testing.
 
-On the **plain XIAO nRF52840**, solder the `VBAT` and `RST` wires to the two small pads on its back first: that side faces the carrier, and they cannot be reached once it is in. The battery's negative needs no wire to the XIAO: the `-` pad is ground on the carrier, and the `G` wire joins it to the XIAO's GND pin. Use Seeed's [front and back pinout](https://wiki.seeedstudio.com/XIAO_BLE/#hardware-overview) to identify the pads on the actual board; do not infer their positions from the nice!nano. The wired main board has no battery-polarity selector. Insulate each joint and check polarity and shorts with the cell and USB disconnected. **Super52840:** battery-pad locations differ and reset, charger and regulator details depend on the actual revision; compatibility remains experimental until verified against that board's schematic and measurements. Do not assume the Seeed battery, reset or charging pinout applies. The XIAO firmware variants compile but have not been tested on hardware.
+On the **plain XIAO nRF52840**, the `VBAT` and `R2` wires start on the two small pads on its back. Keep them flat across its back, not crossing, and off towards the rear of the sockets above it. The battery's negative needs no wire to the XIAO: the `-` pad is ground on the main board, and ground reaches the XIAO through the stacking pins and header. Use Seeed's [front and back pinout](https://wiki.seeedstudio.com/XIAO_BLE/#hardware-overview) to identify the pads on the actual board. Insulate each joint and check polarity and shorts with the cell and USB disconnected.
+
+**Super52840:** battery-pad locations differ and reset, charger and regulator details depend on the actual revision; compatibility remains experimental until verified against that board's schematic and measurements. Do not assume the Seeed battery, reset or charging pinout applies. The XIAO firmware variants compile but have not been tested on hardware.
 
 ### Into the tray
 
@@ -255,14 +265,12 @@ Work in this order, power off, with the magnets already glued in. Before putting
 
 1. **Battery.** Lower it straight into its cradle. Its 7.5 mm thickness has room to spare, but measure a protected pack first, including tape, tabs and leads. Never force it.
 2. **Sensor board.** Before installing the battery, check the two M3 × 8 screws against the actual PCB, posts and floor: the PCB holes are not countersunk, and screw-head dimensions and shim thickness affect the available depth. Do not drive a screw into the floor or toward the battery; the required engagement and clearance have not been physically verified. Trackball: determine the actual unshimmed distance **H** from the top of the board on the posts to the ball surface on the optical axis with the lid, bearings and ball seated. Measure **X** from the board top to the lens reference plane specified by the PMW3610 data sheet. Place one equal-thickness shim under each post, each of thickness **H − X − 2.4 mm**, and verify the assembled reference-plane-to-ball gap is 2.2–2.6 mm. The nominal model gives H = 4.8 mm, but actual dimensions may differ. If the calculated thickness is negative, shimming cannot correct it: do not force the assembly. Trackpad: no optical gap to set, but put the same **0.4 mm** washer under each post: the posts print 0.4 mm low, and without it each screw tip lands exactly on the bottom of its pilot, with no clearance. Fit the board parts face down only after checking screw depth.
-3. **nice!nano.** Face down. Lower it onto its four piers about 3.2 mm forward of its place, then slide it back until the USB-C port is flush with the back: the edges of its board go into two pockets in the back wall. Fix it to the piers with thin double-sided tape, 0.25 mm at most, clear of its antenna: nothing printed stops it sliding forward when a plug is pushed in. A strip of kapton from wall to wall under its front edge holds up its overhanging end.
-
-   **XIAO alternative:** use the same four piers, with the same thin double-sided tape, because only the tape holds it against a plug being pushed in, face down and with the antenna towards the front. Align the **USB receptacle mouth**, not the controller's PCB edge, with the tray's rear plane. In Seeed's published STEP reference the mouth overhangs its PCB by about **1.53 mm**, versus **0.6 mm** in the nice!nano envelope, so the XIAO's rear PCB edge is about **0.93 mm farther forward**. The outline projects this placement onto the main board's front face. The reference model clears the revised supports and sockets; the published model is from the Sense resources, so check the actual plain XIAO revision, USB height and component envelope before assembly. Do not assume these dimensions apply to a Super52840 or nice!nano clone. Insulate the battery and reset joints, and keep the antenna uncovered. Trim solder tails short and keep the tape's surface free of them: the piers sit under the rear pin rows. Test the tape's hold with a real plug before closing the lid.
-4. **Main board.** Lower it flat: the two side posts come up through its large holes and it rests on their shoulders and on the ledge at the back wall. The power lever goes down its slot.
+3. **Controller on its board.** Hold the stack with the front tilted up, about 18°, and lower it in about 3 mm forward of its place. Move it back so the USB end goes in first: a nice!nano's board edges go into the two pockets in the back wall. Lower the front until the board's ears rest on their seats, with the ribs ahead of its arms and the small posts behind its rear corners. These stops take a plug's push and pull, with about 0.4 mm of play on a nice!nano and 0.65 mm on a XIAO. A thin double-sided tape (0.25 mm at most) on the seats keeps the board down. Check that the USB-C mouth lines up with the opening, and test a real plug before going on. A XIAO's mouth sits 0.2 mm inside the back. The cell's end is 0.4 mm ahead of the board, so make sure no battery tape or wire is caught there.
+4. **Main board.** Before lowering it, meter the stack: `3V` and ground must not beep together, and each stacking pin must beep to its header pin. Then lower the board flat, feeding the eight stacking pins through those eight holes, and the controller's two wires up through `VBAT` and `R2`. The pins' plastic stops about 0.25 mm short of its underside. The two side posts come up through its large holes and it rests on their shoulders and on the ledge at the back wall. The power lever goes down its slot. Solder the eight pins and the two wires from above. Each pin's pad is joined to a wire pad, so its joint may melt that wire's: keep them brief, and keep the joints concave. Trim the pins to 0.6 mm at most: the Choc and trackpad lids sit 1 mm over them, and the lid's lip passes close to the two rear pins, so dry-fit the lid. Now test everything together, before the lid: the battery, the power switch, both keys, the sensor or trackpad, and reset.
 
 ![Main board in the tray](renders/trackball_tray.png)
 
-5. **Trackpad only.** Confirm the actual pad has a clear support ring and fit it in the lid on removable adhesive dots. Reserve the packing space above the mostly empty sensor/reset board for the supplied breakout: **24 × 18 × 4.5 mm maximum overall**, including connector, resistors and solder joints, on a **2.5 mm insulating spacer** above the sensor PCB so it clears the screw heads. No printed holder is required. Insulate the breakout's underside and prevent it from moving into screw heads or bare conductors. Keep the original flat cable in its reserved 7 mm-wide bend corridor above the breakout, with slack to lift the lid; route the separate DR lead beside it, and the four breakout wires towards the controller. These are explicit clearance envelopes, not measurements of your kit: check its board size, cable length, bend radius and joint height before assembly. Do not sharply fold the FFC or trap it under the lid. Check the complete wired closure before securing the lid.
+5. **Trackpad only.** Confirm the actual pad has a clear support ring and fit it in the lid on removable adhesive dots. Reserve the packing space above the mostly empty sensor/reset board for the supplied breakout: **24 × 18 × 4.5 mm maximum overall**, including connector, resistors and solder joints, on a **2.5 mm insulating spacer** above the sensor PCB so it clears the screw heads. No printed holder is required. Insulate the breakout's underside and prevent it from moving into screw heads or bare conductors. Keep the original flat cable in its reserved 7 mm-wide bend corridor above the breakout, with slack to lift the lid; route the separate DR lead beside it, and the four breakout wires to the main board's pads. These are explicit clearance envelopes, not measurements of your kit: check its board size, cable length, bend radius and joint height before assembly. Do not sharply fold the FFC or trap it under the lid. Check the complete wired closure before securing the lid.
 6. **Trackball only.** Glue the three ceramic balls into the lid's cup.
 7. **Lid.** Rear first: tilt the lid, push its two rear hooks into the slots in the back wall, then lower the front. It locates on the tray's rim.
 8. **Four M3 × 8 screws** into the lid's countersinks, as on a half: they go into the tray's four posts. Turn them in slowly, and stop when the heads sit flush.
@@ -279,11 +287,11 @@ Same switch and same button in the same place on both modules.
 | ![](renders/trackball_rear.png) | ![](renders/trackball_reset.png) |
 | ![](renders/trackpad_rear.png) | ![](renders/trackpad_reset.png) |
 
-The power switch disconnects the battery from both controller and charger: **charging requires the switch on**. USB can power the controller even with the switch off, so disconnect both USB and the battery before working on wiring. Use a protected single-cell Li-ion/LiPo pack rated for the controller's charging voltage and current; the main PCB supplies neither a charger nor battery protection. Verify the exact controller's charger, startup/bootloader current settings, battery rating and charge termination under USB load before charging. On a genuine XIAO the selectable charging current is approximately 50 or 100 mA; do not assume a Super52840 uses the same circuit or setting. See [Seeed's charging documentation](https://wiki.seeedstudio.com/XIAO_BLE/#battery-charging-current). To reset, take the module out of the dock and press a blunt pin, at most 2 mm across, straight into the hole in the floor: once to reset, twice quickly for the bootloader, if supported by the controller's installed bootloader.
+The power switch disconnects the battery from both controller and charger: **charging requires the switch on**. USB can power the controller even with the switch off, so unplug USB, switch off and unsolder the battery's `+` lead before working on wiring: the module has no battery connector. Use a protected single-cell Li-ion/LiPo pack rated for the controller's charging voltage and current; the main PCB supplies neither a charger nor battery protection. Verify the exact controller's charger, startup/bootloader current settings, battery rating and charge termination under USB load before charging. On a genuine XIAO the selectable charging current is approximately 50 or 100 mA; do not assume a Super52840 uses the same circuit or setting. See [Seeed's charging documentation](https://wiki.seeedstudio.com/XIAO_BLE/#battery-charging-current). To reset, take the module out of the dock and press a blunt pin, at most 2 mm across, straight into the hole in the floor: once to reset, twice quickly for the bootloader, if supported by the controller's installed bootloader.
 
 ### Opening a module
 
-Take it out of the dock, disconnect USB and the battery, and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. The main board then lifts out on its wires. On the trackpad the lid remains attached by the supplied flat cable and the separate DR wire; support it without pulling either, and release the FFC latch if the available slack is insufficient.
+Take it out of the dock, unplug USB, switch it off, and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. The main board stays: it is soldered to the eight stacking pins, so desolder them to take it out. On the trackpad the lid remains attached by the supplied flat cable and the separate DR wire; support it without pulling either, and release the FFC latch if the available slack is insufficient.
 
 ## Resetting a closed half
 

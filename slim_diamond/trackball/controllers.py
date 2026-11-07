@@ -2,7 +2,8 @@
 
 XIAO measurements come from the Seeed-published STEP mesh in models/.
 The nice!nano envelope is nominal; clone connector dimensions must be measured.
-Neither is a direct-solder footprint on the main board.
+Both stand on the same header on the controller board, on the nice!nano's rows: a XIAO's rows are
+XIAO_SETBACK further from the USB-C mouth, so its mouth sits that far inside the rear plane.
 """
 from functools import lru_cache
 from pathlib import Path
@@ -11,6 +12,7 @@ XIAO_WIDTH = 17.78
 XIAO_LENGTH = 20.955
 XIAO_USB_OVERHANG = 1.527
 XIAO_PCB_MAX_T = 1.25
+XIAO_SETBACK = 0.2155
 # Coordinates from the mouth plane of Seeed's STEP, not the overall shell tabs.
 XIAO_MOUTH_X = 13.808639836
 XIAO_MOUTH_Z = -6.118725947

@@ -126,9 +126,9 @@ def lid(L):
 def wiring():
     """nice!nano I2C breakout wiring, plus the separate underside DR wire."""
     return {
-        "breakout SDA": ("D4", "P0.22"), "breakout SCL": ("D3", "P0.20"), "pad DR": ("D2", "P0.17"),
+        "breakout SDA": ("D3", "P0.20"), "breakout SCL": ("D2", "P0.17"), "pad DR": ("D4", "P0.22"),
         "breakout GND": ("GND", ""), "breakout VDD": ("VCC", "3.3 V"),
-        "main board K1": ("D19", "P0.02"), "main board K2": ("D20", "P0.29"),
+        "main board K1": ("D19", "P0.02"), "main board K2": ("D21", "P0.31"),
         "main board GND": ("GND", ""), "main board VBAT": ("B+", ""), "main board RST": ("RST", ""),
     }
 

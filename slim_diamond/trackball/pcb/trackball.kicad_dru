@@ -24,3 +24,7 @@
 
 (rule "Trackball: copper to routed edge"
   (constraint edge_clearance (min 0.3mm)))
+
+(rule "Trackball: pour clearance"
+  (condition "A.Type == 'Zone' || B.Type == 'Zone'")
+  (constraint clearance (min 0.25mm)))

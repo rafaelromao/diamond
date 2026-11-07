@@ -5,8 +5,9 @@ The ball sits at the front in that cup on three 3 mm ceramic balls, and lifts ou
 it, on the tray's floor, the sensor board: a PMW3610 looking up through its LM18-LSI lens, and the
 reset button facing down, pressed with a pin through the floor. Behind the ball the main board rests
 on the tray's posts: two alternative hot-swap sockets per key, the power switch (lever out of the back
-wall), pads for the wires and the battery's leads. The nice!nano hangs under it, wired, USB-C out of the
-back wall; the battery lies on the floor under the nano. Seven wires join the two boards.
+wall), pads for the wires and the battery's leads. The controller stands under it on its own small
+board, USB-C out of the back wall; the battery lies on the floor ahead of that. Eight stacking pins join
+those two boards, and seven wires the sensor board.
 
 This file owns the tray's insides, because the trackpad (trackpad/trackpad.py) uses the same tray,
 main board and battery, and a sensor board for its reset button.
@@ -36,8 +37,8 @@ from shapely.ops import unary_union
 import case as C
 import module_shell as M
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))     # last: this file is itself "trackball"
-from controller_pinout import ROWS
-from controllers import XIAO_LENGTH, XIAO_USB_OVERHANG
+from controller_pinout import HEADER, LINKS, ROWS
+from controllers import XIAO_LENGTH, XIAO_SETBACK, XIAO_USB_OVERHANG
 
 H = M.FLUSH + 4.0
 TOP_T = 1.5                    # the top: an MX plate (1.5 mm)
@@ -77,12 +78,26 @@ SENSOR_PARTS = {
     "H": [(-11.5, 0.0), (0.5, -12.5)],
 }
 NANO = (18.0, 33.3, 1.0, 3.2)  # w, l, PCB, USB-C receptacle
-NANO_ROW1 = 4.0                # first pin row from the USB end (for the footprint only)
+NANO_ROW1 = 4.0                # first pin row from the USB end
 NANO_GAP = 1.6                 # room for wires soldered to a XIAO's back pads (its PCB is 1.25 thick)
+HEADER_T = 2.54                # a standard pin header's plastic, between controller and its board
+CB_T = 1.6                     # the controller board: on the same panel, so as thick as the others
+CB_REAR, CB_FRONT = -20.1, -35.35     # its edges; the front stops short of the battery's end
+CB_NOTCH = (5.0, -22.8)        # half-width, front edge: the notch round the USB receptacle
+CB_EAR = (12.6, -35.4, -27.9)  # half-width, front, rear: the ears beside the controller
+CB_ARM = (10.25, -38.2)        # the arms on past the battery's end: inner edge, front
+CB_RIB = (-39.7, -38.45)       # the ribs ahead of the arms: y span
+CB_COLUMN = 7.62               # the header's columns
+LINK_X = {5: 10.05, 6: 10.05, 7: 10.05, 8: 11.4}   # the stacking pins, by row: past the battery they step out
+LINK_Y8 = .3                   # row 8's pin, further along than the rows: its plastic clears the strip's end
+LINK_GAP = .24                 # the plastic's gap under the main board, set by the 6.75 mm jig
+LINK_PAD = 9.2                 # 3V's wire pad, beside row 8's pin and clear of its plastic
+LINK_PIN = 15.0                # an extra-long header's length, plastic against the main board
 BAT = (20.0, 25.0, 7.5)        # 752025 lengthwise: w (x), l (y), thickness
 CRADLE = (1.2, 3.0, 0.3)
 CUP_WALL = 1.6
-PIER_FRONT = (-33.0, -29.0)    # y span of the controller's second supports
+PAD_TEXT = dict(SCLK="CK", SDIO="IO", NCS="CS", MOTION="MO", RST="RST", VCC="3V", GND="G", VBAT="VBAT", XR="R2")
+PAD_X = 8.2                    # the wire pads' columns, from the centreline
 PAD_EDGE = 1.5                 # wire pad centre to the board edge: its joint clears the lid's lip
 POST_PIN = 2.2                 # the side posts' pin, up through the main board
 PAD_KEEP = (-77.1, 18.9)       # the trackpad's back parts: centre y, radius
@@ -102,7 +117,7 @@ def place():
               if top.buffer(-M.WALL, join_style=2).contains(Point(0, y).buffer(r_bore)))
     k1 = bc + r_top + 0.5 + MX["cap"] / 2 + KEYS_REAR_SHIFT
     keys = [k1, k1 + MX_PITCH]
-    # The wired nano rests on printed piers below the board, its USB-C flush with the back wall.
+    # The nano stands on its board, its USB-C flush with the back wall.
     n_y0 = M.OUTLINE.bounds[3] - 0.6 - NANO[1]
     # the battery on the plate under the nano, as far forward as the cup lets it
     b_y0 = min(y for y in np.arange(bc, -10, 0.1)
@@ -191,6 +206,14 @@ def parts(L, main_plan, sensor_plan, switch="mx"):
     nano = box3(nx - NANO[0] / 2, ny, nb - NANO[2], nx + NANO[0] / 2, ny + NANO[1], nb)
     nano += box3(nx - 4.5, ny + NANO[1] - 7.3, nb - NANO[2] - NANO[3], nx + 4.5, ny + NANO[1] + 0.6, nb - NANO[2])
     out.append(("nice!nano", nano))
+    top = controller_top()
+    out.append(("controller board", M.extrude(controller_board_plan(), top - CB_T, top)))
+    header = [box(s * CB_COLUMN - 1.27, pin_y(L, 7) - 1.27, s * CB_COLUMN + 1.27, pin_y(L, 3) + 1.27) for s in (-1, 1)]
+    out.append(("controller header", M.extrude(unary_union(header), top, top + HEADER_T)))
+    under = PCB_TOP - PCB_T
+    links = [box(s * x - 1.27, link_y(L, b) - 1.27, s * x + 1.27, link_y(L, a) + 1.27)
+             for s in (-1, 1) for x, a, b in ((LINK_X[5], 5, 7), (LINK_X[8], 8, 8))]
+    out.append(("stacking pins' plastic", M.extrude(unary_union(links), under - LINK_GAP - HEADER_T, under - LINK_GAP)))
     bx_, by_ = L["battery"]
     out.append(("battery", box3(bx_ - BAT[0] / 2, by_, BAT_Z, bx_ + BAT[0] / 2, by_ + BAT[1], BAT_Z + BAT[2])))
     sz = PLATE_TOP + SENSOR_BELOW
@@ -257,19 +280,16 @@ def tray(L):
     ring = outer.difference(box(bx_ - BAT[0] / 2 - c, by_ - c, bx_ + BAT[0] / 2 + c, by_ + BAT[1] + c))
     sh += M.extrude(ring.intersection(M.room()), PLATE_TOP - 0.01, PLATE_TOP + CRADLE[1])
     sh += M.extrude(box(bx_ - BAT[0] / 2, by_, bx_ + BAT[0] / 2, by_ + BAT[1]), PLATE_TOP - .01, BAT_Z)
-    # The nano's rear rests on two piers and a low crossweb, clear of the USB receptacle
+    # The controller board drops between printed stops, which hold it until the main board is soldered on.
     nano_floor = SOCKET_BOT - NANO_GAP - NANO[2]
-    ny = L["nano"][1]
-    support_y = max(L["battery"][1] + BAT[1] + 1.5, ny + NANO[1] - 8.0)
+    top = controller_top()
+    seat = top - CB_T
     for sx in (-1, 1):
-        # Narrow outer-edge seats clear the XIAO reference model's underside parts too.
-        pad = box(sx * 8.3 - .8, support_y - 1, sx * 8.3 + .8, support_y + 4)
-        sh += M.extrude(pad, PLATE_TOP - .01, nano_floor)
-    sh += M.extrude(box(-8.9, support_y + 3, 8.9, support_y + 5), PLATE_TOP - .01, usb_z(L) - NANO[3] / 2 - .3)
-    # A second pair under the controller's middle, out to the wall: a XIAO's centre is ahead of the first.
-    for sx in (-1, 1):
-        pad = box(min(sx * 7.5, sx * 20), PIER_FRONT[0], max(sx * 7.5, sx * 20), PIER_FRONT[1])
-        sh += M.extrude(pad.intersection(M.inner().buffer(.05)), PLATE_TOP - .01, nano_floor)
+        span = lambda x0, x1, y0, y1: box(min(sx * x0, sx * x1), y0, max(sx * x0, sx * x1), y1).intersection(M.inner().buffer(.05))
+        sh += M.extrude(span(5.1, 6.5, CB_NOTCH[1] + .2, CB_REAR + .25), PLATE_TOP - .01, seat)       # under the arms at the rear
+        sh += M.extrude(span(5.1, 8.4, CB_REAR + .4, -17.5), PLATE_TOP - .01, seat + 1.3)            # behind them
+        sh += M.extrude(span(11.05, 20, CB_EAR[1], CB_EAR[2] - .3), PLATE_TOP - .01, seat)           # under the ears
+        sh += M.extrude(span(CB_ARM[0] + .05, 20, CB_RIB[0], CB_RIB[1]), PLATE_TOP - .01, top)        # ahead of the arms
     # the sensor board's posts: M3 x 8 down through the board
     for x, y in sensor_holes(L):
         sh += Manifold.cylinder(SENSOR_BELOW - SENSOR_SHIM + 0.01, 2.8, circular_segments=32).translate((x, y, PLATE_TOP - 0.01))
@@ -354,42 +374,149 @@ def sensor_reset(L):
     return (bx + x, by - y)
 
 
-def xiao_pin_y(L, row):
-    """Plan y of the XIAO's pin row (1 at the USB end), its USB-C mouth at the rear plane."""
-    middle = L["back"] - XIAO_USB_OVERHANG - XIAO_LENGTH / 2
-    return middle + (4 - row) * 2.54
+def stacking_pins(L):
+    """The eight stacking pins, standing on the controller board, for the assembly's pictures and sweeps."""
+    return M.extrude(unary_union([box(x - .32, y - .32, x + .32, y + .32) for link in controller_points(L)["links"].values()
+                                  for x, y in [link["xy"]]]), controller_top() - CB_T - 1.0, PCB_TOP + .6)
 
 
-def edge_pad(L, main_plan, side, row):
-    """A wire pad level with a XIAO pin, as far out as the board's edge allows."""
-    y = xiao_pin_y(L, row)
-    ok = main_plan.buffer(-PAD_EDGE)
-    x = next(x for x in np.arange(20, 0, -.05) if ok.contains(Point(side * x, y)))
-    return (round(float(side * x), 2), float(y))
+def pin_y(L, row):
+    """Plan y of a header row: the nice!nano's rows, with row 1 its first after the extra USB-end pair."""
+    return L["nano"][1] + NANO[1] - NANO_ROW1 - (row - 1) * 2.54
+
+
+def link_y(L, row):
+    """Plan y of a stacking pin."""
+    return pin_y(L, row) - (LINK_Y8 if row == 8 else 0)
+
+
+def xiao_back(L):
+    """Where a XIAO's USB-C mouth lies: its pin rows on the same header, a little inside the rear plane."""
+    return L["back"] - XIAO_SETBACK
+
+
+def controller_top():
+    """The controller board's top: a header's plastic below the controller's component face."""
+    return SOCKET_BOT - NANO_GAP - NANO[2] - HEADER_T
+
+
+def controller_board_plan():
+    """The board under the controller: a notch for the USB receptacle, ears beside the controller and
+    arms on past the battery's end for the stacking pins, clear of the walls and the magnet bosses."""
+    core = box(-8.95, CB_FRONT, 8.95, CB_REAR).difference(box(-CB_NOTCH[0], CB_NOTCH[1], CB_NOTCH[0], 0))
+    ears = box(-CB_EAR[0], CB_EAR[1], CB_EAR[0], CB_EAR[2])
+    arms = [box(min(s * CB_ARM[0], s * 12.6), CB_ARM[1], max(s * CB_ARM[0], s * 12.6), CB_EAR[1] + .1) for s in (-1, 1)]
+    # The rear keeps to room()'s 0.3 mm round the bosses: row 2's pad needs all of it.
+    fit = unary_union([M.room().buffer(-.25), M.room().intersection(box(-99, -27.3, 99, 0))])
+    return unary_union([core, ears] + arms).intersection(fit).buffer(-.3).buffer(.3).simplify(.005)
+
+
+def controller_points(L):
+    """Plan positions on the controller board: header pins, stacking pins and jumpers."""
+    pins = {}
+    for column, rows in HEADER.items():
+        sign = -1 if column == "left" else 1
+        for row, name in rows.items():
+            pins[f"{column[0].upper()}{row}"] = dict(xy=(sign * CB_COLUMN, pin_y(L, row)), net=name)
+    links = {f"{column[0].upper()}{row}": dict(xy=((-1 if column == "left" else 1) * LINK_X[row], link_y(L, row)), net=net)
+             for column, rows in LINKS.items() for row, net in rows.items()}
+    return dict(pins=pins, links=links, jumpers=dict(JP1=(0.0, pin_y(L, 4))))
+
+
+def column_pad(L, main_plan, side, row):
+    """A wire pad level with a header row, in a straight column: the same x for every row."""
+    y = link_y(L, row)
+    x = LINK_PAD if row > 7 else PAD_X               # beside the stacking pins' step out
+    assert main_plan.buffer(-PAD_EDGE).contains(Point(side * x, y)), (side, row)
+    return (side * x, float(y))
+
+
+def label_spot(main_plan, x, y, text):
+    """Centre for a pad's 0.8 mm label: outboard of it when the board has the room, else just
+    inboard of it and half a row along, clear of the sockets' pads."""
+    width = 0.75 * len(text)
+    cx = x + (1 if x > 0 else -1) * (1.05 + width / 2)
+    if main_plan.buffer(-.2).contains(box(cx - width / 2, y - .45, cx + width / 2, y + .45)):
+        return (round(cx, 3), float(y))
+    # Over the pad's column if it fits, but no further out than the board's edge allows.
+    across = main_plan.intersection(box(-99, y + .8, 99, y + 1.7))
+    half = max(abs(across.bounds[0]), abs(across.bounds[2])) - .35
+    return ((1 if x > 0 else -1) * min(abs(x), half - width / 2), y + 1.27)
+
+
+def sensor_shift(main_plan, sensor_plan):
+    return PANEL_LENGTH - (main_plan.bounds[3] - sensor_plan.bounds[1])
+
+
+def controller_offset(main_plan, sensor_plan):
+    """Where the controller board sits on the panel: beside the sensor board, a quarter turn round
+    so that the tab from the sensor board's side meets it in its USB notch."""
+    shift = sensor_shift(main_plan, sensor_plan)
+    return (sensor_plan.bounds[2] + 2.0 + CB_REAR, (sensor_plan.bounds[1] + sensor_plan.bounds[3]) / 2 - shift)
 
 
 def panel(L, main_plan, sensor_plan):
     """One board to order: the main board and the sensor board, as far apart as the 100 mm tier
-    allows, on one long bridge with mouse bites at both ends: hold both boards and snap each end.
-    Returns the outline, the bites and how far the sensor board moved (plan y)."""
-    shift = PANEL_LENGTH - (main_plan.bounds[3] - sensor_plan.bounds[1])
+    allows, on one long bridge with mouse bites at both ends: hold both boards and snap each end. The
+    controller board hangs off the sensor board's side on a short tab with bites of its own.
+    Returns the outline, the bridge's bites and how far the sensor board moved (plan y)."""
+    shift = sensor_shift(main_plan, sensor_plan)
     sb = (sensor_plan.bounds[0], sensor_plan.bounds[1] - shift, sensor_plan.bounds[2], sensor_plan.bounds[3] - shift)
     moved = box(*sb)
     front = min(y for x, y in main_plan.exterior.coords if abs(x) < 3.0)
     tab = box(-2.8, sb[3] - 0.5, 2.8, front + 0.5)
-    outline = unary_union([main_plan, tab, moved]).buffer(0)
+    ox, oy = controller_offset(main_plan, sensor_plan)
+    piece, side_tab, _ = controller_panel_piece(ox, oy, sensor_plan.bounds[2])
+    outline = unary_union([main_plan, tab, moved, piece, side_tab]).buffer(0)
     bites = [(x, y) for y in (sb[3] + 0.35, front - 0.35) for x in (-2.0, -1.0, 0.0, 1.0, 2.0)]   # 0.5 mm webs
     return outline, bites, shift
 
 
+def controller_panel_piece(ox, oy, sensor_edge):
+    """The controller board on the panel, its tab and the tab's bites. The tab meets it in the USB
+    notch: what is left there after snapping has only the receptacle's gap to clear, not the tray."""
+    from shapely import affinity
+    notch = -CB_NOTCH[1] + ox
+    side_tab = box(sensor_edge - .5, oy - 2.8, notch + .5, oy + 2.8)
+    bites = [(x, oy + d) for x in (sensor_edge + .35, notch - .35) for d in (-2.0, -1.0, 0.0, 1.0, 2.0)]
+    return affinity.translate(affinity.rotate(controller_board_plan(), 90, origin=(0, 0)), ox, oy), side_tab, bites
+
+
 def board_layout(L, main_plan):
-    """The carrier's pads: level with the XIAO's pins, beside it, so its wires are short and straight;
-    a nice!nano's rows fall within 0.25 mm of the same lines. The battery's stay by the battery."""
-    pad = {name: edge_pad(L, main_plan, -1 if column == "left" else 1, row)
+    """The main board's wire pads: two straight columns level with the header rows. The battery's
+    stay by the battery."""
+    pad = {name: column_pad(L, main_plan, -1 if column == "left" else 1, row)
            for column, rows in ROWS.items() for name, row in rows.items()}
     wires = [pad[n] for n in ("SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND")]
     bat = [(-10.0, -46.71), (-10.0, -49.25)]
-    return dict(wires=wires, bat=bat, controller=[pad["VBAT"], pad["K1"], pad["K2"]])
+    labels = {n: label_spot(main_plan, x, y, PAD_TEXT[n]) for n, (x, y) in pad.items()}
+    # A stacking pin stands beside these: their labels go between the rows, over the pair.
+    for n in ("SCLK", "SDIO", "MOTION", "NCS", "VCC"):
+        x, y = pad[n]
+        sign = 1 if x > 0 else -1
+        labels[n] = (sign * (abs(x) + (LINK_X[8] if n == "VCC" else LINK_X[5])) / 2, y + (1.57 if n == "VCC" else 1.27))
+    return dict(wires=wires, bat=bat, controller=[pad["VBAT"], pad["XR"]], labels=labels)
+
+
+def controller_design(L, main_plan, sensor_plan):
+    """The controller board in KiCad's frame, at its place on the panel."""
+    ox, oy = controller_offset(main_plan, sensor_plan)
+    at = lambda p: [round(float(-p[1] + ox), 4), round(float(-(p[0] + oy)), 4)]     # the quarter turn
+    points = controller_points(L)
+    piece, side_tab, bites = controller_panel_piece(ox, oy, sensor_plan.bounds[2])
+    return dict(
+        controller_plan=dict(outline=[[round(float(x), 4), round(float(y), 4)] for x, y in controller_board_plan().exterior.coords],
+                             pins={k: [round(float(c), 4) for c in v["xy"]] for k, v in points["pins"].items()},
+                             links={k: dict(xy=[round(float(c), 4) for c in v["xy"]], net=v["net"]) for k, v in points["links"].items()},
+                             jumper=[round(float(c), 4) for c in points["jumpers"]["JP1"]]),
+        main_links={k: dict(xy=[round(float(v["xy"][0]), 4), round(float(-v["xy"][1]), 4)], net=v["net"])
+                    for k, v in points["links"].items()},
+        controller_board=[[round(float(x), 4), round(float(-y), 4)] for x, y in piece.exterior.coords],
+        controller_tab=[[round(float(x), 4), round(float(-y), 4)] for x, y in side_tab.exterior.coords],
+        controller_bites=[[round(float(x), 4), round(float(-y), 4)] for x, y in bites],
+        controller_pins={k: dict(xy=at(v["xy"]), net=v["net"]) for k, v in points["pins"].items()},
+        controller_links={k: dict(xy=at(v["xy"]), net=v["net"]) for k, v in points["links"].items()},
+        controller_jumpers={k: at(v) for k, v in points["jumpers"].items()})
 
 
 def stl_lid(m, height, path):
@@ -405,6 +532,7 @@ def main():
     nb = SOCKET_BOT - NANO_GAP
     print("  ball centre %.1f over the standing plane, top %.1f (%.1f over the module's top); keys at y %s"
           % (BCZ, BCZ + BALL / 2, BCZ + BALL / 2 - H, ["%.1f" % k[1] for k in L["keys"]]))
+    print("  controller board %.2f..%.2f" % (controller_top() - CB_T, controller_top()))
     print("  nano %.1f..%.1f, battery %.1f..%.1f (%.1f mm apart)" % (nb - NANO[2] - NANO[3], nb, BAT_Z,
           BAT_Z + BAT[2], nb - NANO[2] - NANO[3] - BAT_Z - BAT[2]))
     print("  USB-C end %.1f mm in from the back wall's outside" % (L["back"] - (L["nano"][1] + NANO[1])))
@@ -434,12 +562,12 @@ def main():
     json.dump(dict(
         panel=kicad(outline.exterior.coords), panel_inner=kicad(outline.buffer(-0.35, join_style=2).exterior.coords),
         bites=kicad(bites), wire_pads=kicad(wires), battery_pads=kicad(bat),
-        controller_pads=kicad(bl["controller"]),
+        controller_pads=kicad(bl["controller"]), pad_labels={k: kicad([v])[0] for k, v in bl["labels"].items()},
         height=H, ball=L["ball"], keys=L["keys"], switch_angle=SWITCH_ANGLE, nano=L["nano"], battery=L["battery"],
         main_board=kicad(main_plan.exterior.coords), sensor_board=held(sensor_plan.exterior.coords),
         sensor_shift=shift, main_holes=kicad(board_holes()), sensor_holes=held(sensor_holes(L)), sensor_parts=SENSOR_PARTS,
         nano_row1=NANO_ROW1, opt=OPT, pcb_top=PCB_TOP, back=L["back"],
-        pin_rows=[-xiao_pin_y(L, r) for r in range(1, 8)], xiao_front=-L["back"] + XIAO_USB_OVERHANG + XIAO_LENGTH),
+        xiao_front=-xiao_back(L) + XIAO_USB_OVERHANG + XIAO_LENGTH, **controller_design(L, main_plan, sensor_plan)),
         open(os.path.join(HERE, "design.json"), "w"), indent=1, default=lambda o: [float(v) for v in o])
     return L, lid_m, tray_m, ps
 

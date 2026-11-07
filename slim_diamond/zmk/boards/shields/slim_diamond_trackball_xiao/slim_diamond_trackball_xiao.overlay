@@ -12,7 +12,7 @@
         compatible = "zmk,kscan-gpio-direct";
         wakeup-source;
         input-gpios
-            = <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            = <&gpio1 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             , <&gpio1 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
             ;
     };
@@ -29,8 +29,10 @@
     };
 };
 
-/* D4 and D5 carry the sensor's SPI here, not the XIAO board's default I2C. */
+/* D4 and D5 carry the sensor's SPI here, not the XIAO board's default I2C; D6 and D7 carry MOTION
+ * and key 1, not the board's serial port. */
 &i2c1 { status = "disabled"; };
+&uart0 { status = "disabled"; };
 
 &pinctrl {
     spi2_default: spi2_default {
@@ -57,14 +59,14 @@
     pinctrl-0 = <&spi2_default>;
     pinctrl-1 = <&spi2_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+    cs-gpios = <&gpio1 13 GPIO_ACTIVE_LOW>;
 
     trackball: trackball@0 {
         status = "okay";
         compatible = "pixart,pmw3610-alt";
         reg = <0>;
         spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio0 29 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        irq-gpios = <&gpio1 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         cpi = <800>;
         evt-type = <INPUT_EV_REL>;
         x-input-code = <INPUT_REL_X>;

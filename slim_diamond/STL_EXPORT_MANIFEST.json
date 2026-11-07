@@ -122,11 +122,11 @@
     },
     {
       "path": "case/module_tray.stl",
-      "sha256": "654ff7aac9a54f3bf31c6c49f333aec86973668c2eb6eeaf2b4f340f47ef851a",
-      "bytes": 243784,
-      "triangles": 4874,
+      "sha256": "4d1ae57e31f182d24d5994b1cf5335db9873266063c5103a209c50640c693676",
+      "bytes": 246284,
+      "triangles": 4924,
       "components": 1,
-      "volume_mm3": 18509.71527,
+      "volume_mm3": 18028.33938,
       "size_mm": [
         55.95002,
         100.81739,
@@ -137,11 +137,11 @@
     },
     {
       "path": "../stls/slim_diamond/module_tray.stl",
-      "sha256": "654ff7aac9a54f3bf31c6c49f333aec86973668c2eb6eeaf2b4f340f47ef851a",
-      "bytes": 243784,
-      "triangles": 4874,
+      "sha256": "4d1ae57e31f182d24d5994b1cf5335db9873266063c5103a209c50640c693676",
+      "bytes": 246284,
+      "triangles": 4924,
       "components": 1,
-      "volume_mm3": 18509.71527,
+      "volume_mm3": 18028.33938,
       "size_mm": [
         55.95002,
         100.81739,

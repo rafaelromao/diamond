@@ -3,14 +3,14 @@
     python3 trackball/build_pcb.py build   -> trackball/pcb/trackball.kicad_pcb + .dsn (unrouted)
     python3 trackball/build_pcb.py import  -> imports the Freerouting session, pours, stitches, saves
 
-One board to order: the main board and the sensor board, joined by a long breakaway bridge. The
-main board sits at its place in the module's plan (trackball.py), in KiCad's frame (x the same, y
-towards you); the sensor board is moved sensor_shift away along y for the panel.
-Seven wires join them once snapped apart: VCC, GND, RST, SCLK, SDIO, NCS, MOTION. The sensor
-board's nets carry an S_ prefix: the wires join them, not copper, so the router mustn't try.
+One board to order: the main board and the sensor board, joined by a long breakaway bridge, with
+the controller board on a short tab off the sensor board's side. The main board sits at its place in the module's
+plan (trackball.py), in KiCad's frame (x the same, y towards you); the others are moved for the panel.
+Once snapped apart, seven wires join the sensor board and eight stacking pins the controller board.
+Their nets carry S_ and M_ prefixes: wires and pins join them, not copper, so the router mustn't try.
 
-The controller hangs under the main board, wired to pads level with a XIAO's pins; which pin each
-pad takes on either controller is in controller_pinout.py. The battery goes through the power switch to B+.
+The controller stands on the controller board on a pin header; which pin each pad takes on either
+controller is in controller_pinout.py. The battery goes through the power switch to B+.
 """
 import json
 import math
@@ -18,7 +18,6 @@ import os
 import sys
 
 import pcbnew
-from controller_marks import annotate
 from controller_pinout import write_pinout
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +26,6 @@ BOARD = os.path.join(PCB_DIR, "trackball.kicad_pcb")
 LIB = os.path.join(PCB_DIR, "trackball.pretty")
 OFF = (100.0, 100.0)
 D = json.load(open(os.path.join(HERE, "design.json")))
-NANO_L = 33.3
 
 WIRES_MAIN = ["SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND"]     # in design.json wire_pads order
 PAD_LABELS = {"SCLK": "CK", "SDIO": "IO", "NCS": "CS", "MOTION": "MO", "VCC": "3V", "GND": "G"}
@@ -116,32 +114,26 @@ def zone(board, pts, layer, netitem=None, rule=None, hole=None):
         z.SetMinThickness(mm(0.25))
         z.SetThermalReliefGap(mm(0.4))
         z.SetThermalReliefSpokeWidth(mm(0.4))
-        z.SetLocalClearance(mm(0.3))
+        z.SetLocalClearance(mm(0.25))
     board.Add(z)
     return z
 
 
-def text(board, s, c, layer, size=1.0, mirror=False, angle=0):
+def text(board, s, c, layer, size=1.0, mirror=False, angle=0, stroke=0.15):
     t = pcbnew.PCB_TEXT(board)
     t.SetText(s)
     t.SetTextAngleDegrees(angle)
     t.SetPosition(pt(*c))
     t.SetLayer(layer)
     t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
-    t.SetTextThickness(mm(0.15))
+    t.SetTextThickness(mm(stroke))
     t.SetMirrored(mirror)
     board.Add(t)
 
 
-def pad_label(board, label, p):
-    """A wire pad's label, on the board side of it; the rearmost row has no room there."""
-    if abs(p[1] - D["pin_rows"][0]) < .1:
-        at = (p[0] + 1.1, p[1] - 1.5)
-    elif label == "CS":                  # a switch hole leaves room only for it turned
-        at = (p[0] + 1.5, p[1])
-    else:
-        at = (p[0] - (1 if p[0] > 0 else -1) * (1.15 + len(label) * .42), p[1])
-    text(board, label, at, pcbnew.F_SilkS, 0.8, angle=90 if label == "CS" else 0)
+def pad_label(board, net, label):
+    """A wire pad's label, at the spot chosen with the layout."""
+    text(board, label, tuple(D["pad_labels"][net]), pcbnew.F_SilkS, 0.7)
 
 
 def pad_at(fp, number):
@@ -172,7 +164,7 @@ def via(board, nets, name, c):
 def prerouted(board, nets, fps):
     """Join the power switch's two VBAT contacts.
     The sensor's VCSEL connection runs round its optical cut-out. Other main-board nets are
-    auto-routed; the controller connects through the labelled wire pads, not a pin footprint.
+    auto-routed.
     """
     F, B = pcbnew.F_Cu, pcbnew.B_Cu
     # Socket orientation and wire rows follow the generated placement. Route these
@@ -188,14 +180,19 @@ def prerouted(board, nets, fps):
     start = (pcbnew.ToMM(ground.GetPosition().x) - OFF[0], pcbnew.ToMM(ground.GetPosition().y) - OFF[1])
     track(board, nets, "GND", [start, (8.4, start[1])], B)
     via(board, nets, "GND", (8.4, start[1]))
-    # The keys' MX contacts to their edge pads, by hand: past the wire pads the router gives up.
-    k1, k2 = pad_at(fps["K1"], "1"), pad_at(fps["K2"], "1")
+    # The keys' MX contacts to their stacking pins, by hand: past the wire pads the router gives up.
+    links = {link["net"]: tuple(link["xy"]) for link in D["main_links"].values()}
     s1 = min((p for p in fps["SW1"].Pads() if p.GetNumber() == "2"), key=lambda p: p.GetPosition().x)
     s2 = min((p for p in fps["SW2"].Pads() if p.GetNumber() == "2"), key=lambda p: p.GetPosition().x)
     xy = lambda p: (pcbnew.ToMM(p.GetPosition().x) - OFF[0], pcbnew.ToMM(p.GetPosition().y) - OFF[1])
     a1, a2 = xy(s1), xy(s2)
-    track(board, nets, "K1", [a1, (-9.6, a1[1] - 4.07), (-9.6, k1[1] + .75), k1], B)
-    track(board, nets, "K2", [a2, (-7.5, a2[1] + .35), (-7.5, k2[1] - 1.6), k2], B)
+    track(board, nets, "K1", [a1, (links["K1"][0], links["K1"][1] + 3.3), links["K1"]], B)
+    track(board, nets, "K2", [a2, (-9.55, a2[1]), (-9.55, links["K2"][1] - 1.5), links["K2"]], B)
+    # Each wire pad and the stacking pin beside it are one net, 0.15 mm apart: join them in solid
+    # copper on both faces, so they read as one pad and solder can't "bridge" them.
+    for name in ("VCC", "NCS", "SCLK", "SDIO", "MOTION"):
+        for layer in (F, B):
+            track(board, nets, name, [pad_at(fps["wires"][name], "1"), links[name]], layer, 1.0)
     # Front-face path round both socket families' drills at the 270-degree placement, from the
     # left wire row to the power switch. The autorouter strands this power net.
     bat = pad_at(fps["BAT+"], "1")
@@ -223,6 +220,36 @@ def tab_box():
     return [(-2.8, ys[0] - 0.4), (2.8, ys[0] - 0.4), (2.8, ys[-1] + 0.4), (-2.8, ys[-1] + 0.4)]
 
 
+# The controller board's nets. L3 and L4 are the pins that differ: a XIAO's 3V3 and D10, a
+# nice!nano's RST and VCC. JP1 feeds 3V from one or the other.
+PIN_NETS = dict(G="GND", L3="L3", L4="L4", CS="CS", K2="K2", K1="K1", CK="CK", IO="IO", MO="MO")
+LINK_NETS = dict(NCS="CS", K2="K2", K1="K1", GND="GND", VCC="3V", SCLK="CK", SDIO="IO", MOTION="MO")
+
+
+def controller_board(board, nets):
+    """The controller board: the header's pins, eight stacking pins and a jumper, all with M_ nets."""
+    for i, (name, pin) in enumerate(D["controller_pins"].items(), 1):
+        fp = add_fp(board, "WirePad", f"MP{i}", tuple(pin["xy"]), 0, name)
+        if pin["net"]:
+            set_pads(fp, {"1": "M_" + PIN_NETS[pin["net"]]}, board, nets)
+    for i, (name, link) in enumerate(D["controller_links"].items(), 1):
+        fp = add_fp(board, "WirePad", f"ML{i}", tuple(link["xy"]), 0, name)
+        set_pads(fp, {"1": "M_" + LINK_NETS[link["net"]]}, board, nets)
+    # The board lies a quarter turn round on the panel: labels follow it. (a, b): across, along.
+    x, y = D["controller_jumpers"]["JP1"]
+    place = lambda a, b: (x + b, y - a)
+    jp = add_fp(board, "SolderJumper3_Back", "JP1", (x, y), -90, "3V: XIAO or nice!nano")
+    set_pads(jp, {"1": "M_L3", "2": "M_3V", "3": "M_L4"}, board, nets)
+    text(board, "X", place(-1.3, -1.7), pcbnew.B_SilkS, 1.0, mirror=True, angle=90)
+    text(board, "N", place(1.3, -1.7), pcbnew.B_SilkS, 1.0, mirror=True, angle=90)
+    text(board, "3V", place(0, 1.7), pcbnew.B_SilkS, 1.0, mirror=True, angle=90)
+    text(board, "MCU", place(0, 1.4), pcbnew.F_SilkS, 1.0, angle=90)
+    text(board, "FACE DOWN", place(0, 3.0), pcbnew.F_SilkS, 1.0, angle=90)
+    text(board, "USB REAR", place(0, 4.6), pcbnew.F_SilkS, 1.0, angle=90)
+    for i, b in enumerate(D["controller_bites"], len(D["bites"]) + 1):
+        add_fp(board, "MouseBite", f"MB{i}", tuple(b), 0, "bite")
+
+
 def antennas():
     """Each controller's antenna end, away from the USB: no pour or vias over them."""
     nx, ny = D["nano"]
@@ -241,6 +268,10 @@ def build():
     # Persist the intended 0.3 mm copper-edge clearance in a real DRC rule: KiCad can reset
     # a generated project's board-setup default to 0.5 mm when saving it.
     rules += '\n(rule "Trackball: copper to routed edge"\n  (constraint edge_clearance (min 0.3mm)))\n'
+    # Later than the general 0.1 mm rule, which otherwise wins. Not 0.3: that leaves a web too thin
+    # to pour between a column's pads.
+    rules += ('\n(rule "Trackball: pour clearance"\n  (condition "A.Type == \'Zone\' || B.Type == \'Zone\'")\n'
+              '  (constraint clearance (min 0.25mm)))\n')
     open(os.path.join(PCB_DIR, "trackball.kicad_dru"), "w").write(rules)
     board = pcbnew.NewBoard(BOARD)
     board.SetCopperLayerCount(2)
@@ -257,16 +288,21 @@ def build():
     # --- the main board
     fps = {"wires": {}}
     for i, k in enumerate(D["keys"], 1):
-        # Quarter-turned: socket pads sit within 6.4 mm of the key's centre, clear
-        # of the nice!nano's pin columns (7.62 mm) under it
         fp = add_fp(board, "SW_MX_Choc_V1_Hotswap", f"SW{i}", kicad(k), D["switch_angle"], f"MX / Choc v1 key {i}")
         set_pads(fp, {"1": "GND", "2": f"K{i}"}, board, nets)
         fps[f"SW{i}"] = fp
-    for i, (p, name) in enumerate(zip(D["controller_pads"], ["VBAT", "K1", "K2"]), 10):
-        fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
+    for i, (p, name, key, label) in enumerate(zip(D["controller_pads"], ["VBAT", "RST"], ["VBAT", "XR"], ["VBAT", "R2"]), 10):
+        fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, label)
         set_pads(fp, {"1": name}, board, nets)
-        fps[name] = fp
-        pad_label(board, name, p)
+        fps[label] = fp
+        pad_label(board, key, label)
+    # The stacking pins from the controller board: their tips solder here, from above.
+    for i, (name, link) in enumerate(D["main_links"].items(), 1):
+        fp = add_fp(board, "WirePad", f"L{i}", tuple(link["xy"]), 0, name)
+        set_pads(fp, {"1": link["net"]}, board, nets)
+        if link["net"] in ("K1", "K2", "GND"):               # the rest share a pad's label
+            at = (link["xy"][0], link["xy"][1] - 1.27)
+            text(board, link["net"], at, pcbnew.F_SilkS, 0.7)
     back = min(y for _, y in D["main_board"])
     pw = add_fp(board, "SW_MSK12C02", "SW3", (0.0, back + 1.8), 180, "MSK-12C02 power")
     set_pads(pw, {"1": "BAT+", "2": "VBAT", "3": "VBAT", "SH": "GND"}, board, nets)
@@ -275,7 +311,7 @@ def build():
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
         fps["wires"][name] = fp
-        pad_label(board, PAD_LABELS.get(name, name), p)
+        pad_label(board, name, PAD_LABELS.get(name, name))
     for i, (p, name) in enumerate(zip(D["battery_pads"], ["BAT+", "GND"]), 8):
         fp = add_fp(board, "WirePad", f"J{i}", tuple(p), 0, name)
         set_pads(fp, {"1": name}, board, nets)
@@ -283,7 +319,7 @@ def build():
         text(board, "+" if name == "BAT+" else "-", (p[0] + 1.8, p[1]), pcbnew.F_SilkS, 1.0)
     for i, h in enumerate(D["main_holes"], 1):
         add_fp(board, "PostHole", f"H{i}", tuple(h), 0, "post")
-    text(board, "SD TRACKBALL", (0.0, back + 4.4), pcbnew.F_SilkS, 1.0)
+    text(board, "MCU BOARD BELOW", (0.0, 56.5), pcbnew.F_SilkS, 1.0)
 
     # --- the sensor board (its parts on the back face)
     bx, by = kicad(D["ball"])
@@ -312,14 +348,15 @@ def build():
     ys = sorted({y for _, y in D["bites"]})
     text(board, "SNAP", (0.0, sum(ys) / 2), pcbnew.F_SilkS, 0.8)
 
+    controller_board(board, nets)
     prerouted(board, nets, fps)
 
-    # no copper on the tab; none over the nano's antenna
+    # no copper on the tabs; none over the nano's antenna
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         zone(board, tab_box(), layer, rule={"tracks", "vias", "pour"})
+        zone(board, [tuple(p) for p in D["controller_tab"][:-1]], layer, rule={"tracks", "vias", "pour"})
         for i, area in enumerate(antennas()):
             zone(board, area, layer, rule=antenna_rule(i))              # thin tracks may cross
-    annotate(board, D)
     pcbnew.SaveBoard(BOARD, board)
     pcbnew.ExportSpecctraDSN(board, os.path.join(PCB_DIR, "trackball.dsn"))
     write_pinout(os.path.join(PCB_DIR, "pinout.json"))
@@ -407,8 +444,21 @@ def import_ses(fill=True):
         pcbnew.SaveBoard(BOARD, board)
 
 
+def prune_vias(board):
+    """Drop signal vias whose tracks all lie on one layer: the router leaves a few, joining nothing."""
+    tracks = [t for t in board.GetTracks() if t.Type() != pcbnew.PCB_VIA_T]
+    for via_item in [t for t in board.GetTracks() if t.Type() == pcbnew.PCB_VIA_T]:
+        if via_item.GetNetname() in ("GND", "S_GND"):
+            continue
+        p = via_item.GetPosition()
+        layers = {t.GetLayer() for t in tracks if t.GetNetCode() == via_item.GetNetCode() and p in (t.GetStart(), t.GetEnd())}
+        if len(layers) < 2:
+            board.Remove(via_item)
+
+
 def finish(board):
     """Pour and stitch the current geometry after its signal tracks have been installed."""
+    prune_vias(board)
     board.GetDesignSettings().m_CopperEdgeClearance = mm(0.3)
     for name, key in (("GND", "main_board"), ("S_GND", "sensor_board")):
         pts = [tuple(p) for p in D[key][:-1]]

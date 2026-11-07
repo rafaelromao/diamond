@@ -1,7 +1,7 @@
 # Assembled-hardware review
 
 Use this checklist for a mechanical blind review or print-readiness review. Inspect the final exported
-meshes, populated assemblies, carrier PCB, build instructions and fabrication outputs. Read previous
+meshes, populated assemblies, panel PCB, build instructions and fabrication outputs. Read previous
 findings only after recording an independent assessment.
 
 ## Required checks
@@ -26,9 +26,9 @@ findings only after recording an independent assessment.
 6. **Printability:** inspect minimum walls, disconnected fragments, supports and trapped support-removal
    paths in the specified print orientations. Check separately printed mating parts with a defined
    tolerance budget, including warping, elephant foot and support-facing surfaces.
-7. **Deliverables:** verify that the single orderable carrier panel, Gerbers, STLs, public copies, renders,
+7. **Deliverables:** verify that the single orderable three-board panel, Gerbers, STLs, public copies, renders,
    BOM and build steps agree. Check interface-specific instructions: the trackpad uses its supplied I²C
-   breakout/FFC plus a separate DR lead; the controller is wired below the common carrier.
+   breakout/FFC plus a separate DR lead; the controller stands on a header on the controller board, joined to the main board by stacking pins.
 
 ## Completion evidence
 
