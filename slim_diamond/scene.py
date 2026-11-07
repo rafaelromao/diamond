@@ -378,18 +378,23 @@ def board_stack_scenes(L, plan):
     ctrl_slab, ctrl_cu = board(B.controller_board_plan(), ctrl_pads, top - B.CB_T, top)
     floor = B.SOCKET_BOT - B.NANO_GAP - B.NANO[2]
     parts = dict(B.parts(L, main_plan, B.sensor_board_plan(L)))
-    header_pins = M.extrude(unary_union([Point(x, y).buffer(.32, 4) for x, y in [p["xy"] for p in points["pins"].values()]]),
-                            top - B.CB_T - 1.0, floor + 1.25 + .6)
     green = (0.1, 0.32, 0.18)
-    lower = [(ctrl_slab, green), (ctrl_cu, vrml.GOLD), (xiao(B.xiao_back(L), floor), vrml.METAL),
-             (parts["controller header"], (.07, .07, .08)), (header_pins, vrml.GOLD),
-             (B.stacking_pins(L), vrml.GOLD), (parts["stacking pins' plastic"], (.07, .07, .08))]
     upper = [(main_slab, (0.33, 0.37, 0.22)), (main_cu, vrml.GOLD)]
-    return {
-        "trackball_board_stack": [(plan(m), rgb) for m, rgb in lower + upper],
-        "trackball_board_stack_exploded": [(plan(m), rgb) for m, rgb in lower] +
-                                          [(plan(m.translate((0, 0, 10))), rgb) for m, rgb in upper],
-    }
+    # The nice!nano's envelope: its board and receptacle, as the clearance checks use it.
+    nano = parts["nice!nano"]
+    nano_usb = nano ^ M.extrude(_box(-4.6, -99, 4.6, 99), 0, floor)
+    scenes = {}
+    for suffix, controller, pcb_t in (("", [(xiao(B.xiao_back(L), floor), vrml.METAL)], 1.25),
+                                      ("_nano", [(nano - nano_usb, vrml.XIAO_PCB), (nano_usb, vrml.METAL)], B.NANO[2])):
+        header_pins = M.extrude(unary_union([Point(x, y).buffer(.32, 4) for x, y in [p["xy"] for p in points["pins"].values()]]),
+                                top - B.CB_T - 1.0, floor + pcb_t + .6)
+        lower = [(ctrl_slab, green), (ctrl_cu, vrml.GOLD)] + controller + [
+                 (parts["controller header"], (.07, .07, .08)), (header_pins, vrml.GOLD),
+                 (B.stacking_pins(L), vrml.GOLD), (parts["stacking pins' plastic"], (.07, .07, .08))]
+        scenes["trackball_board_stack" + suffix] = [(plan(m), rgb) for m, rgb in lower + upper]
+        scenes["trackball_board_stack" + suffix + "_exploded"] = [(plan(m), rgb) for m, rgb in lower] + \
+            [(plan(m.translate((0, 0, 10))), rgb) for m, rgb in upper]
+    return scenes
 
 
 def main():

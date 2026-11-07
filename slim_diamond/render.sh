@@ -69,6 +69,10 @@ r --rotate '-25,0,-130' --zoom 0.0013 -o renders/trackball_xiao_usb_open.png .re
 r --rotate '-62,0,-35' --zoom 0.0050 -o renders/trackball_board_stack.png .render/trackball_board_stack.kicad_pcb
 r --rotate '-62,0,-35' --zoom 0.0042 -o renders/trackball_board_stack_exploded.png .render/trackball_board_stack_exploded.kicad_pcb
 r --side top --zoom 0.0055 -o renders/trackball_board_stack_top.png .render/trackball_board_stack.kicad_pcb
+# the same with a nice!nano, longer: it runs on past the main board's cut-off front
+r --rotate '-62,0,-35' --zoom 0.0040 -o renders/trackball_board_stack_nano.png .render/trackball_board_stack_nano.kicad_pcb
+r --rotate '-62,0,-35' --zoom 0.0036 -o renders/trackball_board_stack_nano_exploded.png .render/trackball_board_stack_nano_exploded.kicad_pcb
+r --side top --zoom 0.0045 -o renders/trackball_board_stack_nano_top.png .render/trackball_board_stack_nano.kicad_pcb
 if [ -f trackball/pcb/trackball.kicad_pcb ]; then
     r --side top    --zoom 0.85 -o renders/trackball_board_top.png    trackball/pcb/trackball.kicad_pcb
     r --side bottom --zoom 0.85 -o renders/trackball_board_bottom.png trackball/pcb/trackball.kicad_pcb

@@ -194,9 +194,10 @@ USB always plugs directly into the chosen MCU's **onboard USB-C receptacle**. Th
 
 How the stacking pins meet the main board, in the module: on the panel the controller board lies a quarter turn round, but each of its eight stacking holes sits exactly under one of the main board's. The diagram is measured from the routed board.
 
-| The main board lifted off the stacking pins | Assembled, seen from above |
-|---|---|
-| ![](renders/trackball_board_stack_exploded.png) | ![](renders/trackball_board_stack_top.png) |
+| | The main board lifted off the stacking pins | Assembled, seen from above |
+|---|---|---|
+| Plain XIAO nRF52840 | ![](renders/trackball_board_stack_exploded.png) | ![](renders/trackball_board_stack_top.png) |
+| nice!nano v2 | ![](renders/trackball_board_stack_nano_exploded.png) | ![](renders/trackball_board_stack_nano_top.png) |
 
 ![Stacking holes of both boards, measured from the routed PCB, and a section across the stack](renders/stack_alignment.png)
 
