@@ -44,10 +44,49 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 40px 72px;
 }
-main { max-width: 980px; margin: 0 auto; display: grid; gap: 56px; }
+main { max-width: 980px; margin: 0 auto; }
+/* Sections as tabs. Without JavaScript every panel shows, one after another, as a long page. */
+.masthead { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+.tabs { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--rule);
+  margin: 18px 0 40px; }
+.tabs-inner { max-width: 980px; margin: 0 auto; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs-inner::-webkit-scrollbar { display: none; }
+.tab { flex: none; display: flex; align-items: baseline; gap: 7px; padding: 14px 12px 12px; margin-bottom: -1px;
+  font-family: var(--display); font-weight: 500; font-size: 1rem; color: var(--muted); text-decoration: none;
+  white-space: nowrap; border-bottom: 2px solid transparent; transition: color .2s cubic-bezier(.22, 1, .36, 1); }
+.tab:first-child { padding-left: 0; }
+.tab:hover { color: var(--fg); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--copper); }
+.tab:focus-visible { outline: 2px solid var(--copper); outline-offset: -2px; }
+.tab-n { font-family: var(--mono); font-size: 0.72rem; color: var(--copper); }
+.panel { display: grid; gap: 56px; scroll-margin-top: 64px; }
+.panel[hidden] { display: none; }
+.panel:focus { outline: none; }
+.panel h2, .panel h3, .panel section { scroll-margin-top: 72px; }
+.next { border-top: 1px solid var(--rule); padding-top: 20px; }
+.next a { font-family: var(--display); font-weight: 700; font-size: 1.35rem; text-decoration: none; }
+.next a:hover span { margin-left: 6px; }
+.next span { transition: margin .25s cubic-bezier(.22, 1, .36, 1); }
+.guide { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 44px; align-items: start; }
+.toc { position: sticky; top: 64px; max-height: calc(100vh - 84px); overflow-y: auto; font-size: 0.88rem; padding-bottom: 12px; }
+.toc summary { display: none; }
+.toc p { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--copper); margin: 14px 0 6px; }
+.toc p:first-child { margin-top: 0; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: block; padding: 3px 0 3px 10px; color: var(--muted); text-decoration: none; border-left: 1px solid var(--rule); line-height: 1.35; }
+.toc a:hover { color: var(--fg); }
+.toc a[aria-current="true"] { color: var(--fg); border-left-color: var(--copper); }
+@media (max-width: 900px) {
+  .guide { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .toc { position: static; max-height: none; border: 1px solid var(--rule); border-radius: 6px; padding: 12px 16px; background: var(--surface); }
+  .toc summary { display: list-item; cursor: pointer; font-family: var(--display); font-weight: 700; font-size: 1.05rem; }
+  .toc details[open] summary { margin-bottom: 10px; }
+}
+@media print { .tabs, .next, .toc { display: none; } .panel[hidden] { display: grid; } .guide { display: block; } }
+@media (prefers-reduced-motion: reduce) { .tab, .next span { transition: none; } }
 .col { max-width: 680px; }
 h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.1; margin: 0; }
-h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); font-weight: 700; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 700; letter-spacing: -0.01em; }
 h2 { font-size: 1.75rem; font-weight: 700; }
 h3 { font-size: 1.15rem; font-weight: 500; }
 p { margin: 0; }
@@ -115,12 +154,26 @@ main img { cursor: zoom-in; }
 </head>
 <body>
 
+<header class="masthead">
+  <h1>Slim Diamond</h1>
+  <span class="eyebrow">Wireless split · 24 keys · Choc v1 · ZMK</span>
+</header>
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-inner" role="tablist">
+    <a class="tab" role="tab" id="tab-overview" href="#overview" aria-controls="overview"><span class="tab-n">01</span>Overview</a>
+    <a class="tab" role="tab" id="tab-halves" href="#halves" aria-controls="halves"><span class="tab-n">02</span>The halves</a>
+    <a class="tab" role="tab" id="tab-making" href="#making" aria-controls="making"><span class="tab-n">03</span>How it is made</a>
+    <a class="tab" role="tab" id="tab-dock" href="#dock" aria-controls="dock"><span class="tab-n">04</span>The dock</a>
+    <a class="tab" role="tab" id="tab-modules" href="#modules" aria-controls="modules"><span class="tab-n">05</span>Pointing modules</a>
+    <a class="tab" role="tab" id="tab-parts" href="#parts" aria-controls="parts"><span class="tab-n">06</span>Parts</a>
+    <a class="tab" role="tab" id="tab-build" href="#build" aria-controls="build"><span class="tab-n">07</span>Build guide</a>
+  </div>
+</nav>
 <main>
-  <header class="col">
-    <span class="eyebrow">Wireless split · 24 keys · Choc v1 · ZMK</span>
-    <h1>Slim Diamond</h1>
+<section class="panel" id="overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="-1">
+  <div class="intro col">
     <p class="lede">A wireless, low-profile remake of the handwired Diamond (1333+2 per half). The layout and goals are mine; the PCB, the printed case and every check were generated as code by Claude, Anthropic's model, working in Claude Code.</p>
-  </header>
+  </div>
 
   <figure class="hero">
     <img src="renders/full.png" alt="Left half assembled: printed base, top plate, Choc switches and keycaps" width="1200" height="900">
@@ -147,6 +200,22 @@ main img { cursor: zoom-in; }
     <figure><img src="renders/parts_top.png" alt="The left half's PCB with switches and keycaps, seen from above at an angle" width="1200" height="900" loading="lazy"><figcaption>Switch side of the left half, with keycaps.</figcaption></figure>
   </div>
 
+  <section class="stack col">
+    <span class="eyebrow">Status</span>
+    <h2>Not built yet</h2>
+    <p>Nothing has been fabbed or printed. Nominal clearances and numerical checks do not guarantee physical fit or assembly. Sources, Gerbers, STLs, a BOM and a hand-soldering guide are in the repo: <a href="https://github.com/rafaelromao/diamond/tree/main/slim_diamond">rafaelromao/diamond</a>.</p>
+  </section>
+  <p class="next"><a href="#halves">Next: The halves <span aria-hidden="true">→</span></a></p>
+</section>
+
+<section class="panel" id="halves" role="tabpanel" aria-labelledby="tab-halves" tabindex="-1">
+  <section class="stack col">
+    <span class="eyebrow">One PCB, two halves</span>
+    <h2>The reversible trick</h2>
+    <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the module's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
+    <p>The module's underside pads (battery, the 12th key's pin, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
+  </section>
+
   <div class="grid3">
     <figure>
       <img src="renders/parts_bottom.png" alt="Underside of the left half's PCB with the Xiao, power switch, JST socket and hot-swap sockets" width="1200" height="900" loading="lazy">
@@ -161,13 +230,6 @@ main img { cursor: zoom-in; }
       <figcaption>Bare board, back face: the left half's parts go here.</figcaption>
     </figure>
   </div>
-
-  <section class="stack col">
-    <span class="eyebrow">One PCB, two halves</span>
-    <h2>The reversible trick</h2>
-    <p>The left half puts its parts on the back face; the right half is the same board flipped, with parts on the front. Flipped, the module's pins land mirrored: where the left half has D0, D1 and D2, the right half has VBUS, GND and 3V3. Solder jumpers route those three to their keys, and you bridge only the set on the face without the module.</p>
-    <p>The module's underside pads (battery, the 12th key's pin, reset) are reached through plated holes filled with solder from the other face, so the whole board stays iron-friendly. The reset pad sits exactly under the module's GND pad on the opposite mount, so each half's reset hole gets its own net and only reaches that half's button.</p>
-  </section>
 
   <section class="stack">
     <span class="eyebrow">One board, either module</span>
@@ -187,6 +249,23 @@ main img { cursor: zoom-in; }
     <figure><img src="renders/xiao_right_half.png" alt="Right half's switch face, mirrored as seen when turned over" width="700" height="700" loading="lazy"><figcaption>Right half, as you see it turned over.</figcaption></figure>
   </div>
 
+  <div class="grid2">
+    <figure><img src="renders/case.png" alt="Printed base with pockets for each part, the USB-C recess and the switch slot" width="1200" height="900" loading="lazy"><figcaption>Solid base: a pocket per part.</figcaption></figure>
+    <figure><img src="renders/plate.png" alt="The top plate from above, with switch cutouts, countersunk screw holes and the reset cone" width="1200" height="900" loading="lazy"><figcaption>Top plate: switch cutouts, countersunk screws, the reset cone.</figcaption></figure>
+    <figure><img src="renders/plate_under.png" alt="Underside of the top plate with support pillars and screw bosses" width="1200" height="900" loading="lazy"><figcaption>Plate underside: pillars, bosses, solder pocket.</figcaption></figure>
+    <figure><img src="renders/pads.png" alt="Both floors from below, showing where each half's anti-slip pads go" width="1000" height="750" loading="lazy"><figcaption>Pads sit in different ends of each slot, so they interleave when stacked.</figcaption></figure>
+  </div>
+
+  <div class="grid2">
+    <figure><img src="renders/unibody.png" alt="Both halves joined at the seam as a unibody" width="1200" height="900" loading="lazy"><figcaption>Joined at the seam by magnets.</figcaption></figure>
+    <figure><img src="renders/unibody_top.png" alt="Both halves joined, seen from above, forming the diamond outline" width="1200" height="900" loading="lazy"><figcaption>Joined, from above: the two outlines make the diamond.</figcaption></figure>
+    <figure><img src="renders/stacked.png" alt="Both halves stacked floor to floor, seen at an angle" width="1200" height="900" loading="lazy"><figcaption>Stacked back to back, keys facing out.</figcaption></figure>
+    <figure><img src="renders/stacked_side.png" alt="Both halves stacked floor to floor, seen from the side" width="1200" height="900" loading="lazy"><figcaption>Stacked floor to floor for travel.</figcaption></figure>
+  </div>
+  <p class="next"><a href="#making">Next: How it is made <span aria-hidden="true">→</span></a></p>
+</section>
+
+<section class="panel" id="making" role="tabpanel" aria-labelledby="tab-making" tabindex="-1">
   <section class="stack">
     <span class="eyebrow">Toolchain</span>
     <h2>Everything is a script</h2>
@@ -242,21 +321,10 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
 <span class="ok">ALL CLEAR</span></pre>
     <p class="note col">Excerpt of the output.</p>
   </section>
+  <p class="next"><a href="#dock">Next: The dock <span aria-hidden="true">→</span></a></p>
+</section>
 
-  <div class="grid2">
-    <figure><img src="renders/case.png" alt="Printed base with pockets for each part, the USB-C recess and the switch slot" width="1200" height="900" loading="lazy"><figcaption>Solid base: a pocket per part.</figcaption></figure>
-    <figure><img src="renders/plate.png" alt="The top plate from above, with switch cutouts, countersunk screw holes and the reset cone" width="1200" height="900" loading="lazy"><figcaption>Top plate: switch cutouts, countersunk screws, the reset cone.</figcaption></figure>
-    <figure><img src="renders/plate_under.png" alt="Underside of the top plate with support pillars and screw bosses" width="1200" height="900" loading="lazy"><figcaption>Plate underside: pillars, bosses, solder pocket.</figcaption></figure>
-    <figure><img src="renders/pads.png" alt="Both floors from below, showing where each half's anti-slip pads go" width="1000" height="750" loading="lazy"><figcaption>Pads sit in different ends of each slot, so they interleave when stacked.</figcaption></figure>
-  </div>
-
-  <div class="grid2">
-    <figure><img src="renders/unibody.png" alt="Both halves joined at the seam as a unibody" width="1200" height="900" loading="lazy"><figcaption>Joined at the seam by magnets.</figcaption></figure>
-    <figure><img src="renders/unibody_top.png" alt="Both halves joined, seen from above, forming the diamond outline" width="1200" height="900" loading="lazy"><figcaption>Joined, from above: the two outlines make the diamond.</figcaption></figure>
-    <figure><img src="renders/stacked.png" alt="Both halves stacked floor to floor, seen at an angle" width="1200" height="900" loading="lazy"><figcaption>Stacked back to back, keys facing out.</figcaption></figure>
-    <figure><img src="renders/stacked_side.png" alt="Both halves stacked floor to floor, seen from the side" width="1200" height="900" loading="lazy"><figcaption>Stacked floor to floor for travel.</figcaption></figure>
-  </div>
-
+<section class="panel" id="dock" role="tabpanel" aria-labelledby="tab-dock" tabindex="-1">
   <section class="stack col">
     <span class="eyebrow">Cyberdeck</span>
     <h2>A dock for a phone stand</h2>
@@ -287,7 +355,10 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <figure><img src="renders/dock_base.png" alt="The dock on the Ugreen base seen from behind, the base's back strip left bare" width="1600" height="1200" loading="lazy"><figcaption>From behind, on the base: bare round the hinge.</figcaption></figure>
     <figure><img src="renders/dock_under.png" alt="The dock from below: the pocket for the Ugreen base, and three bump-on feet under each wing" width="1600" height="1200" loading="lazy"><figcaption>Underneath: the base's pocket and the feet.</figcaption></figure>
   </div>
+  <p class="next"><a href="#modules">Next: Pointing modules <span aria-hidden="true">→</span></a></p>
+</section>
 
+<section class="panel" id="modules" role="tabpanel" aria-labelledby="tab-modules" tabindex="-1">
   <section class="stack col">
     <span class="eyebrow">Pointing</span>
     <h2>A trackball or a trackpad, in the drawer</h2>
@@ -340,7 +411,10 @@ balance, unibody      nearest key  2.79 mm inside (2.0 needed): ok
     <figure><img src="renders/trackball_board_top.png" alt="The three-board panel: main board with keys and wire pads, controller board, and sensor board" width="1600" height="1200" loading="lazy"><figcaption>One panel for either controller and either pointing module.</figcaption></figure>
     <figure><img src="renders/trackball_board_bottom.png" alt="The trackball's board from the back: the MX hot-swap sockets, and the sensor's regulator, capacitors and reset button" width="1600" height="1200" loading="lazy"><figcaption>Back face: the sockets, and the sensor's parts facing the plate.</figcaption></figure>
 </div>
+  <p class="next"><a href="#parts">Next: Parts <span aria-hidden="true">→</span></a></p>
+</section>
 
+<section class="panel" id="parts" role="tabpanel" aria-labelledby="tab-parts" tabindex="-1">
   <section class="stack">
     <span class="eyebrow">Parts</span>
     <h2>Bill of materials</h2>
@@ -643,21 +717,60 @@ buy for the halves.</p>
 <p>Consumables: thin solder (0.5–0.6 mm), flux, a little kapton tape, thin double-sided tape (0.25 mm at most) for the controller board's seats, CA glue
 or epoxy for the magnets, removable adhesive dots for the trackpad, thin card for the sensor's
 shims, and a 2.5 mm insulating spacer/tape stack for the I²C breakout (no printed holder).</p>
-<p>Soldering, assembly and printing: see <a href="BUILD.md">BUILD.md</a>.</p>
+<p>Soldering, assembly and printing: see <a href="#build">BUILD.md</a>.</p>
 <!-- /BOM.md -->
     </div>
   </section>
+  <p class="next"><a href="#build">Next: Build guide <span aria-hidden="true">→</span></a></p>
+</section>
 
+<section class="panel" id="build" role="tabpanel" aria-labelledby="tab-build" tabindex="-1">
   <section class="stack">
     <span class="eyebrow">Build guide</span>
     <h2>Soldering and assembly</h2>
+    <div class="guide">
+    <nav class="toc" aria-label="Build guide contents">
+    <details open><summary>Contents</summary>
+<!-- BUILD.md contents -->
+<p>The halves</p>
+<ol>
+<li><a href="#b-tools">Tools</a></li>
+<li><a href="#b-the-two-faces">The two faces</a></li>
+<li><a href="#b-before-you-start">Before you start</a></li>
+<li><a href="#b-1-bridge-the-d0-d2-jumpers-and-the-battery-selector-switch-face">1. Bridge the D0–D2 jumpers and the battery selector (switch face)</a></li>
+<li><a href="#b-2-solder-the-module-parts-face">2. Solder the module (parts face)</a></li>
+<li><a href="#b-3-power-switch-msk-12c02-parts-face">3. Power switch, MSK-12C02 (parts face)</a></li>
+<li><a href="#b-4-jst-battery-socket-parts-face">4. JST battery socket (parts face)</a></li>
+<li><a href="#b-5-hot-swap-sockets-parts-face">5. Hot-swap sockets (parts face)</a></li>
+<li><a href="#b-6-reset-button-ts-1187a-switch-face">6. Reset button, TS-1187A (switch face)</a></li>
+<li><a href="#b-7-test-before-the-case">7. Test (before the case)</a></li>
+<li><a href="#b-8-case-and-plate">8. Case and plate</a></li>
+<li><a href="#b-optional-stands-and-drawer-retention">Optional stands and drawer retention</a></li>
+</ol>
+<p>Pointing modules</p>
+<ol>
+<li><a href="#b-pointing-modules">Pointing modules</a></li>
+<li><a href="#b-boards">Boards</a></li>
+<li><a href="#b-wiring">Wiring</a></li>
+<li><a href="#b-into-the-tray">Into the tray</a></li>
+<li><a href="#b-power-and-reset">Power and reset</a></li>
+<li><a href="#b-opening-a-module">Opening a module</a></li>
+</ol>
+<p>Both</p>
+<ol>
+<li><a href="#b-resetting-a-closed-half">Resetting a closed half</a></li>
+<li><a href="#b-printing">Printing</a></li>
+</ol>
+<!-- /BUILD.md contents -->
+    </details>
+    </nav>
     <div class="doc">
 <!-- BUILD.md -->
 <p>The module, battery and battery socket all end up inside the case, under the PCB. Only the USB-C port and the power-switch lever show, through openings in the outer wall: a recess the size of a cable's plug in front of the port, and a slot open to the top for the lever. Push the lever with a fingernail. The module's LED and its own reset button face the case floor, so flash and test it before closing the case. A second reset button on the switch face, wired to the module's reset pad, works with the case closed: it sits in a cone in the plate, above the thumbs.</p>
 <p>Everything is soldered with an iron: no paste, no hot air. Build one half at a
 time. Both halves use the same PCB, turned over for the right half.</p>
 <p><strong>The module</strong> is a Seeed XIAO nRF52840 or a NologoTech Super52840. The board takes either: a battery selector, set in step 1, matches it to your module. The other steps are the same for both.</p>
-<h3>Tools</h3>
+<h3 id="b-tools">Tools</h3>
 <ul>
 <li>Temperature-controlled iron with a <strong>small chisel tip</strong> (1.6–2 mm) for the module, sockets and JST tabs, and a <strong>fine conical tip</strong> for the power switch.</li>
 <li>Leaded solder: about 330 °C.</li>
@@ -666,7 +779,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li>A multimeter with a continuity beep.</li>
 <li>Optional: a magnifier or phone camera to inspect the small pads.</li>
 </ul>
-<h3>The two faces</h3>
+<h3 id="b-the-two-faces">The two faces</h3>
 <p>Each board has a <strong>parts face</strong> and a <strong>switch face</strong>. The silkscreen tells you which is which:</p>
 <div class="table"><table>
 <thead>
@@ -694,7 +807,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li><strong>Switch face:</strong> the key switches clip in here, the reset button is soldered here, and you bridge the jumpers and fill the module's holes from this side.</li>
 </ul>
 <p>The module always lies flat on the parts face, with its pad side against the PCB and its components (USB-C, shield, reset button) pointing away from it, towards the case floor.</p>
-<h3>Before you start</h3>
+<h3 id="b-before-you-start">Before you start</h3>
 <ul>
 <li><strong>Flash and test the module first.</strong> Plug it into USB and double-tap reset: a USB drive appears. Copy the firmware onto it:</li>
 </ul>
@@ -719,10 +832,12 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 </tr>
 </tbody>
 </table></div>
-<p>A dead module is much easier to swap now than after soldering.
-- <strong>Battery size and polarity.</strong> The halves use nominal <strong>7 × 20 × 40 mm, 500 mAh</strong> cells; the trackball and trackpad keep <strong>752025, 250 mAh</strong> cells. Verify actual dimensions and lead clearance before assembly. Silkscreen <code>+</code> marks pin 1 of the JST socket. Cells ship with either polarity: check the plug with the multimeter. If reversed, swap the two crimps in the disconnected plug housing (lift each tab with a needle), keeping the contacts insulated from each other.
-- <strong>Magnet polarity.</strong> Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.</p>
-<h3>1. Bridge the D0–D2 jumpers and the battery selector (switch face)</h3>
+<p>A dead module is much easier to swap now than after soldering.</p>
+<ul>
+<li><strong>Battery size and polarity.</strong> The halves use nominal <strong>7 × 20 × 40 mm, 500 mAh</strong> cells; the trackball and trackpad keep <strong>752025, 250 mAh</strong> cells. Verify actual dimensions and lead clearance before assembly. Silkscreen <code>+</code> marks pin 1 of the JST socket. Cells ship with either polarity: check the plug with the multimeter. If reversed, swap the two crimps in the disconnected plug housing (lift each tab with a needle), keeping the contacts insulated from each other.</li>
+<li><strong>Magnet polarity.</strong> Every left-half magnet goes in with the same pole facing out, and every right-half magnet with the other pole. That makes both the stack and the side-by-side join attract. Mark one face of each magnet stack before you start.</li>
+</ul>
+<h3 id="b-1-bridge-the-d0-d2-jumpers-and-the-battery-selector-switch-face">1. Bridge the D0–D2 jumpers and the battery selector (switch face)</h3>
 <p>On the switch face, inside the module's outline, there are three small pad pairs labelled <strong>D0, D1, D2</strong>, on the face without the module. Flux them and bridge each pair with a small blob of solder.</p>
 <p>Next to them is the <strong>battery selector</strong>: two rows of two pad pairs, labelled <code>+MID</code> and <code>+USB</code>. The two modules have their battery pads in the same spots, swapped, and the row you bridge decides which battery hole is +:</p>
 <div class="table"><table>
@@ -749,7 +864,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p><em>Left: the left half's switch face. Right: the right half's switch face. Bridge the three D0–D2 pairs and one selector row, and later fill the three boxed hole groups (step 2).</em></p>
 <p>Leave the jumpers on the other face open: they're on the parts face, under where the module will sit.</p>
 <p><strong>Check:</strong> each bridged pair beeps on the multimeter, and the unbridged selector row doesn't.</p>
-<h3>2. Solder the module (parts face)</h3>
+<h3 id="b-2-solder-the-module-parts-face">2. Solder the module (parts face)</h3>
 <ol>
 <li><strong>Pre-tin the module's underside pads</strong> that the boxed holes reach: the two battery pads (VBAT and GND on the XIAO, B+ and B- on the Super52840), the P0.09 pad (NFC1 on the XIAO, <code>009</code> on the Super52840) and RST. Flux each one and touch it with a lightly tinned iron, leaving a thin, flat coat. Wick off any bump: a blob lifts the module off its edge pads. In step 4 the solder fed into each hole then only has to melt into the coat that's already there.</li>
 <li>Flux the 14 edge pads. Lay the module flat over its outline with the USB-C end towards the board edge. The pads are pulled out past the module, so you can reach them from the side.</li>
@@ -760,34 +875,36 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li>Clean off the flux.</li>
 </ol>
 <p>The battery holes and one P0.09 hole are smaller than the rest (0.6 mm, as large as the pads above them allow): flux them well, use thin solder (0.5 mm), and hold the iron on the ring until the solder sinks into the hole before you feed more.</p>
-<p><strong>Check:</strong>
-- <strong>Before any battery goes in:</strong> the power switch's middle pad (VBAT; the switch is fitted in step 3) must <strong>not</strong> beep to the module's GND castellation. A beep may indicate the wrong selector row, both rows bridged, or another short: find and fix it first.
-- The battery hole the selector made + beeps to the power switch's middle pin.
-- The RST hole does <strong>not</strong> beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).
-- No two adjacent castellations beep to each other.</p>
-<h3>3. Power switch, MSK-12C02 (parts face)</h3>
+<p><strong>Check:</strong></p>
+<ul>
+<li><strong>Before any battery goes in:</strong> the power switch's middle pad (VBAT; the switch is fitted in step 3) must <strong>not</strong> beep to the module's GND castellation. A beep may indicate the wrong selector row, both rows bridged, or another short: find and fix it first.</li>
+<li>The battery hole the selector made + beeps to the power switch's middle pin.</li>
+<li>The RST hole does <strong>not</strong> beep to GND (the module's reset is pulled up inside the module: a beep means a solder bridge, and the half would sit in reset).</li>
+<li>No two adjacent castellations beep to each other.</li>
+</ul>
+<h3 id="b-3-power-switch-msk-12c02-parts-face">3. Power switch, MSK-12C02 (parts face)</h3>
 <p>It goes next to the module's USB-C, with the lever pointing out over the board edge and its two locating pegs in the small holes.</p>
 <ol>
 <li>Tin one of the four corner (shield) pads. Place the switch with tweezers and reheat that pad to tack it.</li>
 <li>Solder the other three shield pads.</li>
 <li>Solder the three signal pads with the fine tip and very little solder. A bridge between the middle pin and its near neighbour does no harm (both are VBAT). A bridge from the middle pin to the far one bypasses the switch: wick it away.</li>
 </ol>
-<h3>4. JST battery socket (parts face)</h3>
+<h3 id="b-4-jst-battery-socket-parts-face">4. JST battery socket (parts face)</h3>
 <p>Its opening faces the battery's spot under the inner keys. Tack one signal pin, check it sits flat, and solder the other pin. Then solder the two large mounting tabs: they need more heat and more solder, because they take the force of plugging the battery in.</p>
-<h3>5. Hot-swap sockets (parts face)</h3>
+<h3 id="b-5-hot-swap-sockets-parts-face">5. Hot-swap sockets (parts face)</h3>
 <p>Twelve, one per key. Each socket fits its outline only one way round.</p>
 <ol>
 <li>Tin one pad lightly, place the socket, and hold it flat with tweezers while you reheat the pad until the socket's metal tab sinks into the solder.</li>
 <li>Solder the second tab. Use enough solder to make a fillet, but keep it out of the socket's opening.</li>
 </ol>
-<h3>6. Reset button, TS-1187A (switch face)</h3>
+<h3 id="b-6-reset-button-ts-1187a-switch-face">6. Reset button, TS-1187A (switch face)</h3>
 <p>It goes on the <strong>switch face</strong>, in the gap above the thumb keys, inside its outline labelled <code>RST</code>. The part is square and symmetric: any of the four ways round works.</p>
 <ol>
 <li>Tin one corner pad, hold the button flat and centred with tweezers, and reheat the pad to tack it.</li>
 <li>Solder the other three legs: a small fillet on each, iron on the pad and against the leg. Keep the solder off the body: the button is 2.0 mm tall and the plate's pocket over it leaves only 0.3 mm above the collar.</li>
 </ol>
 <p><strong>Check:</strong> the RST hole (step 2.4) beeps to the two legs on the <code>RST</code> side of the button (the side with the label), and beeps to GND only while you press the button.</p>
-<h3>7. Test (before the case)</h3>
+<h3 id="b-7-test-before-the-case">7. Test (before the case)</h3>
 <ol>
 <li>Plug in USB. With the firmware flashed and your computer paired or connected, short each socket's two contacts with tweezers. Every key should register.</li>
 <li>Plug in the battery, unplug USB and toggle the power switch: the half should stay connected.</li>
@@ -831,7 +948,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 </tr>
 </tbody>
 </table></div>
-<h3>8. Case and plate</h3>
+<h3 id="b-8-case-and-plate">8. Case and plate</h3>
 <p>The base is solid up to the PCB's underside, with a pocket for every part. The PCB rests on plastic everywhere, which makes the half stiff and quiet. The top plate covers the whole board: the switches clip into it, and a shallow pocket in its underside clears the solder around the module.</p>
 <ol>
 <li>Fit <strong>13 common 8 × 1.5 mm N52 discs per half</strong> (polarity!): seven underneath and six along the seam. Dry-fit first, without forcing the plastic, then apply a little suitable adhesive. Keep adhesive off the mating faces.</li>
@@ -845,7 +962,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p>The rule is the same on both halves: turn the half over and go <strong>clockwise round the floor</strong>. In every slot, the pad goes in the end you reach <strong>second</strong>. Then each half's five pads sit in the ends the other half leaves empty.</p>
 <p><img alt="Both floors from below: the pads in black" src="renders/pads.png" /></p>
 <p>Clean the slots with isopropyl alcohol first and press each pad down firmly against the slot's roof, centred in its round end. Stack the halves to check: they should close flat, with no rocking.</p>
-<h3>Optional stands and drawer retention</h3>
+<h3 id="b-optional-stands-and-drawer-retention">Optional stands and drawer retention</h3>
 <ul>
 <li>Use the same <strong>8 × 1.5 mm N52 discs everywhere</strong>. The dock takes six wing magnets and six side magnets per half, <strong>three base pairs</strong> (three of those discs are glued to the Ugreen base) and one upward-facing disc in the drawer floor: <strong>31 discs total</strong>. No underside contact sits near the drawer retention magnet: at least 1 mm of plastic separates their pockets, even with each 0.2 mm off. Leave the rear free for USB and the cable.</li>
 <li>Each drawer insert takes three evenly spaced side magnets per side (seam positions 2, 4 and 6). The halves and dock have six per side at 17.8 mm pitch; the inserts use every other position. Check the full half → dock → insert polarity chain before gluing.</li>
@@ -857,7 +974,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li>For independent tenting, print <code>case/stand_magnet_template_left.svg</code> and <code>case/stand_magnet_template_right.svg</code> at 100% and check the 54 mm boundary with a ruler. Glue three discs to each stand's <strong>tilting phone platform</strong>, not its base; the patterns are mirrored and the magnet centres form a 44 mm circle.</li>
 <li>The platform needs a clear flat 54 mm patch. Use <strong>2.0 mm bump-ons</strong>. Start flat, support the half while increasing the tilt, then test typing on it before relying on it.</li>
 </ul>
-<h3>Pointing modules</h3>
+<h3 id="b-pointing-modules">Pointing modules</h3>
 <p>Both modules are built the same way as a half: a <strong>tray</strong>, a <strong>lid</strong>, and the same <strong>M3 × 8 flat-head screws</strong> going in from the top. The tray is one print, shared by all of them. Only the lid changes: <code>trackball/case/lid.stl</code> (MX), <code>trackball/case/lid_choc.stl</code> (Choc v1) or <code>trackpad/case/lid.stl</code>.</p>
 <p>The raised lid has upper facets on its <strong>front and both sides</strong>, starting at the halves' top-surface height. Below that height the front keeps the drawer's matching profile for horizontal removal.</p>
 <div class="table"><table>
@@ -887,7 +1004,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p>The controller stands face down on the controller board on an ordinary 2.54 mm pin header, its pins in two straight columns 15.24 mm apart. Eight stacking pins then join the controller board to the main board above it, beside the controller. The six signal pins land on GPIOs on both controllers, so they need only the right firmware. One solder jumper chooses the 3.3 V pin. Two wires of about 25 mm, the same on both controllers, carry the battery and reset.</p>
 <p><strong>The main board does not lift out afterwards:</strong> removing it means desoldering the eight stacking pins. Solder and test everything beneath it first.</p>
 <p>USB always plugs directly into the chosen MCU's <strong>onboard USB-C receptacle</strong>. There is no external USB connector, extension or soldered USB wiring.</p>
-<h3>Boards</h3>
+<h3 id="b-boards">Boards</h3>
 <ol>
 <li><strong>Snap the panel.</strong> The main board and sensor board are joined by one long bridge with a row of holes at each end, and the controller board hangs off the sensor board's side, a quarter turn round, on a short tab with a row of holes at each end of its own. The tab meets it in its USB notch. Snap the controller board's tab first, then the bridge: hold a board in one hand and the bridge in the other (pliers help) and bend at the row of holes until it snaps. File off the stubs.</li>
 <li><strong>Main board.</strong> Solder the MSK-12C02 power switch on the front face (the side marked <code>MCU BOARD BELOW</code>), with its lever over the rear edge. Solder one family of hot-swap sockets on the back face: Kailh MX for the MX lid, Choc for the Choc lid and the trackpad. Never both.</li>
@@ -943,7 +1060,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p><img alt="Stacking holes of both boards, measured from the routed PCB, and a section across the stack" src="renders/stack_alignment.png" /></p>
 <p>For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.</p>
 <p>Some sensor-board silkscreen labels overlap. Do not identify wires by silkscreen alone: in the KiCad panel, inspect pad references <code>SJ1</code> through <code>SJ7</code>, whose nets are respectively <code>S_VCC</code>, <code>S_GND</code>, <code>S_RST</code>, <code>S_SCLK</code>, <code>S_SDIO</code>, <code>S_NCS</code>, <code>S_MOTION</code>. Meter each pad to its intended component or reset button before soldering.</p>
-<h3>Wiring</h3>
+<h3 id="b-wiring">Wiring</h3>
 <p>Use flexible 30 AWG stranded wire. The main board's pads have short labels: <code>3V</code> is VCC, <code>G</code> is GND, <code>CK</code> SCLK, <code>IO</code> SDIO, <code>CS</code> NCS and <code>MO</code> MOTION. Solder both of these to the main board before it goes in, and keep it beside the tray on its wires while you fit the parts below it. Run the <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>CS</code> wires inboard of the stacking pins' plastic: that is the only way out of those holes, and a wire left outboard gets trapped. The main board's labels are small: down its right edge, rear to front, the pads are <code>R2</code>, <code>RST</code>, <code>VBAT</code>, <code>CK</code>, <code>IO</code>, <code>MO</code> and <code>3V</code>, and on its left <code>G</code> and <code>CS</code>, with <code>K2</code>, <code>K1</code> and <code>GND</code> marking stacking holes.</p>
 <div class="table"><table>
 <thead>
@@ -1100,7 +1217,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <p>Use <code>slim_diamond_trackpad</code> for nice!nano or <code>slim_diamond_trackpad_xiao</code> for XIAO. Both use I²C at 100 kHz and address <code>0x2A</code>. Never connect breakout VDD/VCC to raw battery voltage or USB 5 V. Both I²C firmware variants compile; physical communications, tap, sleep and wake still need testing.</p>
 <p>On the <strong>plain XIAO nRF52840</strong>, the <code>VBAT</code> and <code>R2</code> wires start on the two small pads on its back. Keep them flat across its back, not crossing, and off towards the rear of the sockets above it. The battery's negative needs no wire to the XIAO: the <code>-</code> pad is ground on the main board, and ground reaches the XIAO through the stacking pins and header. Use Seeed's <a href="https://wiki.seeedstudio.com/XIAO_BLE/#hardware-overview">front and back pinout</a> to identify the pads on the actual board. Insulate each joint and check polarity and shorts with the cell and USB disconnected.</p>
 <p><strong>Super52840:</strong> battery-pad locations differ and reset, charger and regulator details depend on the actual revision; compatibility remains experimental until verified against that board's schematic and measurements. Do not assume the Seeed battery, reset or charging pinout applies. The XIAO firmware variants compile but have not been tested on hardware.</p>
-<h3>Into the tray</h3>
+<h3 id="b-into-the-tray">Into the tray</h3>
 <p>Work in this order, power off, with the magnets already glued in. Before putting the battery in, perform the sensor screw depth check in step 2. The picture shows the first three steps done.</p>
 <p><img alt="Battery, sensor board and nice!nano in the tray" src="renders/trackball_stack.png" /></p>
 <ol>
@@ -1118,7 +1235,7 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 <li>Clip the switches through the lid into the sockets, fit the keycaps, and drop the ball in.</li>
 </ol>
 <p>Stick three 8 × 2 mm bump-ons into the floor's recesses.</p>
-<h3>Power and reset</h3>
+<h3 id="b-power-and-reset">Power and reset</h3>
 <p>Same switch and same button in the same place on both modules.</p>
 <div class="table"><table>
 <thead>
@@ -1139,15 +1256,15 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 </tbody>
 </table></div>
 <p>The power switch disconnects the battery from both controller and charger: <strong>charging requires the switch on</strong>. USB can power the controller even with the switch off, so unplug USB, switch off and unsolder the battery's <code>+</code> lead before working on wiring: the module has no battery connector. Use a protected single-cell Li-ion/LiPo pack rated for the controller's charging voltage and current; the main PCB supplies neither a charger nor battery protection. Verify the exact controller's charger, startup/bootloader current settings, battery rating and charge termination under USB load before charging. On a genuine XIAO the selectable charging current is approximately 50 or 100 mA; do not assume a Super52840 uses the same circuit or setting. See <a href="https://wiki.seeedstudio.com/XIAO_BLE/#battery-charging-current">Seeed's charging documentation</a>. To reset, take the module out of the dock and press a blunt pin, at most 2 mm across, straight into the hole in the floor: once to reset, twice quickly for the bootloader, if supported by the controller's installed bootloader.</p>
-<h3>Opening a module</h3>
+<h3 id="b-opening-a-module">Opening a module</h3>
 <p>Take it out of the dock, unplug USB, switch it off, and take off the keycaps and ball. Undo the four lid screws and tilt the lid up from the front. The main board stays: it is soldered to the eight stacking pins, so desolder them to take it out. On the trackpad the lid remains attached by the supplied flat cable and the separate DR wire; support it without pulling either, and release the FFC latch if the available slack is insufficient.</p>
-<h3>Resetting a closed half</h3>
+<h3 id="b-resetting-a-closed-half">Resetting a closed half</h3>
 <p>Press straight down into the cone above the thumbs with a fingertip (the pad, not the nail, is enough: the cone is 4.2 mm across at the top and the plunger 2.0 mm wide).</p>
 <ul>
 <li><strong>Once:</strong> the half reboots.</li>
 <li><strong>Twice quickly:</strong> the bootloader. With USB plugged in, a USB drive appears: copy a <code>.uf2</code> onto it to flash new firmware, as in "Before you start".</li>
 </ul>
-<h3>Printing</h3>
+<h3 id="b-printing">Printing</h3>
 <ul>
 <li><strong>Base:</strong> floor-down, no supports (the wall over the USB recess and the roofs of the pad slots, 8.6 mm wide, bridge). For a quiet, solid base, use 4–5 walls and 40–100% infill (gyroid, or solid). More infill means less hollow sound and more weight.</li>
 <li><strong>Plate:</strong> <strong>top face down</strong>: the STL is already oriented that way, with the pillars and screw bosses pointing up. The reset button's cone narrows upwards at 45° from the bed (4.2 mm to 2.8 mm over the first 0.7 mm) and needs no support. Print it solid, at 0.2 mm layers. The switch cutouts are 14.0 mm (13.8 mm + 0.1 mm per side); if your switches are loose or tight, change <code>cut_tol</code> in <code>design.py</code> and regenerate.</li>
@@ -1160,14 +1277,9 @@ time. Both halves use the same PCB, turned over for the right half.</p>
 </ul>
 <!-- /BUILD.md -->
     </div>
+    </div>
   </section>
-
-  <section class="stack col">
-    <span class="eyebrow">Status</span>
-    <h2>Not built yet</h2>
-    <p>Nothing has been fabbed or printed. Nominal clearances and numerical checks do not guarantee physical fit or assembly. Sources, Gerbers, STLs, a BOM and a hand-soldering guide are in the repo: <a href="https://github.com/rafaelromao/diamond/tree/main/slim_diamond">rafaelromao/diamond</a>.</p>
-  </section>
-
+</section>
 
   <footer>Renders: KiCad 9 ray tracer from the generated board and case. Layout after the handwired Diamond.</footer>
 </main>
@@ -1176,6 +1288,71 @@ time. Both halves use the same PCB, turned over for the right half.</p>
   <img id="zoom-img" alt="">
   <p id="zoom-cap"></p>
 </div>
+<script>
+(function () {
+  // Tabs. Each panel has its own #fragment; a link to anything inside a panel opens that panel.
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var panels = tabs.map(function (t) { return document.getElementById(t.getAttribute("aria-controls")); });
+  var title = document.title;
+  function activate(panel) {
+    panels.forEach(function (p, i) {
+      var on = p === panel;
+      p.hidden = !on;
+      tabs[i].setAttribute("aria-selected", on ? "true" : "false");
+      tabs[i].tabIndex = on ? 0 : -1;
+      if (on) {
+        document.title = i ? title + " · " + tabs[i].lastChild.textContent : title;
+        var bar = tabs[i].parentNode;                       // the active tab, whole, in a scrolled tab bar
+        bar.scrollLeft = tabs[i].offsetLeft - (bar.clientWidth - tabs[i].offsetWidth) / 2;
+      }
+    });
+  }
+  function route() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var target = id ? document.getElementById(id) : null;
+    var panel = target ? target.closest(".panel") : null;
+    activate(panel || panels[0]);
+    if (target && target !== panel) target.scrollIntoView();
+    else window.scrollTo(0, 0);
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener("keydown", function (e) {
+      var j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+      if (j === undefined) return;
+      e.preventDefault();
+      j = (j + tabs.length) % tabs.length;
+      history.pushState(null, "", tabs[j].getAttribute("href"));   // a hash change would move focus to the panel
+      route();
+      tabs[j].focus();
+    });
+  });
+  window.addEventListener("hashchange", route);
+  route();
+
+  // On a narrow screen the guide's contents start folded; a choice in them folds them again.
+  var box = document.querySelector(".toc details");
+  if (box && window.matchMedia("(max-width: 900px)").matches) {
+    box.open = false;
+    box.addEventListener("click", function (e) { if (e.target.closest("a")) box.open = false; });
+  }
+
+  // The build guide's contents: mark the section being read, the last heading scrolled past.
+  var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
+  var heads = links.map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); });
+  var queued = false;
+  function mark() {
+    queued = false;
+    if (!heads.length || heads[0].closest(".panel").hidden) return;
+    var current = 0;
+    heads.forEach(function (h, i) { if (h && h.getBoundingClientRect().top <= 96) current = i; });
+    links.forEach(function (a, i) { a.setAttribute("aria-current", i === current ? "true" : "false"); });
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(mark); } }
+  window.addEventListener("scroll", queue, { passive: true });
+  window.addEventListener("hashchange", queue);
+  queue();
+})();
+</script>
 <script>
 (function () {
   // Click any image on the page to see it large; click again, press Escape or Close to go back.
