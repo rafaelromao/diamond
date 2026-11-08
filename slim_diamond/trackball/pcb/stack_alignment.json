@@ -1,0 +1,162 @@
+{
+ "pairs": {
+  "L5": {
+   "net": "K2",
+   "main": [
+    -10.05,
+    -29.11
+   ],
+   "controller": [
+    -10.05,
+    -29.11
+   ],
+   "offset": 0.0,
+   "main_net": "K2",
+   "controller_net": "M_K2"
+  },
+  "L6": {
+   "net": "NCS",
+   "main": [
+    -10.05,
+    -31.65
+   ],
+   "controller": [
+    -10.05,
+    -31.65
+   ],
+   "offset": 0.0,
+   "main_net": "NCS",
+   "controller_net": "M_CS"
+  },
+  "L7": {
+   "net": "K1",
+   "main": [
+    -10.05,
+    -34.19
+   ],
+   "controller": [
+    -10.05,
+    -34.19
+   ],
+   "offset": 0.0,
+   "main_net": "K1",
+   "controller_net": "M_K1"
+  },
+  "L8": {
+   "net": "GND",
+   "main": [
+    -11.4,
+    -37.03
+   ],
+   "controller": [
+    -11.4,
+    -37.03
+   ],
+   "offset": 0.0,
+   "main_net": "GND",
+   "controller_net": "M_GND"
+  },
+  "R5": {
+   "net": "SCLK",
+   "main": [
+    10.05,
+    -29.11
+   ],
+   "controller": [
+    10.05,
+    -29.11
+   ],
+   "offset": 0.0,
+   "main_net": "SCLK",
+   "controller_net": "M_CK"
+  },
+  "R6": {
+   "net": "SDIO",
+   "main": [
+    10.05,
+    -31.65
+   ],
+   "controller": [
+    10.05,
+    -31.65
+   ],
+   "offset": 0.0,
+   "main_net": "SDIO",
+   "controller_net": "M_IO"
+  },
+  "R7": {
+   "net": "MOTION",
+   "main": [
+    10.05,
+    -34.19
+   ],
+   "controller": [
+    10.05,
+    -34.19
+   ],
+   "offset": 0.0,
+   "main_net": "MOTION",
+   "controller_net": "M_MO"
+  },
+  "R8": {
+   "net": "VCC",
+   "main": [
+    11.4,
+    -37.03
+   ],
+   "controller": [
+    11.4,
+    -37.03
+   ],
+   "offset": 0.0,
+   "main_net": "VCC",
+   "controller_net": "M_3V"
+  }
+ },
+ "header": {
+  "R5": [
+   7.62,
+   -29.11
+  ],
+  "L2": [
+   -7.62,
+   -21.49
+  ],
+  "L4": [
+   -7.62,
+   -26.57
+  ],
+  "L6": [
+   -7.62,
+   -31.65
+  ],
+  "R6": [
+   7.62,
+   -31.65
+  ],
+  "R3": [
+   7.62,
+   -24.03
+  ],
+  "L3": [
+   -7.62,
+   -24.03
+  ],
+  "L5": [
+   -7.62,
+   -29.11
+  ],
+  "R7": [
+   7.62,
+   -34.19
+  ],
+  "R4": [
+   7.62,
+   -26.57
+  ],
+  "L7": [
+   -7.62,
+   -34.19
+  ]
+ }
+}

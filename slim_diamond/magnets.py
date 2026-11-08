@@ -1,10 +1,10 @@
-"""Finds the magnets by measuring the solid base: the floor's four, then the seam's row.
+"""Finds candidate magnets by measuring the solid base: seven floor pockets, then the seam's row.
 
 Floor: the base built without magnet pockets, sliced flat from the desk up to the pocket's depth
 plus SKIN, overlaps in the plastic a pocket can sink into. Shrunk by the pocket's radius plus
 SKIN, and kept to design.py's room (off the Xiao's antenna, the pad slots, the screws and a strip
-along the seam), that leaves where centres may go. The four go as far apart as they can: the
-smallest distance between any two is as large as it gets.
+along the seam), that leaves where centres may go. Keep the three derived stand contacts pinned,
+then spread the remaining four as far from one another as the geometry allows.
 
 Seam: the same, sliced parallel to the seam face from the face to the pocket's depth plus SKIN,
 in the base with the floor pockets cut. Each height gets the most centres the free stretches
@@ -38,21 +38,23 @@ def levels(depth):
     return [0.05] + [0.25 * i for i in range(1, int(depth / 0.25) + 2)]
 
 
-def floor_spots(base):
+def floor_spots(base, count=7):
     d, h = DZ.MAG_FLOOR
     room = unary_union([Polygon(C.plan(p)) for p in C.D["magnet_floor_room"]])
     ok = region(base, levels(h + SKIN)).buffer(-(d / 2 + SKIN)).intersection(room)
     x0, y0, x1, y1 = ok.bounds
     grid = [(x0 + i * 0.5, y0 + j * 0.5) for i in range(int((x1 - x0) * 2) + 1)
             for j in range(int((y1 - y0) * 2) + 1) if ok.contains(Point(x0 + i * 0.5, y0 + j * 0.5))]
-    # candidates near the region's edge, then the best four of them by their closest pair
-    edge = ok.boundary
-    rim = [p for p in grid if edge.distance(Point(p)) < 0.6][::3]
-    best = max(combinations(rim, 4), key=lambda q: min(math.dist(a, b) for a, b in combinations(q, 2)))
+    pinned = C.plan(C.D["stand_mount"]["magnets"])
+    assert all(ok.contains(Point(p)) for p in pinned), "stand group no longer fits; redesign its template"
+    spots = list(pinned)
+    while len(spots) < count:
+        q = max(grid, key=lambda p: min(math.dist(p, o) for o in spots))
+        assert min(math.dist(q, o) for o in spots) >= d + SKIN, "no room for another floor magnet"
+        spots.append(q)
     # polish: move each spot over the whole grid while the closest pair grows
-    spots = list(best)
     for _ in range(3):
-        for i in range(4):
+        for i in range(len(pinned), count):
             others = spots[:i] + spots[i + 1:]
             spots[i] = max(grid, key=lambda p: min(min(math.dist(p, o) for o in others),
                                                    min(math.dist(a, b) for a, b in combinations(others, 2))))
@@ -89,7 +91,8 @@ def seam_spots(base):
 def main():
     C.D["magnets_floor"], C.D["magnets_side_y"] = [], []
     floor, gap = floor_spots(C.build())
-    print(f"MAG_FLOOR_SPOTS = {floor}   # closest pair {gap:.1f} mm apart")
+    print(f"MAG_FLOOR_SPOTS = {floor[len(C.D['stand_mount']['magnets']):]}   # four ordinary pockets")
+    print(f"plus three derived stand-circle magnets; closest pair {gap:.1f} mm apart")
     C.D["magnets_floor"] = floor
     z, ys = seam_spots(C.build())
     print(f"MAG_SIDE_SPOTS = ({z}, {ys})")
