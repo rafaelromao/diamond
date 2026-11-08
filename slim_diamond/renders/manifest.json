@@ -6,7 +6,7 @@
         4120,
         2043
       ],
-      "sha256": "012582bea5333ae10877f010ee0e078c791e4fd8a4517693442ca798980e6fcc"
+      "sha256": "aaaf8fc1c9ef6b4f366cd85f1adbfd2ce41c2be4384fdd018823df4b797853f7"
     },
     {
       "path": "renders/board_bottom.png",
@@ -14,7 +14,7 @@
         1568,
         1176
       ],
-      "sha256": "66d85f388ef499e1c91511c039bef16708a25994d45522d8c115cb3227d5fc1b"
+      "sha256": "3b4d394a31870d56b6ef0e9b6cb56835701ea4ef8cdd924b1e424422b1f05634"
     },
     {
       "path": "renders/board_top.png",
@@ -22,7 +22,7 @@
         1568,
         1176
       ],
-      "sha256": "e5489b853ab0260a1a0610a7872af10c27ddb78bc0be9605322e299bbc3139e7"
+      "sha256": "ba7dfa8f1233386d9ac39ea78751bad217d4b225239681c3759f57912b23be95"
     },
     {
       "path": "renders/case.png",
@@ -30,7 +30,7 @@
         1568,
         1176
       ],
-      "sha256": "4f296737ddf1b38032aef4747cf43d98cafc2f940df310816dc69db7517f6b75"
+      "sha256": "e3d2341ae4d70fbfbc630ca59c4c2270d33b197ec470c851ebc5a47a4d62ec02"
     },
     {
       "path": "renders/cyberdeck.png",
@@ -38,7 +38,7 @@
         1568,
         1176
       ],
-      "sha256": "b193e70f3f2a9e6c7c0a6a82d304a4c246175859d51cbdf4f91a49b48df68b94"
+      "sha256": "ad71f4cefcebd6f6695695f48aa3dc164c3caa443c479faa9dfe2b95980998b7"
     },
     {
       "path": "renders/cyberdeck_front.png",
@@ -46,7 +46,7 @@
         1568,
         1176
       ],
-      "sha256": "aa04acc767a631543fe706fc2cc643d905f2b80b93d4f10bcc01fb7803db5844"
+      "sha256": "b01e46038b265058f5f0d615d896b9362e172a82795790f9a089408744c5e11a"
     },
     {
       "path": "renders/cyberdeck_side.png",
@@ -54,7 +54,7 @@
         1568,
         1176
       ],
-      "sha256": "421229dae24e1c6331e9e93d075b1b21f325871e01915183ececdcaa68b74257"
+      "sha256": "2cfe050fb0e43ff3b823052f2123663d5db0dc1dd756b66d79e79857e7b9a14b"
     },
     {
       "path": "renders/cyberdeck_top.png",
@@ -62,7 +62,7 @@
         1568,
         1176
       ],
-      "sha256": "d4b30117198417f5dc98d7b88e8ade445b0ba0e9e553bcf85ce5f7ccc4a15c82"
+      "sha256": "d111b22919a5d475f88202f04ccbcee9c9f694b4aa7f14cef9543784fce41fab"
     },
     {
       "path": "renders/dock.png",
@@ -70,7 +70,7 @@
         1568,
         1176
       ],
-      "sha256": "0674a30b2ed71b9a2565e4b2ce3df8bbd8ee0894e7f17635adca1af111c2ada0"
+      "sha256": "0befe3a0fe7dcce557eb46f468c898008f2959a1b5af74fccbc6bf7a950c1066"
     },
     {
       "path": "renders/dock_base.png",
@@ -78,7 +78,7 @@
         1568,
         1176
       ],
-      "sha256": "9d45fa39a730b80af992673e7e7ca563098ee3ac4449cfbe8313ba3677bbee9e"
+      "sha256": "d60e6b5fe39f6799372493e15fd42133c2eb0cebd5f75fad583663c5f8c49eb7"
     },
     {
       "path": "renders/dock_insert.png",
@@ -86,7 +86,7 @@
         1568,
         1176
       ],
-      "sha256": "f9855c882ca832a4d874526fda69695f03205c337c016a976c6180889ebb65e7"
+      "sha256": "69344d72676b187bdbff01865abe37b4eaa769461d49db4aee651d6eab654b07"
     },
     {
       "path": "renders/dock_under.png",
@@ -94,7 +94,7 @@
         1568,
         1176
       ],
-      "sha256": "da714c757f59ce639ab4c2d258f1731f61b584c234d1bf1c146e6904db1efcef"
+      "sha256": "2d7fc342b2ace6471c464d45d52d3f88ba9a3ef1f270beb889d13ce1a1173f3e"
     },
     {
       "path": "renders/dock_unibody.png",
@@ -102,7 +102,7 @@
         1568,
         1176
       ],
-      "sha256": "6d0ea62eca11e64ba52a135414f26655e938810ae3e0aade75de3791189ec76b"
+      "sha256": "657bc6ad0cf72c533d9e9caf51bd31b4fe35b41c985f7cdcf0c79f8c786d85c2"
     },
     {
       "path": "renders/dock_unibody_side.png",
@@ -110,7 +110,7 @@
         1568,
         1176
       ],
-      "sha256": "2a39b33272f8a653d25b77c91a393b4863a0f2c66acb48e97edcf01b6b85ebbb"
+      "sha256": "fb6cd097e0ceb7f87b8b4b52dacbe2fe6a2b9f473d1ffb362c949a60c6acb248"
     },
     {
       "path": "renders/full.png",
@@ -118,7 +118,7 @@
         1568,
         1176
       ],
-      "sha256": "fe87644d7029383d4f3aa9752ae5760c4faacd0af0caead7e0b105b06cc96129"
+      "sha256": "1c443edb0b9346840cc02742bf07d970a1138519b9be849bee98ad60bbe63a72"
     },
     {
       "path": "renders/full_side.png",
@@ -126,7 +126,7 @@
         1568,
         1176
       ],
-      "sha256": "7163fbf97785c3532759e17ee5203853ca512be1e6d632256eb2fac7999e4358"
+      "sha256": "3ba1b9defc13d19e09480007b46fcb60168e31d803055b8baa6783cd8746d5a9"
     },
     {
       "path": "renders/independent_tenting.png",
@@ -134,15 +134,15 @@
         1568,
         1176
       ],
-      "sha256": "faef0a768a47fd62ede608323ae568b94fe2c34e40b69c26378d731a508d2718"
+      "sha256": "faf3ceb465862fd8a1daef040bca9d6ab759cffeade42d40ac85f1bc731fce2f"
     },
     {
       "path": "renders/modules.png",
       "size": [
         1800,
-        6000
+        6500
       ],
-      "sha256": "24cba95d57f6c65256b1ff17f1084d61507a0e9ccdc86da44866a6857af7be14"
+      "sha256": "7c411cafb7eafb2a67845fbe75239744af9af5637318d5f5c3dac7343df76ece"
     },
     {
       "path": "renders/pads.png",
@@ -158,7 +158,7 @@
         1568,
         1176
       ],
-      "sha256": "1b73cbb98193895e75a2557fb4d9a888ab5b03bc87c804cf414d1c7ea007fe46"
+      "sha256": "5c2eabdce2b9282e28ea0d85250fc52586344fa2730ba5ed1019d780bc742bc2"
     },
     {
       "path": "renders/parts_top.png",
@@ -166,7 +166,7 @@
         1568,
         1176
       ],
-      "sha256": "f437ababee9817a740081e8063c810a4374441e0b71cf1ceb70bc4510989f7cb"
+      "sha256": "f3e16692f33a556717b6b3aa702a31848cbaf4e118aaf8f64c3d5b697b5b8690"
     },
     {
       "path": "renders/plate.png",
@@ -174,7 +174,7 @@
         1568,
         1176
       ],
-      "sha256": "2922af4a3723dac89e1a039762805f00a7e1060bef4c44e97ffb2954b2b7784c"
+      "sha256": "dbe71322bb5244f8f47133eeb8e606aa051120b3d610f9c49c27e0c3b96b6a7e"
     },
     {
       "path": "renders/plate_under.png",
@@ -182,7 +182,7 @@
         1568,
         1176
       ],
-      "sha256": "426365b991c575cee39bda22a6341de08e372af7514e3907553c11ce89599763"
+      "sha256": "a2f3a46e57df8dbb95db931bc623dcf012ce5c295cd0fbd9ab3278e89db5c3ea"
     },
     {
       "path": "renders/stack_alignment.png",
@@ -198,7 +198,7 @@
         1568,
         1176
       ],
-      "sha256": "871aa85a31664b5bc3d106e337501e32e4c08cddbfd0ccb40c38214d932cf106"
+      "sha256": "a6f2b0ad2f36525517197c27a998a4efa6063bd873253363ad026000cba5d322"
     },
     {
       "path": "renders/stacked_side.png",
@@ -206,7 +206,7 @@
         1568,
         1176
       ],
-      "sha256": "c57df77acc556cc0b0186b50e1343e54da9c33f88a796da9dccd407e45cf3816"
+      "sha256": "329140c923a2f25aaa1161b89b9470196925641d18de4282bdc241f843eae5b1"
     },
     {
       "path": "renders/trackball.png",
@@ -214,7 +214,7 @@
         1568,
         1176
       ],
-      "sha256": "414df647236111fddcfdcb4f4dd73341a1ead467e5e88c64c112f3da88390e39"
+      "sha256": "c05cd2995bce5f263d6d68e4882629fe276cb17cef67bdcf47db6c6d2111afff"
     },
     {
       "path": "renders/trackball_assembly.png",
@@ -222,7 +222,7 @@
         1568,
         1176
       ],
-      "sha256": "6b884054d33245555bcb16b695629ade324728e4fe82330d30e593e852b8e8f0"
+      "sha256": "aaf8954335264837c6e3b2ba955df2af217117d8048b78d8b7373f1a27127845"
     },
     {
       "path": "renders/trackball_board_bottom.png",
@@ -230,7 +230,7 @@
         1568,
         1176
       ],
-      "sha256": "353f34e07ada56f2fe0845e76c96faa6242823c290f06efcee9f03623cfa2aec"
+      "sha256": "c50a8a62f797e5b4fe1828da3fd6e0096fd94adb4a83316168be678728da4be4"
     },
     {
       "path": "renders/trackball_board_stack.png",
@@ -238,7 +238,7 @@
         1568,
         1176
       ],
-      "sha256": "85c221a43835ab85cb9f8dedab1f2abb4ef893512868452010d824f72b1de69d"
+      "sha256": "d0284ca6c788b7ef6b310b731718f6b41ea0d9d2b8c8da0d2ffd8e83e83526e8"
     },
     {
       "path": "renders/trackball_board_stack_exploded.png",
@@ -246,7 +246,7 @@
         1568,
         1176
       ],
-      "sha256": "34cb6c718e51a4061c536e7168c4c7f4faf7a743df5b5b77da45db68c11f9082"
+      "sha256": "ce3aeabf52c89a6276e8faeccc529446500b285e1fba53915f92b40288de713a"
     },
     {
       "path": "renders/trackball_board_stack_nano.png",
@@ -254,7 +254,7 @@
         1568,
         1176
       ],
-      "sha256": "82483b67b45ea8915647be6f1004ca4fc4581b42e36a314195e8ed894fe24c3a"
+      "sha256": "99a9f25da28aae102c2bf8acc0c799e5b9297089749c087bcf7390992dbc92bb"
     },
     {
       "path": "renders/trackball_board_stack_nano_exploded.png",
@@ -262,7 +262,7 @@
         1568,
         1176
       ],
-      "sha256": "94ea0954bb227a48ce778cebf0f2d4bcea3ffefdcb713b26bd3702c6fa235ad4"
+      "sha256": "0b10827e5113fe76b02827a5b95dc15c09b2a43bdbce18c6fe46fddca7baae3d"
     },
     {
       "path": "renders/trackball_board_stack_nano_top.png",
@@ -270,7 +270,15 @@
         1568,
         1176
       ],
-      "sha256": "24faf2a91d6e7f7624f812606ac444e2bed5eeac98b597b63ff6609b1cc1cb7d"
+      "sha256": "876e25eab6a2b172d3bc324aaf62e5fe1c7835a9e4d4d2e572a1993ff8417726"
+    },
+    {
+      "path": "renders/trackball_board_stack_nano_wires.png",
+      "size": [
+        1568,
+        1176
+      ],
+      "sha256": "3eeace1ad27d9df573fb0bc6d63adf934a89772d0050a1cb778b03972fd77056"
     },
     {
       "path": "renders/trackball_board_stack_top.png",
@@ -278,7 +286,15 @@
         1568,
         1176
       ],
-      "sha256": "ab02acdc4c04c5ef8f9af3623719ad40b047988cee2d37f82784b2114a7a73cd"
+      "sha256": "49428fc64bf0041a025956f37b3169a699f2221455c9f59f0a08062c475cde4f"
+    },
+    {
+      "path": "renders/trackball_board_stack_wires.png",
+      "size": [
+        1568,
+        1176
+      ],
+      "sha256": "104f2a2b036527cb9ff04bcb5c4ad57d6c894b98b833cce20337d58a4d5e9b7a"
     },
     {
       "path": "renders/trackball_board_top.png",
@@ -286,7 +302,7 @@
         1568,
         1176
       ],
-      "sha256": "e0b00bdaa1aac314490e758693f0eb664d8a3073ff56f494291b8a408cead95a"
+      "sha256": "59bed46f45c5a5e7a230cc4a095029afcc56f5521e53f27879482e6d1cb2536a"
     },
     {
       "path": "renders/trackball_choc.png",
@@ -294,7 +310,7 @@
         1568,
         1176
       ],
-      "sha256": "10251ee6522d3f480c06ff67181ca2316b9f993071ae41ab1686e105ea42b63c"
+      "sha256": "9977a2a73a4de386936998633827661acd8db53b0606315b3fe584c381aed1f3"
     },
     {
       "path": "renders/trackball_choc_reset.png",
@@ -302,7 +318,7 @@
         1568,
         1256
       ],
-      "sha256": "ca1ce9f73cbc3279e7a6b0aec9945016796ad3b9c15b11801a5433954c3592c8"
+      "sha256": "b06343c111b8bf6130d6082350d81c7cb2c9258ebaba63989895f38a4294c65e"
     },
     {
       "path": "renders/trackball_choc_seam.png",
@@ -310,7 +326,7 @@
         1568,
         1256
       ],
-      "sha256": "6525729f20211f0a7c9a05a21d62635e55fbd8a7db1639a769b5e1c4108bdc97"
+      "sha256": "1b879fd0218829988e0481c0308614ba5683d53cb8b5feac5e31ebd7fbce0f23"
     },
     {
       "path": "renders/trackball_choc_stack.png",
@@ -318,7 +334,7 @@
         1568,
         1256
       ],
-      "sha256": "20ab6bdb0d81197c45bfcbbec989fe40734167ae950dd23e4bb24c9a7fef49ec"
+      "sha256": "7dd09b831de6c84d9eb34a59f396597963dbcee267a3247ef0db48a899ee9a5a"
     },
     {
       "path": "renders/trackball_choc_structure.png",
@@ -326,7 +342,7 @@
         1568,
         1256
       ],
-      "sha256": "9677d07126d80fa94ec8224bd8eb28530859f5d968d5304edfdda6b5c19b5fdb"
+      "sha256": "6594cd292f13aba3f83d99b7dfc84a0f882795412ad509620a39dbc785589839"
     },
     {
       "path": "renders/trackball_choc_tray.png",
@@ -334,7 +350,7 @@
         1568,
         1256
       ],
-      "sha256": "2ef9e24a5ee6cdaeb4feec1a10c1cc496105720d51711a49dad26c8ee7766fe2"
+      "sha256": "f0bbe7203c4b202db29e73a760e5780164a82804f980eb4b30ee8eedb42542ad"
     },
     {
       "path": "renders/trackball_open.png",
@@ -342,7 +358,7 @@
         1568,
         1176
       ],
-      "sha256": "17ed4cf2f469ff5ecf0819fe923d90f7f7669acfb70a140bd8de4df9d7671bd3"
+      "sha256": "c24f776d0858de00773d3e810f0bff07c997134b09bdafafe3726f6a6968bb95"
     },
     {
       "path": "renders/trackball_rear.png",
@@ -350,7 +366,7 @@
         1568,
         1256
       ],
-      "sha256": "6b42de0ec543cc8190fafa3195c0afee04b2ff4da998849c6c83f1818d025ebe"
+      "sha256": "1cba643acec4224a983be756e9b7e411e5116c7dfa69bb696420f5c672d213e9"
     },
     {
       "path": "renders/trackball_reset.png",
@@ -358,7 +374,7 @@
         1568,
         1256
       ],
-      "sha256": "4372ddd82e557c0db4c19efb2487d1a4bed317d03e628f510c5399aa48c8e1fe"
+      "sha256": "2c1847c5eaf6a00fddc852e0ba27856eb6e91655f7df8e42258a289669b404b2"
     },
     {
       "path": "renders/trackball_seam.png",
@@ -366,7 +382,7 @@
         1568,
         1256
       ],
-      "sha256": "118b1a16c80bed1e54fd1884022e414f392ba21988f4368479d08c8136e545e8"
+      "sha256": "203788422e2b17991cd31aec3d3d3b1c494601f7aa0c0fe56c55cd097c143af3"
     },
     {
       "path": "renders/trackball_stack.png",
@@ -374,7 +390,7 @@
         1568,
         1256
       ],
-      "sha256": "822c5b3a146e06ded40df341045c4153abb9be77e0bbad9071ff957cbfbcbd87"
+      "sha256": "0390554634ca6c6c3079db65b315f064aa3dffe07e9b5de175c599cca513a449"
     },
     {
       "path": "renders/trackball_structure.png",
@@ -382,7 +398,7 @@
         1568,
         1256
       ],
-      "sha256": "5e03766b26dc711e398c3da0d34bbab8660d94f55b4ab628a2bb5d7e5719e69a"
+      "sha256": "db259b576689689bf7d100d2e2f305dc915265328a7521e805bc007851529d8d"
     },
     {
       "path": "renders/trackball_tray.png",
@@ -390,7 +406,7 @@
         1568,
         1256
       ],
-      "sha256": "8ea0ffeb41ae12f2512fd1f72e50897ededfed34a26bf337bb1486209448baf0"
+      "sha256": "fac9ec23e41e1f90eedab7bb830b3b68f451fcd155621b213906553de561f402"
     },
     {
       "path": "renders/trackball_under.png",
@@ -398,7 +414,7 @@
         1568,
         1176
       ],
-      "sha256": "a21abcfa656ffcddbbf7c64c3d53249d6ce82b73b8890c7b5f5e7b58138f1590"
+      "sha256": "4619f012b49f9c3e77c104a19eec2bdb8ca04b08fe61336ffad43bc652aae1a5"
     },
     {
       "path": "renders/trackball_usb.png",
@@ -406,7 +422,7 @@
         1568,
         1176
       ],
-      "sha256": "eabbe548e9a659ef5fd3d4888a99378b9c7a9adf64b06754a16b1ac0e5b1caa2"
+      "sha256": "ea9e7b7d3b16cfb1a2bfbda0139fae45640a24eac8ab0b647466f79ce4a03826"
     },
     {
       "path": "renders/trackball_usb_dock.png",
@@ -414,7 +430,7 @@
         1568,
         1176
       ],
-      "sha256": "8eaa143f8f34ac289fc45b525d5a7f9a6c2c00ee74f0f88a4b47eb5e4ae28f9a"
+      "sha256": "6699fe75b8d447f6fb8ca39a035a8889e85fa91be8504147f4b730852759604e"
     },
     {
       "path": "renders/trackball_usb_open.png",
@@ -422,7 +438,7 @@
         1568,
         1176
       ],
-      "sha256": "ba2489344c4d60655ba28f8d5d76755d6a8e4ed030ebc19cef6e20cf54332177"
+      "sha256": "108001cd74490b0462ccaa2eb275c014f4620f34aaddc65fbaa61d58d2a652fa"
     },
     {
       "path": "renders/trackball_with_half.png",
@@ -430,7 +446,7 @@
         1568,
         1176
       ],
-      "sha256": "064d727d565cb0aca9ea233983daec4f3b87f4009727e343765da358db9b15e8"
+      "sha256": "3beb650939fcabfadfb1ab86dff686eff7666155291c2d30c6f5ea1255f7d759"
     },
     {
       "path": "renders/trackball_xiao_stack.png",
@@ -438,7 +454,7 @@
         1568,
         1176
       ],
-      "sha256": "5547dda5005882ed9143b70ae37e30be273b8dfe5bbe5e7e2ae7d57c5553fe1f"
+      "sha256": "b61688182292791974ee9907435855b8680064f56c1782cedfe27c1b22f62909"
     },
     {
       "path": "renders/trackball_xiao_usb_open.png",
@@ -446,7 +462,7 @@
         1568,
         1176
       ],
-      "sha256": "d4310c57573997157d9e59a7f4e1f28d874ae288b1be54c117e3ec4e047263ec"
+      "sha256": "3074aacebf8188574da9727705541478050165b33c6e287bf688cdb0a039bb16"
     },
     {
       "path": "renders/trackpad.png",
@@ -454,7 +470,7 @@
         1568,
         1176
       ],
-      "sha256": "3e828526d09d406c386e4a8bf16ec467f2a23e6ab2643fa20a2c925844bc1ad3"
+      "sha256": "0597d962ea11f249792df5dbb851e6063e5718079642449de26f5ba12c41398d"
     },
     {
       "path": "renders/trackpad_assembly.png",
@@ -462,7 +478,7 @@
         1568,
         1176
       ],
-      "sha256": "5c86f443a54fa934f5f3c20d6e36bcfe93909eb9b03b22d49fc4750559793166"
+      "sha256": "763d5885bcae347469df8913d76fddf977316e9bab7e00f171a29d898a244d9c"
     },
     {
       "path": "renders/trackpad_open.png",
@@ -470,7 +486,7 @@
         1568,
         1176
       ],
-      "sha256": "c723a41ff987492b7c3a246b32f6bf386a2ff3e7ef76b871a99da65331f3a103"
+      "sha256": "399402604a26c474ee9697266dee0559c9295b5a2f17f06d5240af984d236385"
     },
     {
       "path": "renders/trackpad_rear.png",
@@ -478,7 +494,7 @@
         1568,
         1256
       ],
-      "sha256": "45781f8205403c8be921272123129f128fe7ee5ba66b706ca30df46a059f0b23"
+      "sha256": "c9328e68e97083440dba114ca439b6d5510ee3b545e12fab432df7829fadfb6f"
     },
     {
       "path": "renders/trackpad_reset.png",
@@ -486,7 +502,7 @@
         1568,
         1256
       ],
-      "sha256": "229084ac524113f062f55bff3f2de706aecaf0809e4eaee0ebc32489975fbb4d"
+      "sha256": "a2fb9f2f92c73542055c0aa91a416740cd1e5d68aa8acb876da2dc5d8743a5c0"
     },
     {
       "path": "renders/trackpad_seam.png",
@@ -494,7 +510,7 @@
         1568,
         1256
       ],
-      "sha256": "13506dbe64ab85f60058071cd89cbd10a533bfa5660c12f08cbee5e14b92fa16"
+      "sha256": "a5afa5bc7a4f2839f34236e89f5c8c35cf41548d72ad19aba08bdc520b389cf6"
     },
     {
       "path": "renders/trackpad_stack.png",
@@ -502,7 +518,7 @@
         1568,
         1256
       ],
-      "sha256": "04f72197a29767b889a8fc7f27abcc8eeeec80f4895b8db5646959b706542357"
+      "sha256": "58480ecff075a49f8b991ca392a4fc5901b5831e1029c0b30306e4a26b89ec2c"
     },
     {
       "path": "renders/trackpad_structure.png",
@@ -510,7 +526,7 @@
         1568,
         1256
       ],
-      "sha256": "11053eade93e7eb100b9b4b013159907ab066c956df9761ea5eab0fce585c1ab"
+      "sha256": "1f01ae508f11d31c51c2e88204f3d81e4ff49345456ff4f2988dc6269f714333"
     },
     {
       "path": "renders/trackpad_tray.png",
@@ -518,7 +534,7 @@
         1568,
         1256
       ],
-      "sha256": "5bf8c4c1d1c298cc90cab6f7eaa73af9843a1c1e66fe9e14ffa7b349a689ff54"
+      "sha256": "b8fad4c2e5453edae170a86af65bd6f6c74d6b14863fe3da7c134b32120fc6e8"
     },
     {
       "path": "renders/trackpad_under.png",
@@ -526,7 +542,7 @@
         1568,
         1176
       ],
-      "sha256": "593a143d6a3ae863e0dc038194147ab49f5ee58e55d4f1928100668632eaf899"
+      "sha256": "e01193b853ed0b20bc307f355dd38d8456f9170fc17b0c6a802c2753be26f45e"
     },
     {
       "path": "renders/trackpad_usb.png",
@@ -534,7 +550,7 @@
         1568,
         1176
       ],
-      "sha256": "dfe12849187a3b30f6b96f39db9da85e6c35e7991df9715ca5800a59eb673395"
+      "sha256": "1c534077285e5feb85888113b5f9f6384ae2ea4e1baff24f47c7fa87a924af11"
     },
     {
       "path": "renders/trackpad_usb_dock.png",
@@ -542,7 +558,7 @@
         1568,
         1176
       ],
-      "sha256": "7a1bd3125a96b3da24398a94272514f3818cd27613465d7ba294bac2132fa3c2"
+      "sha256": "2b7a1592f67d43a8b7f007e1af4fcf6509161cf1c32fe39b803bf5f8edaa9999"
     },
     {
       "path": "renders/trackpad_usb_open.png",
@@ -550,7 +566,7 @@
         1568,
         1176
       ],
-      "sha256": "366c32519034a9a9b67b17f34a8377f6ea3a32bbefc770ef06176eb31d89862d"
+      "sha256": "37b6e233c9d4ce794f6e90077fa9e3a73baef93c42a60632830c4656d5a22071"
     },
     {
       "path": "renders/trackpad_with_half.png",
@@ -558,7 +574,7 @@
         1568,
         1176
       ],
-      "sha256": "b309e7c516babf85f7e5e6f1ba38105b256f672a21682786dd3e856cc056f48b"
+      "sha256": "f99999c492796258955054ccb6c31fa4e4cc025bc8cf92aca38ce6e2e7d29af3"
     },
     {
       "path": "renders/unibody.png",
@@ -566,7 +582,7 @@
         1568,
         1176
       ],
-      "sha256": "216c7a56bd857adb147cbebe4f7834556a30882a4a8e13805c518b3d6429be05"
+      "sha256": "a40cd04b4c776f4509ce1fe70da9e308eb9a96b5d83dcde4cfc6a67e2d00d2c4"
     },
     {
       "path": "renders/unibody_top.png",
@@ -574,7 +590,7 @@
         1568,
         1176
       ],
-      "sha256": "d7abdbd7ff71b7659edc931a039ce8201be2c0768dd29b147bc458f28a2829a3"
+      "sha256": "ea05064055d1503ef9233ef02a8fac7545f274d9247cabd9244b9e94052b3c30"
     },
     {
       "path": "renders/wiring_nice_nano.png",
@@ -598,7 +614,7 @@
         900,
         900
       ],
-      "sha256": "8d10596d0275b38263e6265b72647e948695f26fd95df08933d934684e394341"
+      "sha256": "cfcb1e7ecd65c898a4ab434ecb44a991391c930d3da0ec752fa26310ced8e0c8"
     },
     {
       "path": "renders/xiao_right_half.png",
@@ -606,7 +622,7 @@
         900,
         900
       ],
-      "sha256": "5ac8128270eec75640bd83c68bd48e06c219954357916e32a69af2a766bcdcd0"
+      "sha256": "07ec5e533a7a64920bf3237e0a8194aa31defec2ec08dabc52f7f4755af0ca26"
     }
   ],
   "inputs": [
@@ -672,7 +688,7 @@
     },
     {
       "path": "render.sh",
-      "sha256": "9133054e963d7c994939994d11d944ea93b2dbca0df4ffe32f85d2a406fb50e4"
+      "sha256": "c8b4fbe8a7a4ddf79eb0c8c864d92ba1aaaf38fc9765a3e4120ddf1d51a5d984"
     },
     {
       "path": "render_boards.py",
@@ -680,7 +696,7 @@
     },
     {
       "path": "render_manifest.py",
-      "sha256": "e04e0e549102526d1feaf818391a492796b50ae97f26d9692d8ee63b33324eb8"
+      "sha256": "6d841fc46f3b7b0720547c6aa30c5b001ac0e959e28a935b2523f45f7082e71d"
     },
     {
       "path": "render_notes.py",
@@ -688,7 +704,7 @@
     },
     {
       "path": "scene.py",
-      "sha256": "a43e2481eabc548afe354f34621246de5b6d9465c7e94c6693c4e28a7148f966"
+      "sha256": "66409ed7b25065ca680703c7d40251dd1b461358d4346ae2e86cd0be11d0c5d6"
     },
     {
       "path": "stand_mount.py",

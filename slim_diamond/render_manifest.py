@@ -29,7 +29,8 @@ def main():
                  for v in ("rear", "assembly", "under", "usb", "usb_open", "usb_dock")]
     required += ['trackball_xiao_stack.png', 'trackball_xiao_usb_open.png', 'trackball_board_stack.png',
                  'trackball_board_stack_exploded.png', 'trackball_board_stack_top.png', 'stack_alignment.png',
-                 'trackball_board_stack_nano.png', 'trackball_board_stack_nano_exploded.png', 'trackball_board_stack_nano_top.png']
+                 'trackball_board_stack_nano.png', 'trackball_board_stack_nano_exploded.png', 'trackball_board_stack_nano_top.png',
+                 'trackball_board_stack_wires.png', 'trackball_board_stack_nano_wires.png']
     assert all((root / "renders" / n).is_file() for n in required)
     font = ImageFont.truetype("/usr/share/fonts/liberation/LiberationSans-Regular.ttf", 22)
     sheet = Image.new("RGB", (1800, ((len(required) + 2) // 3) * 500), "white")

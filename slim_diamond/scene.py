@@ -383,6 +383,34 @@ def board_stack_scenes(L, plan):
     # The nice!nano's envelope: its board and receptacle, as the clearance checks use it.
     nano = parts["nice!nano"]
     nano_usb = nano ^ M.extrude(_box(-4.6, -99, 4.6, 99), 0, floor)
+    # The wires, assembled views only: in through each pad from below, a tip showing above it.
+    # Sensor/trackpad wires leave forward through the gap over the controller, under the sockets.
+    def strand(points, r=.3):
+        balls = [Manifold.sphere(r, 12).translate(p) for p in points]
+        out = Manifold()
+        for a, b in zip(balls, balls[1:]):
+            out += (a + b).hull()
+        return out
+    run = floor + 1.25 + .45                                  # over either controller, under the sockets
+    names = ["SCLK", "SDIO", "NCS", "MOTION", "RST", "VCC", "GND"]
+    pad_at = dict(zip(names, [kicad(p) for p in design["wire_pads"]]))
+    pad_at.update(zip(["VBAT", "R2"], [kicad(p) for p in design["controller_pads"]]))
+    colour = dict(SCLK=(.95, .8, .1), SDIO=(.2, .7, .25), NCS=(.15, .35, .9), MOTION=(.1, .75, .8),
+                  RST=(.92, .92, .92), VCC=(.85, .1, .1), GND=(.3, .3, .32), VBAT=(.95, .45, .05), R2=(.6, .25, .8))
+    def to_front(name):
+        x, y = pad_at[name]
+        return strand([(x, y, B.PCB_TOP + .3), (x, y, run), (x, -46.0, run), (x, -50.0, run - 3)])
+    front = [(to_front(n), colour[n]) for n in names]
+    def up_to(name, start, via):
+        x, y = pad_at[name]
+        return strand([start] + via + [(x, y, run), (x, y, B.PCB_TOP + .3)])
+    rows = lambda r: B.pin_y(L, r)
+    controller_wires = {
+        "": [(up_to("VBAT", (4.455, rows(4) + .315, floor + 1.3), []), colour["VBAT"]),
+             (up_to("R2", (1.28, rows(4) + 6.03, floor + 1.3), [(4.0, rows(2), run)]), colour["R2"])],
+        "_nano": [(up_to("VBAT", (-7.62, rows(1), floor + B.NANO[2] + .3), [(-5.0, rows(1), run), (5.0, rows(4), run)]), colour["VBAT"]),
+                  (up_to("R2", (-7.62, rows(3), floor + B.NANO[2] + .6), [(-5.5, rows(3), run), (5.0, rows(2), run)]), colour["R2"])],
+    }
     scenes = {}
     for suffix, controller, pcb_t in (("", [(xiao(B.xiao_back(L), floor), vrml.METAL)], 1.25),
                                       ("_nano", [(nano - nano_usb, vrml.XIAO_PCB), (nano_usb, vrml.METAL)], B.NANO[2])):
@@ -391,7 +419,7 @@ def board_stack_scenes(L, plan):
         lower = [(ctrl_slab, green), (ctrl_cu, vrml.GOLD)] + controller + [
                  (parts["controller header"], (.07, .07, .08)), (header_pins, vrml.GOLD),
                  (B.stacking_pins(L), vrml.GOLD), (parts["stacking pins' plastic"], (.07, .07, .08))]
-        scenes["trackball_board_stack" + suffix] = [(plan(m), rgb) for m, rgb in lower + upper]
+        scenes["trackball_board_stack" + suffix] = [(plan(m), rgb) for m, rgb in lower + upper + front + controller_wires[suffix]]
         scenes["trackball_board_stack" + suffix + "_exploded"] = [(plan(m), rgb) for m, rgb in lower] + \
             [(plan(m.translate((0, 0, 10))), rgb) for m, rgb in upper]
     return scenes

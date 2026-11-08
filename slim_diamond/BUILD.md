@@ -199,6 +199,12 @@ How the stacking pins meet the main board, in the module: on the panel the contr
 | Plain XIAO nRF52840 | ![](renders/trackball_board_stack_exploded.png) | ![](renders/trackball_board_stack_top.png) |
 | nice!nano v2 | ![](renders/trackball_board_stack_nano_exploded.png) | ![](renders/trackball_board_stack_nano_top.png) |
 
+Every other hole in the main board takes a wire. Wires: `3V` red, `G` grey, `RST` white, `CK` yellow, `IO` green, `CS` blue, `MO` cyan, run forward to the sensor board or trackpad; `VBAT` orange and `R2` purple come up from the controller.
+
+| Plain XIAO nRF52840 | nice!nano v2 |
+|---|---|
+| ![](renders/trackball_board_stack_wires.png) | ![](renders/trackball_board_stack_nano_wires.png) |
+
 ![Stacking holes of both boards, measured from the routed PCB, and a section across the stack](renders/stack_alignment.png)
 
 For the trackball sensor board, use these values at the PCB references: C1 3.3 µF; C2, C3 and C4 100 nF; C5 and C7 10 nF; C6 10 µF; C8 and C9 1 µF; R1 10 kΩ. Match the regulator and PMW3610 pin 1 to the footprint markings and check the manufacturer drawings before soldering. Solder with an iron, inspect the joints under magnification and check adjacent pins for shorts. Keep the lens clean and do not touch its optical surfaces.
