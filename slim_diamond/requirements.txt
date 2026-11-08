@@ -1,5 +1,0 @@
-shapely==2.2.0
-numpy==2.5.4
-manifold3d==3.5.4
-matplotlib==3.11.2
-markdown==3.11.2

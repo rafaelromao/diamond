@@ -23,14 +23,6 @@ Diamond is a handwired board originally designed by me but heavily inspired by t
 
 ![img](builds/choc_diamond/choc_diamond.jpeg)
 
-## [Slim Diamond](slim_diamond/README.md)
-
-A wireless Choc version on a reversible PCB: XIAO nRF52840, 500 mAh battery,
-tented by the battery underneath, and magnets to join the halves or stack
-them back to back.
-
-![img](slim_diamond/renders/full.png)
-
 # STL Files
 
 The STL files are provided for the right side only. To print the left side you will have to mirror them.
@@ -42,15 +34,3 @@ The STL files are provided for the right side only. To print the left side you w
 - [MX Body Right - Tilted Thumbs](stls/v2/body_right_tilted.stl)
 - [Choc Body Right](stls/v2/choc_body_right.stl)
 - [Choc Body Right - Tilted Thumbs](stls/v2/choc_body_right_tilted.stl)
-
-## Slim Diamond
-
-Both halves are provided, already oriented for printing: the bases floor-down, the plates top face down. See the [build guide](slim_diamond/BUILD.md) for the print settings.
-
-- [Case Left](stls/slim_diamond/case_left.stl)
-- [Case Right](stls/slim_diamond/case_right.stl)
-- [Plate Left](stls/slim_diamond/plate_left.stl)
-- [Plate Right](stls/slim_diamond/plate_right.stl)
-- [Cyberdeck Dock](stls/slim_diamond/dock.stl), [Drawer Placeholder](stls/slim_diamond/insert.stl)
-- Pointing modules, one shared tray: [Module Tray](stls/slim_diamond/module_tray.stl)
-- Lids: [Trackball MX](stls/slim_diamond/trackball_lid.stl), [Trackball Choc v1](stls/slim_diamond/trackball_lid_choc.stl), [Trackpad](stls/slim_diamond/trackpad_lid.stl)
