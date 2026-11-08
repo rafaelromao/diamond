@@ -69,6 +69,8 @@ for i, (name, link) in enumerate(design['main_links'].items(), 1):
     assert off < 1e-3, (name, main_xy, ctrl_xy)
 header = {fp.GetValue(): [round(v, 4) for v in plan_of(fp.GetReference())] for fp in footprints.values()
           if fp.GetReference().startswith('MP')}
-(root / 'pcb/stack_alignment.json').write_text(json.dumps(dict(pairs=pairs, header=header), indent=1) + '\n')
+import hashlib
+board_hash = hashlib.sha256((root / 'pcb/trackball.kicad_pcb').read_bytes()).hexdigest()   # which board it measured
+(root / 'pcb/stack_alignment.json').write_text(json.dumps(dict(board=board_hash, pairs=pairs, header=header), indent=1) + '\n')
 print('Stacking holes: all %d pairs coincide in the module, worst %.4f mm' % (len(pairs), max(p['offset'] for p in pairs.values())))
 print('All three boards: every pad, header pin, stacking pin and jumper net matches')

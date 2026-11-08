@@ -684,7 +684,7 @@
     },
     {
       "path": "page.py",
-      "sha256": "578ec1f7ac8980bf3cd248969372f6d6b7d3a614f11a2503ca77317d5a29a795"
+      "sha256": "0879cb9310e019f813f315d888b9678ac8bcf703c808a9d610400c9e7c27cdc5"
     },
     {
       "path": "render.sh",
@@ -732,7 +732,7 @@
     },
     {
       "path": "test_xiao_option.py",
-      "sha256": "971ea53cdb1b345e77967fa35dbd1c4c5dc89b71694d23db3c3c1e06d76150f4"
+      "sha256": "b4949634522f208efbb9a93142d46862cc3189632f8811cda067889ca8883b27"
     },
     {
       "path": "trackball/controllers.py",

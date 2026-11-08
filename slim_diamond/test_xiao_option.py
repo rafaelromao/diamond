@@ -164,9 +164,11 @@ class XiaoOptionTest(unittest.TestCase):
 
     def test_the_routed_boards_stacking_holes_coincide(self):
         # Written by check_controller_pcb.py from the routed board, the panel's turn and offset undone.
-        path = Path('trackball/pcb/stack_alignment.json')
-        self.assertGreaterEqual(path.stat().st_mtime, Path('trackball/pcb/trackball.kicad_pcb').stat().st_mtime)
-        pairs = json.loads(path.read_text())['pairs']
+        import hashlib
+        data = json.loads(Path('trackball/pcb/stack_alignment.json').read_text())
+        board = hashlib.sha256(Path('trackball/pcb/trackball.kicad_pcb').read_bytes()).hexdigest()
+        self.assertEqual(data['board'], board, 'measured on a different board: rerun check_controller_pcb.py')
+        pairs = data['pairs']
         self.assertEqual(len(pairs), 8)
         for name, pair in pairs.items():
             with self.subTest(hole=name):
